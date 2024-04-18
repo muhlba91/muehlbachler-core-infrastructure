@@ -510,9 +510,9 @@
     "@pulumi/pulumi" "^3.0.0"
 
 "@pulumi/pulumi@^3.0.0", "@pulumi/pulumi@^3.65.1":
-  version "3.113.0"
-  resolved "https://registry.yarnpkg.com/@pulumi/pulumi/-/pulumi-3.113.0.tgz#fcca0d19b1cec88bc55762ecfee8aef8ccf07d50"
-  integrity sha512-egkifOLTGIQmyN0BFbMBBYKTqKy2a5UE5a4DKOT51S6GrdGas6M4yvXVksjL2gcaKiKIYOQSsaonvwc8/hkvpQ==
+  version "3.113.1"
+  resolved "https://registry.yarnpkg.com/@pulumi/pulumi/-/pulumi-3.113.1.tgz#d9755ce2d2c732a5ebc468f6a5f7fb1b125710fb"
+  integrity sha512-eKqnfm6ZooHCA5w7V37KsSUpuWzuyEpZh1MHQ3JHNRaAGDjvw2XzVAVsz4gw7vLwIKoFkxK+5ZlmwLRAb0T1MQ==
   dependencies:
     "@grpc/grpc-js" "^1.10.1"
     "@logdna/tail-file" "^2.0.6"
