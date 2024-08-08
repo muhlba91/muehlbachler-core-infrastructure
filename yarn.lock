@@ -134,9 +134,9 @@
   integrity sha512-XGSsWDweP80Fks16lwkAUIr54ICyBs6PsI4mpfTLQaWgEJRtY9xEV+PeyDpJ+sJEGZxqINlpmAwe/6tS1pP8Ng==
 
 "@muhlba91/pulumi-proxmoxve@^6.3.1":
-  version "6.11.1"
-  resolved "https://registry.yarnpkg.com/@muhlba91/pulumi-proxmoxve/-/pulumi-proxmoxve-6.11.1.tgz#512964034777b915f1b9d59bf411173e54c67063"
-  integrity sha512-iJuQUSfgU7zp/AwMtDgjVp28TBUwffBAeZiP0fGOPNDN0FgNJ5nyt6lpSfztWWp4sSMMzopbiGxNPBqad9bLRQ==
+  version "6.12.0"
+  resolved "https://registry.yarnpkg.com/@muhlba91/pulumi-proxmoxve/-/pulumi-proxmoxve-6.12.0.tgz#d8165cba89255f3a4b9f7afe4e68b30991cdfc2c"
+  integrity sha512-/3IqZj9tbQpw42mm7INkARm7uaqyDa7Vi+z+g45DAkPMA1pwlf6ZiaGq3IEQ8ZE4tGdLOuJQRFfQp9lUte8LvQ==
   dependencies:
     "@pulumi/pulumi" "^3.0.0"
 
@@ -1786,9 +1786,9 @@ for-each@^0.3.3:
     is-callable "^1.1.3"
 
 foreground-child@^3.1.0:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/foreground-child/-/foreground-child-3.2.1.tgz#767004ccf3a5b30df39bed90718bab43fe0a59f7"
-  integrity sha512-PXUUyLqrR2XCWICfv6ukppP96sdFwWbNEnfEMt7jNsISjMsvaLNinAHNDYyvkyU+SZG2BTSbT5NjG+vZslfGTA==
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/foreground-child/-/foreground-child-3.3.0.tgz#0ac8644c06e431439f8561db8ecf29a7b5519c77"
+  integrity sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==
   dependencies:
     cross-spawn "^7.0.0"
     signal-exit "^4.0.1"
