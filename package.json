@@ -24,7 +24,7 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "yarn@4.5.0",
+  "packageManager": "yarn@4.5.1",
   "dependencies": {
     "@muhlba91/pulumi-proxmoxve": "^6.15.0",
     "@pulumi/command": "^1.0.0",
