@@ -1,6 +1,6 @@
 services:
   vault:
-    image: hashicorp/vault:1.18.0
+    image: hashicorp/vault:1.18.1
     command: server
     container_name: vault
     ports:
