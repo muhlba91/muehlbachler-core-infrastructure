@@ -37,6 +37,7 @@ write_files:
 
       [Service]
       Restart=always
+      TimeoutSec=15m
       WorkingDirectory=/opt/vault
       ExecStartPre=/usr/bin/docker compose --file /opt/vault/docker-compose.yml --project-name vault pull
       ExecStart=/usr/bin/docker compose --file /opt/vault/docker-compose.yml --project-name vault up --force-recreate
