@@ -26,7 +26,7 @@
   },
   "packageManager": "yarn@4.8.1",
   "dependencies": {
-    "@muhlba91/pulumi-proxmoxve": "^6.15.0",
+    "@muhlba91/pulumi-proxmoxve": "^7.0.0",
     "@pulumi/command": "^1.0.0",
     "@pulumi/gcp": "^8.0.0",
     "@pulumi/google-native": "^0.32.0",
