@@ -12,6 +12,7 @@ export const enableAppRole = (provider: vault.Provider): vault.AuthBackend =>
     {
       type: 'approle',
       description: 'App Role Backend',
+      tune: {},
     },
     {
       provider: provider,

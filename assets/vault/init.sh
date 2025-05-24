@@ -9,7 +9,7 @@ until sudo docker inspect vault --format "{{.State.Status}}" | grep "running" > 
     echo "Waiting for vault to start..."
     sleep 5
 done
-while [[ ! `curl -s ${ADDRESS}` ]]; do
+while [[ ! $(curl -s ${ADDRESS}) ]]; do
     echo "Waiting for vault to be reachable..."
     sleep 5
 done
@@ -20,7 +20,7 @@ if [[ -f /opt/vault-init.txt ]]; then
     echo "Vault already initialized. Skipping..."
 else
     echo "Initializing vault..."
-    sudo docker exec vault /bin/sh -c "vault operator init --address '${ADDRESS}'" > /opt/vault-init.txt
+    sudo docker exec vault /bin/sh -c "vault operator init --address '${ADDRESS}'" | sudo tee /opt/vault-init.txt > /dev/null
 fi
 
 # check if vault was already initialized or not
