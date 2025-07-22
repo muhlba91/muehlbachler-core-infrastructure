@@ -12,6 +12,11 @@ export interface ServerConfig {
   readonly diskSize: number;
   readonly startupOrder: number;
   readonly usbPassthrough?: readonly ServerUsbPassthroughConfig[];
+  // TODO: new
+  readonly location: string;
+  readonly type: string;
+  readonly ipv4: string;
+  readonly publicSsh?: boolean;
 }
 
 /**

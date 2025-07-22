@@ -22,6 +22,9 @@ config:
     nameservers:
       - 10.100.0.1
       - 2a01:4f8:121:14e2:100::1
+    name: infrastructure-services
+    cidr: 10.21.0.0/16
+    subnetCidr: 10.21.0.0/24
   muehlbachler-hashicorp-vault-infrastructure:oidc:
     clientId: 262742851836814654@public_services
     clientSecret:
@@ -45,4 +48,11 @@ config:
       max: 2048
       min: 2048
     startupOrder: 10
+    location: fsn1
+    type: cx22
+    ipv4: 10.21.0.10
+    publicSsh: true
   muehlbachler-hashicorp-vault-infrastructure:username: proxmox
+  muehlbachler-hashicorp-vault-infrastructure:dns:
+    project: muehlbachler-dns
+    email: postmaster@muehlbachler.io

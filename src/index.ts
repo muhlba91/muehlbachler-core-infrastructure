@@ -1,6 +1,7 @@
 import { all } from '@pulumi/pulumi';
 import { stringify } from 'yaml';
 
+import { createHetznerInstance } from './lib/hetzner';
 import { createDir } from './lib/util/create_dir';
 import { createRandomPassword } from './lib/util/random';
 import { createSSHKey } from './lib/util/ssh_key';
@@ -14,6 +15,11 @@ export = async () => {
   const userPassword = createRandomPassword('server', {});
   const sshKey = createSSHKey('vault', {});
   const vaultData = createVaultResources();
+
+  // Hetzner resources
+  const hetznerVaultInstance = await createHetznerInstance(
+    sshKey.publicKeyOpenssh,
+  );
 
   // Vault instance
   const vaultInstance = all([
@@ -57,6 +63,10 @@ export = async () => {
   );
 
   return {
+    hetzner: {
+      ipv4: hetznerVaultInstance.publicIPv4,
+      ipv6: hetznerVaultInstance.publicIPv6,
+    },
     server: {
       ipv4: vaultInstance.server.ipv4Address,
       ipv6: vaultInstance.server.ipv6Address,

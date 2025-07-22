@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 
 import * as proxmox from '@muhlba91/pulumi-proxmoxve';
+import { Output } from '@pulumi/pulumi';
 
 import { ServerConfig } from '../../model/config/server';
 import { ServerData } from '../../model/server';
@@ -189,5 +190,11 @@ export const createServer = (
     hostname: hostname,
     ipv4Address: server.ipv4Address,
     ipv6Address: server.ipv6Address,
+    // TODO: old data
+    privateIPv4: Output.create(''),
+    publicIPv4: Output.create(''),
+    publicIPv6: Output.create(''),
+    sshIPv4: Output.create(''),
+    network: Output.create(''),
   };
 };

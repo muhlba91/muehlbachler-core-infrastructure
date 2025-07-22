@@ -30,6 +30,7 @@
     "@pulumi/command": "^1.0.0",
     "@pulumi/gcp": "^8.0.0",
     "@pulumi/google-native": "^0.32.0",
+    "@pulumi/hcloud": "^1.19.1",
     "@pulumi/pulumi": "^3.65.1",
     "@pulumi/random": "^4.13.0",
     "@pulumi/tls": "^5.0.0",

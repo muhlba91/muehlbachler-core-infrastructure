@@ -282,6 +282,7 @@ __metadata:
     "@pulumi/command": "npm:^1.0.0"
     "@pulumi/gcp": "npm:^8.0.0"
     "@pulumi/google-native": "npm:^0.32.0"
+    "@pulumi/hcloud": "npm:^1.19.1"
     "@pulumi/pulumi": "npm:^3.65.1"
     "@pulumi/random": "npm:^4.13.0"
     "@pulumi/tls": "npm:^5.0.0"
@@ -831,6 +832,15 @@ __metadata:
   dependencies:
     "@pulumi/pulumi": "npm:^3.0.0"
   checksum: 10c0/d3290ab596f76c8e277c47484de6000faa57e2604ed8db20dcdcaa3fbf1e4f9acc72bec881d9bf83be1197a736a4605783173a3682a7a048150264707baac585
+  languageName: node
+  linkType: hard
+
+"@pulumi/hcloud@npm:^1.19.1":
+  version: 1.23.0
+  resolution: "@pulumi/hcloud@npm:1.23.0"
+  dependencies:
+    "@pulumi/pulumi": "npm:^3.142.0"
+  checksum: 10c0/4ff03b0c3cea7c8061bbaa401eaf205b571911d10bf3a5258eb42a5b74459e8e3c98ffdc9018af03433a278944e63f7b76d14a47504b0baa349a63b6c4ae2ccc
   languageName: node
   linkType: hard
 

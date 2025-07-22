@@ -6,6 +6,10 @@ export interface NetworkConfig {
   readonly domain: string;
   readonly ipv4: NetworkIPConfig;
   readonly ipv6: NetworkIPConfig;
+  // TODO: new
+  readonly name: string;
+  readonly cidr: string;
+  readonly subnetCidr: string;
 }
 
 /**
