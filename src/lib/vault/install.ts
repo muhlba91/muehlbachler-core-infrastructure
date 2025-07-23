@@ -2,7 +2,7 @@ import { remote } from '@pulumi/command';
 import { all, Output, Resource } from '@pulumi/pulumi';
 import { FileAsset } from '@pulumi/pulumi/asset';
 
-import { gcpConfig } from '../configuration';
+import { dnsConfig, gcpConfig } from '../configuration';
 import { getFileHash, readFileContents, writeFileContents } from '../util/file';
 import { renderTemplate } from '../util/template';
 
@@ -40,7 +40,7 @@ export const initVault = (
 
   const dockerComposeHash = Output.create(
     renderTemplate('./assets/vault/docker-compose.yml.j2', {
-      domain: '', // TODO: domain
+      domain: dnsConfig.entries['vault'],
     }),
   )
     .apply((content) =>
@@ -64,7 +64,6 @@ export const initVault = (
       ),
   );
 
-  // TODO: add credentials = "/opt/google/credentials.json"
   const vaultConfigHash = Output.create(
     renderTemplate('./assets/vault/config.hcl.j2', {
       gcp: gcpConfig,

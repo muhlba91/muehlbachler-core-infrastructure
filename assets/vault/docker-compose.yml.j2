@@ -13,27 +13,26 @@ services:
       - traefik.http.routers.vault_http.entrypoints=web
       - traefik.http.routers.vault_http.service=vault_http
       - traefik.http.routers.vault_http.middlewares=redirect-to-https
-      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=8200 # TODO: this should be https
       - traefik.http.services.vault_http.loadbalancer.server.port=8200
 
       - traefik.http.routers.vault_https.rule=Host(`{{ domain }}`)
-      - traefik.http.routers.vault_https.entrypoints=websecure
+      - traefik.http.routers.vault_https.entrypoints=vault
       - traefik.http.routers.vault_https.service=vault_https
       - traefik.http.routers.vault_https.tls=true
       - traefik.http.routers.vault_https.tls.certresolver=letsencrypt
       - traefik.http.services.vault_https.loadbalancer.server.port=8200
-    ports:
-      - "8200:8200"
     networks:
       roundcube:
       proxy:
     environment:
       - VAULT_ADDR=http://127.0.0.1:8200
-      - GOOGLE_APPLICATION_CREDENTIALS=/vault/config/credentials.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/vault/credentials.json
     cap_add:
       - IPC_LOCK
     volumes:
       - /opt/vault/config:/vault/config
+      - /opt/google/credentials.json:/vault/credentials.json
 
 networks:
   vault:

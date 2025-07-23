@@ -56,3 +56,5 @@ config:
   muehlbachler-hashicorp-vault-infrastructure:dns:
     project: muehlbachler-dns
     email: postmaster@muehlbachler.io
+    entries:
+      vault: vault-new.platform.muehlbachler.io

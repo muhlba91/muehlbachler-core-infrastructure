@@ -44,6 +44,19 @@ entryPoints:
         - "10.0.0.0/8"
         - "172.16.0.0/12"
 
+  vault: # TODO: remove this entrypoint
+    address: :8200
+    http3: {}
+    http:
+      tls:
+        certResolver: letsencrypt
+    proxyProtocol:
+      trustedIPs:
+        - "127.0.0.0/8"
+        - "::1"
+        - "10.0.0.0/8"
+        - "172.16.0.0/12"
+
 providers:
   docker:
     exposedByDefault: false
