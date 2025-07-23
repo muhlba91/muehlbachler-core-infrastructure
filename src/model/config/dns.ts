@@ -6,5 +6,13 @@ import { StringMap } from '../map';
 export interface DNSConfig {
   readonly project: string;
   readonly email: string;
-  readonly entries: StringMap<string>;
+  readonly entries: StringMap<DNSEntryConfig>;
+}
+
+/**
+ * Defines configuration data for one DNS entry.
+ */
+export interface DNSEntryConfig {
+  readonly domain: string;
+  readonly zoneId: string;
 }

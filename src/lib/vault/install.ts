@@ -40,7 +40,7 @@ export const installVault = (
 
   const dockerComposeHash = Output.create(
     renderTemplate('./assets/vault/docker-compose.yml.j2', {
-      domain: dnsConfig.entries['vault'],
+      domain: dnsConfig.entries.vault.domain,
     }),
   )
     .apply((content) =>

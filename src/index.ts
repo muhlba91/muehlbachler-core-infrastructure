@@ -12,6 +12,7 @@ import { createSSHKey } from './lib/util/ssh_key';
 import { writeFilePulumiAndUploadToS3 } from './lib/util/storage';
 import { createVaultInstance, createVaultResources } from './lib/vault';
 import { installVault } from './lib/vault/install';
+import { createVaultDNSRecords } from './lib/vault/record';
 
 export = async () => {
   createDir('outputs');
@@ -50,6 +51,7 @@ export = async () => {
         instance.resource,
       ]),
   );
+  createVaultDNSRecords(instance.publicIPv4, instance.publicIPv6);
 
   // Vault instance
   const vaultInstance = all([
