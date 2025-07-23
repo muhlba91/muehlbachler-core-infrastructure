@@ -1,4 +1,4 @@
-import { all, Output } from '@pulumi/pulumi';
+import { all, Output, Resource } from '@pulumi/pulumi';
 import * as vault from '@pulumi/vault';
 
 import { ServiceAccountData } from '../../model/google/service_account_data';
@@ -34,46 +34,42 @@ export const createVaultResources = (
   };
 };
 
-// /**
-//  * Creates the Hashicorp Vault instance.
-//  *
-//  * @param {string} userPassword the user's password
-//  * @param {string} sshPublicKey the SSH public key (OpenSSH)
-//  * @param {string} sshPrivateKey the SSH private key (PEM)
-//  * @param {string} serviceAccountKey the service account key (JSON) for Vault
-//  * @param {string} bucket the bucket name
-//  * @returns {Output<VaultInstanceData>} the instance data
-//  */
-// export const configure = (
-//   userPassword: string,
-//   sshPublicKey: string,
-//   sshPrivateKey: string,
-//   serviceAccountKey: string,
-//   bucket: string,
-// ): Output<VaultInstanceData> => {
+/**
+ * Configures the Hashicorp Vault instance.
+ *
+ * @param {Output<string>} ipv4Address the IPv4 address of the server
+ * @param {Output<string>} sshKey the SSH key (PEM format)
+ * @param {string} bucket the bucket name
+ * @param {readonly Resource[]} dependsOn the resources this command depends on
+ * @returns {Output<VaultInstanceData>} the instance data
+ */
+export const configure = (
+  ipv4Address: Output<string>,
+  sshKey: Output<string>,
+  bucket: string,
+  dependsOn: readonly Resource[],
+): Output<VaultInstanceData> => {
+  const address = `http://${ipv4Address}:8200`;
+  const keys = initVault(ipv4Address, sshKey, dependsOn);
+  const vaultProvider = new vault.Provider('vault', {
+    address: address,
+    token: keys.rootToken,
+  });
+  createDefaultPolicies(vaultProvider);
+  enableAppRole(vaultProvider);
+  enableGithubAuth(vaultProvider);
 
-//   const address = `http://${server.ipv4Address}:8200`;
-//   const keys = initVault(server, sshPrivateKey);
-//   const vaultProvider = new vault.Provider('vault', {
-//     address: address,
-//     token: keys.rootToken,
-//   });
-//   createDefaultPolicies(vaultProvider);
-//   enableAppRole(vaultProvider);
-//   enableGithubAuth(vaultProvider);
+  const ownedSecrets = keys.apply((keys) =>
+    storeVaultSecrets(keys, vaultProvider),
+  );
 
-//   const ownedSecrets = keys.apply((keys) =>
-//     storeVaultSecrets(keys, vaultProvider),
-//   );
-
-//   return all([keys, ownedSecrets]).apply(([vaultKeys, vaultOwnedSecrets]) => ({
-//     bucket: bucket,
-//     server: server,
-//     address: address,
-//     keys: vaultKeys,
-//     ownedSecrets: vaultOwnedSecrets,
-//   }));
-// };
+  return all([keys, ownedSecrets]).apply(([vaultKeys, vaultOwnedSecrets]) => ({
+    bucket: bucket,
+    address: address,
+    keys: vaultKeys,
+    ownedSecrets: vaultOwnedSecrets,
+  }));
+};
 
 /**
  * Stores the Vault secrets.
@@ -155,7 +151,11 @@ export const createVaultInstance = (
   );
 
   const address = `http://${server.ipv4Address}:8200`;
-  const keys = initVault(server, sshPrivateKey);
+  const keys = initVault(
+    Output.create(server.ipv4Address),
+    Output.create(sshPrivateKey),
+    [server.resource],
+  );
   const vaultProvider = new vault.Provider('vault', {
     address: address,
     token: keys.rootToken,
@@ -170,7 +170,6 @@ export const createVaultInstance = (
 
   return all([keys, ownedSecrets]).apply(([vaultKeys, vaultOwnedSecrets]) => ({
     bucket: bucket,
-    server: server,
     address: address,
     keys: vaultKeys,
     ownedSecrets: vaultOwnedSecrets,

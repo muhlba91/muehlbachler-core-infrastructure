@@ -1,8 +1,7 @@
 import { remote } from '@pulumi/command';
-import { Output } from '@pulumi/pulumi';
+import { Output, Resource } from '@pulumi/pulumi';
 import { parse } from 'yaml';
 
-import { ServerData } from '../../../model/server';
 import { VaultKeysData } from '../../../model/vault';
 import { username } from '../../configuration';
 import { readFileContents } from '../../util/file';
@@ -10,22 +9,24 @@ import { readFileContents } from '../../util/file';
 /**
  * Initializes the Hashicorp Vault instance.
  *
- * @param {ServerData} server the server data
- * @param {string} sshPrivateKey the SSH private key (PEM)
+ * @param {Output<string>} ipv4Address the IPv4 address of the server
+ * @param {Output<string>} sshKey the SSH key (PEM format)
+ * @param {readonly Resource[]} dependsOn the resources this command depends on
  * @returns {Output<VaultKeysData>} the Vault keys
  */
 export const initVault = (
-  server: ServerData,
-  sshPrivateKey: string,
+  ipv4Address: Output<string>,
+  sshKey: Output<string>,
+  dependsOn: readonly Resource[],
 ): Output<VaultKeysData> => {
   const initScript = readFileContents('./assets/vault/init.sh');
   const vaultInit = new remote.Command(
     'vault-init',
     {
       connection: {
-        host: server.ipv4Address,
+        host: ipv4Address,
         user: username,
-        privateKey: sshPrivateKey,
+        privateKey: sshKey,
       },
       create: initScript,
     },
@@ -34,7 +35,7 @@ export const initVault = (
         create: '40m',
         update: '40m',
       },
-      dependsOn: [server.resource],
+      dependsOn: dependsOn.map((resource) => resource),
     },
   );
 

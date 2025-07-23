@@ -2,7 +2,6 @@ import * as gcp from '@pulumi/gcp';
 import * as vault from '@pulumi/vault';
 
 import { ServiceAccountData } from './google/service_account_data';
-import { ServerData } from './server';
 
 /**
  * Defines Vault data.
@@ -17,7 +16,6 @@ export interface VaultData {
  */
 export interface VaultInstanceData {
   readonly bucket: string;
-  readonly server: ServerData;
   readonly address: string;
   readonly keys: VaultKeysData;
   readonly ownedSecrets: VaultOwnedSecretsData;

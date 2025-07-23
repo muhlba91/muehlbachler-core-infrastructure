@@ -15,7 +15,7 @@ import { renderTemplate } from '../util/template';
  * @param {readonly Resource[]} dependsOn the resources this command depends on
  * @returns {Output<remote.Command>} the remote command
  */
-export const initVault = (
+export const installVault = (
   ipv4Address: Output<string>,
   sshKey: Output<string>,
   bucket: string,

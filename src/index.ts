@@ -11,6 +11,7 @@ import { createRandomPassword } from './lib/util/random';
 import { createSSHKey } from './lib/util/ssh_key';
 import { writeFilePulumiAndUploadToS3 } from './lib/util/storage';
 import { createVaultInstance, createVaultResources } from './lib/vault';
+import { installVault } from './lib/vault/install';
 
 export = async () => {
   createDir('outputs');
@@ -39,6 +40,15 @@ export = async () => {
       gcloudInstall,
       instance.resource,
     ]),
+  );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const vault = all([gcloud, vaultData.bucket.id]).apply(
+    ([gcloudInstall, bucket]) =>
+      installVault(instance.sshIPv4, sshKey.privateKeyPem, bucket, [
+        docker,
+        gcloudInstall,
+        instance.resource,
+      ]),
   );
 
   // Vault instance
@@ -83,13 +93,9 @@ export = async () => {
   );
 
   return {
-    hetzner: {
+    server: {
       ipv4: instance.publicIPv4,
       ipv6: instance.publicIPv6,
-    },
-    server: {
-      ipv4: vaultInstance.server.ipv4Address,
-      ipv6: vaultInstance.server.ipv6Address,
     },
     vault: {
       address: vaultInstance.address,

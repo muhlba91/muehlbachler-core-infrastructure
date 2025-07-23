@@ -23,7 +23,7 @@ services:
       - traefik.http.routers.vault_https.tls.certresolver=letsencrypt
       - traefik.http.services.vault_https.loadbalancer.server.port=8200
     networks:
-      roundcube:
+      vault:
       proxy:
     environment:
       - VAULT_ADDR=http://127.0.0.1:8200
