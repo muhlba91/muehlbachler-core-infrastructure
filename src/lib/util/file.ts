@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 
 import { Output } from '@pulumi/pulumi';
@@ -21,16 +22,18 @@ export const writeFileContents = (
  * @param {string} path the path to the file
  * @param {Output<string>} content the content
  * @param {string} permissions the permissions (default: 0644)
- * @returns {Output<unknown>} to track state
+ * @returns {Output<string>} the content
  */
 export const writeFilePulumi = (
   path: string,
   content: Output<string>,
   { permissions = '0644' }: { readonly permissions?: string },
-): Output<unknown> =>
-  content.apply((value) =>
-    writeFileContents(path, value, { permissions: permissions }),
-  );
+): Output<string> =>
+  content
+    .apply((value) =>
+      writeFileContents(path, value, { permissions: permissions }),
+    )
+    .apply(() => content);
 
 /**
  * Reads the contents of a given file.
@@ -40,3 +43,12 @@ export const writeFilePulumi = (
  */
 export const readFileContents = (path: string): string =>
   fs.readFileSync(path, 'utf8').toString();
+
+/**
+ * Creates the hash of a file.
+ *
+ * @param {string} path the path to the file
+ * @returns {string} the hash
+ */
+export const getFileHash = (path: string): string =>
+  crypto.createHash('sha512').update(fs.readFileSync(path)).digest('hex');

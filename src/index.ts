@@ -1,7 +1,11 @@
 import { all } from '@pulumi/pulumi';
 import { stringify } from 'yaml';
 
+import { installDocker } from './lib/docker';
+import { installGCloud } from './lib/gcloud';
 import { createHetznerInstance } from './lib/hetzner';
+import { createServiceAccount } from './lib/iam';
+import { installTraefik } from './lib/traefik';
 import { createDir } from './lib/util/create_dir';
 import { createRandomPassword } from './lib/util/random';
 import { createSSHKey } from './lib/util/ssh_key';
@@ -12,13 +16,29 @@ export = async () => {
   createDir('outputs');
 
   // Keys, IAM, ...
+  const serviceAccount = createServiceAccount();
   const userPassword = createRandomPassword('server', {});
   const sshKey = createSSHKey('vault', {});
-  const vaultData = createVaultResources();
+  const vaultData = createVaultResources(serviceAccount);
 
-  // Hetzner resources
-  const hetznerVaultInstance = await createHetznerInstance(
-    sshKey.publicKeyOpenssh,
+  // Instance
+  const instance = await createHetznerInstance(sshKey.publicKeyOpenssh);
+  const docker = installDocker(instance.sshIPv4, sshKey.privateKeyPem, [
+    instance.resource,
+  ]);
+  const gcloud = installGCloud(
+    instance.sshIPv4,
+    sshKey.privateKeyPem,
+    serviceAccount,
+    [docker, instance.resource],
+  );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const traefik = gcloud.apply((gcloudInstall) =>
+    installTraefik(instance.sshIPv4, sshKey.privateKeyPem, [
+      docker,
+      gcloudInstall,
+      instance.resource,
+    ]),
   );
 
   // Vault instance
@@ -26,7 +46,7 @@ export = async () => {
     userPassword.password,
     sshKey.publicKeyOpenssh,
     sshKey.privateKeyPem,
-    vaultData.serviceAccount.key.privateKey,
+    serviceAccount.key.privateKey,
     vaultData.bucket.id,
   ]).apply(
     ([
@@ -64,8 +84,8 @@ export = async () => {
 
   return {
     hetzner: {
-      ipv4: hetznerVaultInstance.publicIPv4,
-      ipv6: hetznerVaultInstance.publicIPv6,
+      ipv4: instance.publicIPv4,
+      ipv6: instance.publicIPv6,
     },
     server: {
       ipv4: vaultInstance.server.ipv4Address,

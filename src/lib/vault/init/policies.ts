@@ -15,7 +15,7 @@ export const createDefaultPolicies = (
     'vault-policy-admin',
     {
       name: 'admin',
-      policy: readFileContents('assets/vault/policies/admin.hcl'),
+      policy: readFileContents('./assets/vault/policies/admin.hcl'),
     },
     {
       provider: provider,
@@ -25,7 +25,7 @@ export const createDefaultPolicies = (
     'vault-policy-manager',
     {
       name: 'manager',
-      policy: readFileContents('assets/vault/policies/manager.hcl'),
+      policy: readFileContents('./assets/vault/policies/manager.hcl'),
     },
     {
       provider: provider,
@@ -35,7 +35,7 @@ export const createDefaultPolicies = (
     'vault-policy-reader',
     {
       name: 'reader',
-      policy: readFileContents('assets/vault/policies/reader.hcl'),
+      policy: readFileContents('./assets/vault/policies/reader.hcl'),
     },
     {
       provider: provider,

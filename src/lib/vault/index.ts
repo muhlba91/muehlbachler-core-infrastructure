@@ -1,6 +1,7 @@
 import { all, Output } from '@pulumi/pulumi';
 import * as vault from '@pulumi/vault';
 
+import { ServiceAccountData } from '../../model/google/service_account_data';
 import {
   VaultData,
   VaultInstanceData,
@@ -12,7 +13,6 @@ import { createServer } from '../proxmox/create';
 
 import { enableAppRole } from './auth/approle';
 import { enableGithubAuth } from './auth/github_auth';
-import { createServiceAccount } from './iam';
 import { initVault } from './init';
 import { createDefaultPolicies } from './init/policies';
 import { createStorageBucket } from './storage';
@@ -20,10 +20,12 @@ import { createStorageBucket } from './storage';
 /**
  * Creates the Hashicorp Vault resources.
  *
+ * @param {ServiceAccountData} serviceAccount the service account data
  * @returns {VaultData} the Vault data
  */
-export const createVaultResources = (): VaultData => {
-  const serviceAccount = createServiceAccount();
+export const createVaultResources = (
+  serviceAccount: ServiceAccountData,
+): VaultData => {
   const bucket = createStorageBucket(serviceAccount.serviceAccount.email);
 
   return {
@@ -32,55 +34,46 @@ export const createVaultResources = (): VaultData => {
   };
 };
 
-/**
- * Creates the Hashicorp Vault instance.
- *
- * @param {string} userPassword the user's password
- * @param {string} sshPublicKey the SSH public key (OpenSSH)
- * @param {string} sshPrivateKey the SSH private key (PEM)
- * @param {string} serviceAccountKey the service account key (JSON) for Vault
- * @param {string} bucket the bucket name
- * @returns {Output<VaultInstanceData>} the instance data
- */
-export const createVaultInstance = (
-  userPassword: string,
-  sshPublicKey: string,
-  sshPrivateKey: string,
-  serviceAccountKey: string,
-  bucket: string,
-): Output<VaultInstanceData> => {
-  const server = createServer(
-    globalName,
-    'vault',
-    userPassword,
-    sshPublicKey,
-    serviceAccountKey,
-    bucket,
-    serverConfig,
-  );
+// /**
+//  * Creates the Hashicorp Vault instance.
+//  *
+//  * @param {string} userPassword the user's password
+//  * @param {string} sshPublicKey the SSH public key (OpenSSH)
+//  * @param {string} sshPrivateKey the SSH private key (PEM)
+//  * @param {string} serviceAccountKey the service account key (JSON) for Vault
+//  * @param {string} bucket the bucket name
+//  * @returns {Output<VaultInstanceData>} the instance data
+//  */
+// export const configure = (
+//   userPassword: string,
+//   sshPublicKey: string,
+//   sshPrivateKey: string,
+//   serviceAccountKey: string,
+//   bucket: string,
+// ): Output<VaultInstanceData> => {
 
-  const address = `http://${server.ipv4Address}:8200`;
-  const keys = initVault(server, sshPrivateKey);
-  const vaultProvider = new vault.Provider('vault', {
-    address: address,
-    token: keys.rootToken,
-  });
-  createDefaultPolicies(vaultProvider);
-  enableAppRole(vaultProvider);
-  enableGithubAuth(vaultProvider);
+//   const address = `http://${server.ipv4Address}:8200`;
+//   const keys = initVault(server, sshPrivateKey);
+//   const vaultProvider = new vault.Provider('vault', {
+//     address: address,
+//     token: keys.rootToken,
+//   });
+//   createDefaultPolicies(vaultProvider);
+//   enableAppRole(vaultProvider);
+//   enableGithubAuth(vaultProvider);
 
-  const ownedSecrets = keys.apply((keys) =>
-    storeVaultSecrets(keys, vaultProvider),
-  );
+//   const ownedSecrets = keys.apply((keys) =>
+//     storeVaultSecrets(keys, vaultProvider),
+//   );
 
-  return all([keys, ownedSecrets]).apply(([vaultKeys, vaultOwnedSecrets]) => ({
-    bucket: bucket,
-    server: server,
-    address: address,
-    keys: vaultKeys,
-    ownedSecrets: vaultOwnedSecrets,
-  }));
-};
+//   return all([keys, ownedSecrets]).apply(([vaultKeys, vaultOwnedSecrets]) => ({
+//     bucket: bucket,
+//     server: server,
+//     address: address,
+//     keys: vaultKeys,
+//     ownedSecrets: vaultOwnedSecrets,
+//   }));
+// };
 
 /**
  * Stores the Vault secrets.
@@ -131,4 +124,55 @@ export const storeVaultSecrets = (
     mount: mount,
     keys: keysSecret,
   };
+};
+
+// TODO: old
+/**
+ * Creates the Hashicorp Vault instance.
+ *
+ * @param {string} userPassword the user's password
+ * @param {string} sshPublicKey the SSH public key (OpenSSH)
+ * @param {string} sshPrivateKey the SSH private key (PEM)
+ * @param {string} serviceAccountKey the service account key (JSON) for Vault
+ * @param {string} bucket the bucket name
+ * @returns {Output<VaultInstanceData>} the instance data
+ */
+export const createVaultInstance = (
+  userPassword: string,
+  sshPublicKey: string,
+  sshPrivateKey: string,
+  serviceAccountKey: string,
+  bucket: string,
+): Output<VaultInstanceData> => {
+  const server = createServer(
+    globalName,
+    'vault',
+    userPassword,
+    sshPublicKey,
+    serviceAccountKey,
+    bucket,
+    serverConfig,
+  );
+
+  const address = `http://${server.ipv4Address}:8200`;
+  const keys = initVault(server, sshPrivateKey);
+  const vaultProvider = new vault.Provider('vault', {
+    address: address,
+    token: keys.rootToken,
+  });
+  createDefaultPolicies(vaultProvider);
+  enableAppRole(vaultProvider);
+  enableGithubAuth(vaultProvider);
+
+  const ownedSecrets = keys.apply((keys) =>
+    storeVaultSecrets(keys, vaultProvider),
+  );
+
+  return all([keys, ownedSecrets]).apply(([vaultKeys, vaultOwnedSecrets]) => ({
+    bucket: bucket,
+    server: server,
+    address: address,
+    keys: vaultKeys,
+    ownedSecrets: vaultOwnedSecrets,
+  }));
 };

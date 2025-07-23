@@ -18,7 +18,7 @@ export const initVault = (
   server: ServerData,
   sshPrivateKey: string,
 ): Output<VaultKeysData> => {
-  const initScript = readFileContents('assets/vault/init.sh');
+  const initScript = readFileContents('./assets/vault/init.sh');
   const vaultInit = new remote.Command(
     'vault-init',
     {
