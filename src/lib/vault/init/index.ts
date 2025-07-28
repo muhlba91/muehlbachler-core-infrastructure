@@ -3,7 +3,6 @@ import { Output, Resource } from '@pulumi/pulumi';
 import { parse } from 'yaml';
 
 import { VaultKeysData } from '../../../model/vault';
-import { username } from '../../configuration';
 import { readFileContents } from '../../util/file';
 
 /**
@@ -25,7 +24,6 @@ export const initVault = (
     {
       connection: {
         host: ipv4Address,
-        user: username,
         privateKey: sshKey,
       },
       create: initScript,

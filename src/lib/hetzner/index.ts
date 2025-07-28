@@ -60,10 +60,5 @@ export const createHetznerInstance = async (
       ? primaryIPAddresses.ipv4
       : Output.create(serverConfig.ipv4),
     network: Output.create(networkConfig.name),
-    // TODO: old data
-    hostname: '',
-    ipv4Address: '',
-    ipv6Address: '',
-    serverId: server.id.apply(hetznerIdentifierToNumber),
   };
 };

@@ -8,8 +8,7 @@ import {
   VaultKeysData,
   VaultOwnedSecretsData,
 } from '../../model/vault';
-import { globalName, serverConfig } from '../configuration';
-import { createServer } from '../proxmox/create';
+import { dnsConfig } from '../configuration';
 
 import { enableAppRole } from './auth/approle';
 import { enableGithubAuth } from './auth/github_auth';
@@ -43,13 +42,13 @@ export const createVaultResources = (
  * @param {readonly Resource[]} dependsOn the resources this command depends on
  * @returns {Output<VaultInstanceData>} the instance data
  */
-export const configure = (
+export const configureVault = (
   ipv4Address: Output<string>,
   sshKey: Output<string>,
   bucket: string,
   dependsOn: readonly Resource[],
 ): Output<VaultInstanceData> => {
-  const address = `http://${ipv4Address}:8200`;
+  const address = `https://${dnsConfig.entries.vault.domain}:8200`;
   const keys = initVault(ipv4Address, sshKey, dependsOn);
   const vaultProvider = new vault.Provider('vault', {
     address: address,
@@ -120,58 +119,4 @@ export const storeVaultSecrets = (
     mount: mount,
     keys: keysSecret,
   };
-};
-
-// TODO: old
-/**
- * Creates the Hashicorp Vault instance.
- *
- * @param {string} userPassword the user's password
- * @param {string} sshPublicKey the SSH public key (OpenSSH)
- * @param {string} sshPrivateKey the SSH private key (PEM)
- * @param {string} serviceAccountKey the service account key (JSON) for Vault
- * @param {string} bucket the bucket name
- * @returns {Output<VaultInstanceData>} the instance data
- */
-export const createVaultInstance = (
-  userPassword: string,
-  sshPublicKey: string,
-  sshPrivateKey: string,
-  serviceAccountKey: string,
-  bucket: string,
-): Output<VaultInstanceData> => {
-  const server = createServer(
-    globalName,
-    'vault',
-    userPassword,
-    sshPublicKey,
-    serviceAccountKey,
-    bucket,
-    serverConfig,
-  );
-
-  const address = `http://${server.ipv4Address}:8200`;
-  const keys = initVault(
-    Output.create(server.ipv4Address),
-    Output.create(sshPrivateKey),
-    [server.resource],
-  );
-  const vaultProvider = new vault.Provider('vault', {
-    address: address,
-    token: keys.rootToken,
-  });
-  createDefaultPolicies(vaultProvider);
-  enableAppRole(vaultProvider);
-  enableGithubAuth(vaultProvider);
-
-  const ownedSecrets = keys.apply((keys) =>
-    storeVaultSecrets(keys, vaultProvider),
-  );
-
-  return all([keys, ownedSecrets]).apply(([vaultKeys, vaultOwnedSecrets]) => ({
-    bucket: bucket,
-    address: address,
-    keys: vaultKeys,
-    ownedSecrets: vaultOwnedSecrets,
-  }));
 };

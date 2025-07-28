@@ -8,7 +8,7 @@
   "license": "MIT",
   "keywords": [
     "pulumi",
-    "proxmox",
+    "hetzner",
     "vault"
   ],
   "scripts": {

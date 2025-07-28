@@ -40,10 +40,7 @@ To successfully run, and configure the Pulumi plugins, you need to set a list of
 - `CLOUDSDK_COMPUTE_REGION` the Google Cloud (GCP) region
 - `GOOGLE_APPLICATION_CREDENTIALS`: reference to a file containing the Google Cloud (GCP) service account credentials
 - `GITHUB_TOKEN`: the GitHub Personal Access Token (PAT)
-- `PROXMOX_VE_USERNAME`: the Proxmox username
-- `PROXMOX_VE_PASSWORD`: the Proxmox password
-- `PROXMOX_VE_ENDPOINT`: the endpoint to connect to Proxmox
-- `PROXMOX_VE_INSECURE`: turn on/off insecure connections to Proxmox
+- `HCLOUD_TOKEN`: the Hetzner Cloud API token
 
 ---
 
@@ -80,16 +77,9 @@ General configuration about the local network.
 
 ```yaml
 network:
-  domain: the internal DNS domain
-  ipv4:
-    cidrMask: the CIDR mask of the internal network
-    enabled: enables IPv4 networking
-    gateway: the IPv4 gateway
-  ipv6:
-    cidrMask: the CIDR mask of the internal network
-    enabled: enables IPv6 networking
-    gateway: the IPv6 gateway
-  nameservers: a list of all nameservers to set (IPv4, IPv6)
+  name: the Hetzner Cloud network name
+  cidr: the CIDR of the internal network
+  subnetCidr: the CIDR of the internal network subnet
 ```
 
 ### OIDC
@@ -104,42 +94,28 @@ oidc:
   redirectUrls: a list of redirect URLs to set
 ```
 
-### Proxmox VE (pve)
-
-General configuration about the Proxmox environment.
-
-***Attention:*** you must download the specifief `imageName` to each Proxmox host!
-
-```yaml
-pve:
-  cpuType: the default CPU type to assign to machines
-  imageName: the reference to the locally installed image
-  localStoragePool: the storage pool used for snippets
-  networkBridge: the network bridge to use for server connectivity
-  storagePool: the storage pool used for machine disks
-```
-
 ### Server
 
 The Proxmox server configuration.
 
 ```yaml
 server:
-  cpu: the CPU allocation
-  diskSize: the disk size to use
-  memory: memory configuration (enables or disables ballooning automatically)
-    min: the minimum memory to assign
-    max: the maximum memory to assign
-  host: the Proxmox host to create the node on
-  ipv4Address: the internal IPv4 address
-  ipv6Address: the internal IPv6 address (optional)
-  startupOrder: the order when the VM should be automatically started
+  location: the Hetzner Cloud server location
+  type: the Hetzner Cloud server type
+  ipv4: the IPv4 address of the server
+  publicSsh: whether to allow public SSH access
 ```
 
-### Username
+### DNS
 
 ```yaml
-username: the username to use for interacting with the servers
+dns:
+  project: the Google Cloud project
+  email: the ACME email address
+  entries: a map containing the DNS entries to create
+    <name>:
+      domain: the domain name
+      zoneId: the Google Cloud DNS zone identifier
 ```
 
 ---
