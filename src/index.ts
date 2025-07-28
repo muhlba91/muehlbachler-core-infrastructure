@@ -51,6 +51,7 @@ export = async () => {
         instance.resource,
       ]),
   );
+  // TODO: init vault
   createVaultDNSRecords(instance.publicIPv4, instance.publicIPv6);
 
   // Vault instance

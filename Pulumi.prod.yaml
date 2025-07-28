@@ -56,4 +56,4 @@ config:
   muehlbachler-hashicorp-vault-infrastructure:dns:
     project: muehlbachler-dns
     email: postmaster@muehlbachler.io
-    entries: {vault: {zoneId: muehlbachler-io, domain: vault-new.platform.muehlbachler.io}}
+    entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}}
