@@ -269,7 +269,6 @@ __metadata:
   resolution: "@muhlba91/muehlbachler-hashicorp-vault-infrastructure@workspace:."
   dependencies:
     "@eslint/compat": "npm:^1.1.1"
-    "@muhlba91/pulumi-proxmoxve": "npm:^7.0.0"
     "@pulumi/command": "npm:^1.0.0"
     "@pulumi/gcp": "npm:^8.0.0"
     "@pulumi/google-native": "npm:^0.32.0"
@@ -296,15 +295,6 @@ __metadata:
     yaml: "npm:^2.3.2"
   languageName: unknown
   linkType: soft
-
-"@muhlba91/pulumi-proxmoxve@npm:^7.0.0":
-  version: 7.2.0
-  resolution: "@muhlba91/pulumi-proxmoxve@npm:7.2.0"
-  dependencies:
-    "@pulumi/pulumi": "npm:^3.0.0"
-  checksum: 10c0/313cda4b0ca918f2e23b7fa974d8ea86cad345756c96ac90448f572e23d1019a5767e9dac0f3cfb2460a8d3db381f1a0bdc019b5b7a7a1ec0a79fe290252d35a
-  languageName: node
-  linkType: hard
 
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
