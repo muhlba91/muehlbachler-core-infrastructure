@@ -156,12 +156,6 @@ jobs:
           requested-token-type: urn:pulumi:token-type:access_token:personal
           scope: user:muhlba91
 
-      - uses: tailscale/github-action@84a3f23bb4d843bcf4da6cf824ec1be473daf4de # v3
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:github-actions
-      
       - uses: pulumi/actions@cc7494be991dba0978f7ffafaf995b0449a0998e # v6.5.0
         with:
           command: preview
