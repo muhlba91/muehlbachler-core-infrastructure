@@ -1,10 +1,10 @@
-# muehlbachler: Hashicorp Vault - Infrastructure
+# muehlbachler: Core Infrastructure
 
 [![Build status](https://img.shields.io/github/actions/workflow/status/muhlba91/muehlbachler-hashicorp-vault-infrastructure/pipeline.yml?style=for-the-badge)](https://github.com/muhlba91/muehlbachler-hashicorp-vault-infrastructure/actions/workflows/pipeline.yml)
 [![License](https://img.shields.io/github/license/muhlba91/muehlbachler-hashicorp-vault-infrastructure?style=for-the-badge)](LICENSE.md)
 [![](https://api.scorecard.dev/projects/github.com/muhlba91/muehlbachler-hashicorp-vault-infrastructure/badge?style=for-the-badge)](https://scorecard.dev/viewer/?uri=github.com/muhlba91/muehlbachler-hashicorp-vault-infrastructure)
 
-This repository contains the infrastructure as code (IaC) for the [Hashicorp Vault instance](https://www.vaultproject.io) using [Pulumi](http://pulumi.com).
+This repository contains the infrastructure as code (IaC) for the Core Infrastructure using [Pulumi](http://pulumi.com).
 
 ---
 
@@ -39,8 +39,15 @@ To successfully run, and configure the Pulumi plugins, you need to set a list of
 
 - `CLOUDSDK_COMPUTE_REGION` the Google Cloud (GCP) region
 - `GOOGLE_APPLICATION_CREDENTIALS`: reference to a file containing the Google Cloud (GCP) service account credentials
-- `GITHUB_TOKEN`: the GitHub Personal Access Token (PAT)
 - `HCLOUD_TOKEN`: the Hetzner Cloud API token
+
+---
+
+## Services
+
+The following services are deployed:
+
+- [HashiCorp Vault](https://www.vaultproject.io) as the secret management solution
 
 ---
 
@@ -96,7 +103,7 @@ oidc:
 
 ### Server
 
-The Proxmox server configuration.
+The Hetzner server configuration.
 
 ```yaml
 server:

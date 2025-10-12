@@ -1,5 +1,5 @@
-name: muehlbachler-hashicorp-vault-infrastructure
-description: "muehlbachler: Hashicorp Vault - Infrastructure"
+name: muehlbachler-core-infrastructure
+description: "muehlbachler: Core Infrastructure"
 runtime:
   name: nodejs
   options:
