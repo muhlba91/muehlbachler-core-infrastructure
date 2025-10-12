@@ -16,7 +16,8 @@ export const oidcConfig = config.requireObject<OIDCConfig>('oidc');
 export const bucketId = config.require<string>('bucketId');
 export const dnsConfig = config.requireObject<DNSConfig>('dns');
 
-export const globalName = 'vault';
+export const globalName = 'core';
+export const globalNameVault = 'vault';
 
 export const commonLabels = {
   environment: environment,

@@ -1,5 +1,5 @@
 import { ServiceAccountData } from '../../../model/google/service_account_data';
-import { environment, globalName } from '../../configuration';
+import { environment, globalNameVault } from '../../configuration';
 import { createKey } from '../../google/iam/key';
 import { createServiceAccount } from '../../google/iam/serviceaccount';
 
@@ -20,7 +20,7 @@ export const createGCPServiceAccountAndKey = (
     readonly roles?: readonly string[];
   },
 ): ServiceAccountData => {
-  const accountName = `${name}-${globalName}-${environment}`;
+  const accountName = `${name}-${globalNameVault}-${environment}`;
   const serviceAccount = createServiceAccount(accountName, project, {
     roles: roles,
   });

@@ -2,18 +2,27 @@ import { interpolate } from '@pulumi/pulumi';
 
 import { ServiceAccountData } from '../model/google/service_account_data';
 
-import { dnsConfig, gcpConfig, globalName } from './configuration';
+import {
+  dnsConfig,
+  gcpConfig,
+  globalName,
+  globalNameVault,
+} from './configuration';
 import { createIAMMember } from './google/iam/iam_member';
 import { createKMSIAMMember } from './google/kms/iam_member';
 import { createGCPServiceAccountAndKey } from './util/google/service_account_user';
 
 /**
- * Creates the Hashicorp Vault IAM resources.
+ * Creates the Core IAM resources.
  *
  * @returns {ServiceAccountData} the service account
  */
 export const createServiceAccount = (): ServiceAccountData => {
-  const iam = createGCPServiceAccountAndKey('vault', gcpConfig.project, {});
+  const iam = createGCPServiceAccountAndKey(
+    globalNameVault,
+    gcpConfig.project,
+    {},
+  );
 
   iam.serviceAccount.email.apply((email) => {
     createKMSIAMMember(

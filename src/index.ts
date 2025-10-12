@@ -18,7 +18,7 @@ export = async () => {
 
   // Keys, IAM, ...
   const serviceAccount = createServiceAccount();
-  const sshKey = createSSHKey('vault', {});
+  const sshKey = createSSHKey('core', {});
   const vaultData = createVaultResources(serviceAccount);
 
   // Instance

@@ -1,14 +1,14 @@
 {
-  "name": "@muhlba91/muehlbachler-hashicorp-vault-infrastructure",
+  "name": "@muhlba91/muehlbachler-core-infrastructure",
   "version": "0.0.0",
-  "description": "muehlbachler: Hashicorp Vault - Infrastructure",
+  "description": "muehlbachler: Core Infrastructure",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
-  "repository": "https://github.com/muhlba91/muehlbachler-hashicorp-vault-infrastructure",
+  "repository": "https://github.com/muhlba91/muehlbachler-core-infrastructure",
   "license": "MIT",
   "keywords": [
     "pulumi",
-    "hetzner",
+    "infrastructure",
     "vault"
   ],
   "scripts": {

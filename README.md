@@ -6,6 +6,10 @@
 
 This repository contains the infrastructure as code (IaC) for the Core Infrastructure using [Pulumi](http://pulumi.com).
 
+> **ℹ️ Info:**  
+> This repository was previously named `vault` as it initially only contained the Vault deployment.
+> There are leftover references to this name in the code, and documentation, which cannot be changed at this point.
+
 ---
 
 ## Requirements

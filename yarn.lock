@@ -279,9 +279,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@muhlba91/muehlbachler-hashicorp-vault-infrastructure@workspace:.":
+"@muhlba91/muehlbachler-core-infrastructure@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@muhlba91/muehlbachler-hashicorp-vault-infrastructure@workspace:."
+  resolution: "@muhlba91/muehlbachler-core-infrastructure@workspace:."
   dependencies:
     "@eslint/compat": "npm:^1.1.1"
     "@pulumi/command": "npm:^1.0.0"

@@ -6,7 +6,7 @@ import { uploadToGCS } from '../google/storage/upload';
 
 import { writeFilePulumi } from './file';
 
-export const BUCKET_PATH = `vault/${globalName}/${environment}`;
+export const BUCKET_PATH = `${globalName}/${environment}`;
 
 /**
  * Writes the pulumi Output to a file and uploads it to S3.
