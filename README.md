@@ -1,8 +1,8 @@
 # muehlbachler: Core Infrastructure
 
-[![Build status](https://img.shields.io/github/actions/workflow/status/muhlba91/muehlbachler-hashicorp-vault-infrastructure/pipeline.yml?style=for-the-badge)](https://github.com/muhlba91/muehlbachler-hashicorp-vault-infrastructure/actions/workflows/pipeline.yml)
-[![License](https://img.shields.io/github/license/muhlba91/muehlbachler-hashicorp-vault-infrastructure?style=for-the-badge)](LICENSE.md)
-[![](https://api.scorecard.dev/projects/github.com/muhlba91/muehlbachler-hashicorp-vault-infrastructure/badge?style=for-the-badge)](https://scorecard.dev/viewer/?uri=github.com/muhlba91/muehlbachler-hashicorp-vault-infrastructure)
+[![Build status](https://img.shields.io/github/actions/workflow/status/muhlba91/muehlbachler-core-infrastructure/pipeline.yml?style=for-the-badge)](https://github.com/muhlba91/muehlbachler-core-infrastructure/actions/workflows/pipeline.yml)
+[![License](https://img.shields.io/github/license/muhlba91/muehlbachler-core-infrastructure?style=for-the-badge)](LICENSE.md)
+[![](https://api.scorecard.dev/projects/github.com/muhlba91/muehlbachler-core-infrastructure/badge?style=for-the-badge)](https://scorecard.dev/viewer/?uri=github.com/muhlba91/muehlbachler-core-infrastructure)
 
 This repository contains the infrastructure as code (IaC) for the Core Infrastructure using [Pulumi](http://pulumi.com).
 
@@ -91,7 +91,7 @@ network:
 
 ### OIDC
 
-The OIDC configuration to connect the Vault instance to for login.
+The OIDC configuration to connect the instance to for login.
 
 ```yaml
 oidc:
