@@ -1,6 +1,7 @@
 import { all } from '@pulumi/pulumi';
 import { stringify } from 'yaml';
 
+import { createDNSRecords } from './lib/dns/record';
 import { installDocker } from './lib/docker';
 import { installGCloud } from './lib/gcloud';
 import { createHetznerInstance } from './lib/hetzner';
@@ -11,31 +12,32 @@ import { createSSHKey } from './lib/util/ssh_key';
 import { writeFilePulumiAndUploadToS3 } from './lib/util/storage';
 import { configureVault, createVaultResources } from './lib/vault';
 import { installVault } from './lib/vault/install';
-import { createVaultDNSRecords } from './lib/vault/record';
 
 export = async () => {
   createDir('outputs');
 
-  // Keys, IAM, ...
-  const serviceAccount = createServiceAccount();
+  // instance
   const sshKey = createSSHKey('core', {});
-  const vaultData = createVaultResources(serviceAccount);
-
-  // Instance
   const instance = await createHetznerInstance(sshKey.publicKeyOpenssh);
-  const dnsEntries = createVaultDNSRecords(
-    instance.publicIPv4,
-    instance.publicIPv6,
-  );
+
+  // dns
+  const dnsEntries = createDNSRecords(instance.publicIPv4, instance.publicIPv6);
+
+  // docker
   const docker = installDocker(instance.sshIPv4, sshKey.privateKeyPem, [
     instance.resource,
   ]);
+
+  // google cloud
+  const serviceAccount = createServiceAccount();
   const gcloud = installGCloud(
     instance.sshIPv4,
     sshKey.privateKeyPem,
     serviceAccount,
     [docker, instance.resource],
   );
+
+  // traefik
   const traefik = gcloud.apply((gcloudInstall) =>
     installTraefik(instance.sshIPv4, sshKey.privateKeyPem, [
       ...dnsEntries,
@@ -44,6 +46,9 @@ export = async () => {
       instance.resource,
     ]),
   );
+
+  // vault
+  const vaultData = createVaultResources(serviceAccount);
   const vault = all([gcloud, traefik, vaultData.bucket.id]).apply(
     ([gcloudInstall, traefikInstall, bucket]) =>
       installVault(instance.sshIPv4, sshKey.privateKeyPem, bucket, [
@@ -63,7 +68,7 @@ export = async () => {
       ]),
   );
 
-  // Write output files
+  // write output files
   writeFilePulumiAndUploadToS3('ssh.key', sshKey.privateKeyPem, {
     permissions: '0600',
   });

@@ -17,7 +17,6 @@ export const bucketId = config.require<string>('bucketId');
 export const dnsConfig = config.requireObject<DNSConfig>('dns');
 
 export const globalName = 'core';
-export const globalNameVault = 'vault';
 
 export const commonLabels = {
   environment: environment,

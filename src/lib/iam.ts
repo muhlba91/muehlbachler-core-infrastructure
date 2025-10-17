@@ -2,12 +2,7 @@ import { interpolate } from '@pulumi/pulumi';
 
 import { ServiceAccountData } from '../model/google/service_account_data';
 
-import {
-  dnsConfig,
-  gcpConfig,
-  globalName,
-  globalNameVault,
-} from './configuration';
+import { dnsConfig, gcpConfig, globalName } from './configuration';
 import { createIAMMember } from './google/iam/iam_member';
 import { createKMSIAMMember } from './google/kms/iam_member';
 import { createGCPServiceAccountAndKey } from './util/google/service_account_user';
@@ -18,11 +13,7 @@ import { createGCPServiceAccountAndKey } from './util/google/service_account_use
  * @returns {ServiceAccountData} the service account
  */
 export const createServiceAccount = (): ServiceAccountData => {
-  const iam = createGCPServiceAccountAndKey(
-    globalNameVault,
-    gcpConfig.project,
-    {},
-  );
+  const iam = createGCPServiceAccountAndKey(globalName, gcpConfig.project, {});
 
   iam.serviceAccount.email.apply((email) => {
     createKMSIAMMember(
@@ -42,8 +33,8 @@ export const createServiceAccount = (): ServiceAccountData => {
     );
 
     createIAMMember(
-      `${globalName}-dns-admin`,
-      interpolate`serviceAccount:${iam.serviceAccount.email}`,
+      `${email}-dns-admin`,
+      interpolate`serviceAccount:${email}`,
       ['roles/dns.admin'],
       { project: dnsConfig.project },
     );
