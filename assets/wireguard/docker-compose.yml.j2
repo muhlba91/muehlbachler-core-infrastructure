@@ -1,0 +1,29 @@
+---
+services:
+  wireguard:
+    image: wgportal/wg-portal:v2.1.0
+    container_name: wireguard
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.wireguard_http.rule=Host(`{{ domain }}`)
+      - traefik.http.routers.wireguard_http.entrypoints=web
+      - traefik.http.routers.wireguard_http.service=wireguard_http
+      - traefik.http.routers.wireguard_http.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.services.wireguard_http.loadbalancer.server.port=8888
+
+      - traefik.http.routers.wireguard_https.rule=Host(`{{ domain }}`)
+      - traefik.http.routers.wireguard_https.entrypoints=websecure
+      - traefik.http.routers.wireguard_https.service=wireguard_https
+      - traefik.http.routers.wireguard_https.tls=true
+      - traefik.http.routers.wireguard_https.tls.certresolver=letsencrypt
+      - traefik.http.services.wireguard_https.loadbalancer.server.port=8888
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - /opt/wireguard/config:/app/config
+      - /opt/wireguard/data:/app/data
+      - /opt/wireguard/etc:/etc/wireguard

@@ -1,6 +1,7 @@
 import { Output, Resource } from '@pulumi/pulumi';
 
 import { createVaultDNSRecords } from '../vault/record';
+import { createWireguardDNSRecords } from '../wireguard/record';
 
 /**
  * Creates the DNS records.
@@ -12,4 +13,7 @@ import { createVaultDNSRecords } from '../vault/record';
 export const createDNSRecords = (
   ipv4Address: Output<string>,
   ipv6Address: Output<string>,
-): Resource[] => createVaultDNSRecords(ipv4Address, ipv6Address);
+): Resource[] => [
+  ...createVaultDNSRecords(ipv4Address, ipv6Address),
+  ...createWireguardDNSRecords(ipv4Address, ipv6Address),
+];

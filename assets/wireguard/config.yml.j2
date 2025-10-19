@@ -1,0 +1,100 @@
+---
+core:
+  admin_user: admin
+  admin_password: {{ adminPassword }}
+  admin_api_token: ""
+  editable_keys: true
+  create_default_peer: false
+  create_default_peer_on_creation: false
+  re_enable_peer_after_user_enable: true
+  delete_peer_after_user_deleted: true
+  self_provisioning_allowed: true
+  import_existing: true
+  restore_state: true
+
+advanced:
+  log_level: warn
+  log_pretty: false
+  log_json: false
+  start_listen_port: 51820
+  start_cidr_v4: 10.11.12.0/24
+  start_cidr_v6: fdfd:d3ad:c0de:1234::0/64
+  use_ip_v6: true
+  config_storage_path: /etc/wireguard
+  expiry_check_interval: 1h
+  rule_prio_offset: 20000
+  route_table_offset: 20000
+  api_admin_only: true
+
+database:
+  debug: false
+  slow_query_threshold: "0"
+  type: sqlite
+  dsn: data/sqlite.db
+  encryption_passphrase: {{ database.encryptionPassphrase }}
+
+statistics:
+  use_ping_checks: true
+  ping_check_workers: 10
+  ping_unprivileged: false
+  ping_check_interval: 1m
+  data_collection_interval: 5m
+  collect_interface_data: true
+  collect_peer_data: true
+  collect_audit_data: true
+  listening_address: 127.0.0.1:8787
+
+mail:
+  host: 127.0.0.1
+  port: 25
+  encryption: none
+  cert_validation: true
+  username: ""
+  password: ""
+  auth_type: plain
+  from: VPN Portal <noreply@{{ domain }}>
+  link_only: false
+
+auth:
+  min_password_length: 16
+  hide_login_form: true # note: https://wg.portal/#/login?all
+  oidc:
+    - id: tuxnet-sso
+      provider_name: tuxnet-sso
+      display_name: SSO
+      base_url: {{ oidc.baseUrl }}
+      client_id: {{ oidc.clientId }}
+      client_secret: {{ oidc.clientSecret }}
+      extra_scopes:
+        - openid
+        - profile
+        - email
+      registration_enabled: true
+      log_user_info: false
+      log_sensitive_info: false
+      field_map:
+        user_identifier: sub
+        email: email
+        user_groups: grants
+      admin_mapping:
+        admin_group_regex: ^admin$
+  oauth: []
+  ldap: []
+
+web:
+  listening_address: 0.0.0.0:8888
+  external_url: https://{{ domain }}
+  site_company_name: Tuxnet VPN Portal
+  site_title: Tuxnet VPN Portal
+  session_identifier: wgPortalSession
+  session_secret: {{ web.sessionSecret }}
+  csrf_secret: {{ web.csrfSecret }}
+  request_logging: false
+  expose_host_info: false
+  cert_file: ""
+  key_file: ""
+
+webhook:
+  url: ""
+  authentication: ""
+  timeout: 10s

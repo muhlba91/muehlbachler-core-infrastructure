@@ -1,0 +1,14 @@
+[Unit]
+Description=Run FRR
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+WorkingDirectory=/opt/frr
+ExecStartPre=/usr/bin/docker compose --file /opt/frr/docker-compose.yml --project-name frr pull
+ExecStart=/usr/bin/docker compose --file /opt/frr/docker-compose.yml --project-name frr up --force-recreate
+ExecStop=/usr/bin/docker compose --file /opt/frr/docker-compose.yml --project-name frr stop
+
+[Install]
+WantedBy=multi-user.target

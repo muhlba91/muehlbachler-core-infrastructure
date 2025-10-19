@@ -8,6 +8,8 @@ import {
   serverConfig,
 } from '../configuration';
 
+const NETWORK_ALL_CIDR = ['0.0.0.0/0', '::/0'];
+
 /**
  * Creates a Hetzner firewall.
  *
@@ -25,30 +27,16 @@ export const createFirewall = (): hcloud.Firewall =>
           port: '22',
           protocol: 'tcp',
           sourceIps: serverConfig.publicSsh
-            ? ['0.0.0.0/0', '::/0']
+            ? NETWORK_ALL_CIDR
             : [networkConfig.cidr],
         },
-        {
-          description: 'Allow incoming Vault traffic',
+        ...Object.values(networkConfig.firewallRules).map((rule) => ({
+          description: rule.description,
           direction: 'in',
-          port: '8200',
-          protocol: 'tcp',
-          sourceIps: ['0.0.0.0/0', '::/0'],
-        },
-        {
-          description: 'Allow incoming HTTP traffic',
-          direction: 'in',
-          port: '80',
-          protocol: 'tcp',
-          sourceIps: ['0.0.0.0/0', '::/0'],
-        },
-        {
-          description: 'Allow incoming HTTPS traffic',
-          direction: 'in',
-          port: '443',
-          protocol: 'tcp',
-          sourceIps: ['0.0.0.0/0', '::/0'],
-        },
+          port: rule.port,
+          protocol: rule.protocol,
+          sourceIps: rule.sourceIps ?? NETWORK_ALL_CIDR,
+        })),
       ],
       labels: commonLabels,
     },

@@ -100,9 +100,10 @@ The OIDC configuration to connect the instance to for login.
 ```yaml
 oidc:
   discoveryUrl: the OIDC discovery url (without ".well-known")
-  clientId: the client id
-  clientSecret: the client secret
-  redirectUrls: a list of redirect URLs to set
+  clients: a map containing the OIDC clients
+    <name>:
+      clientId: the client id
+      clientSecret: the client secret
 ```
 
 ### Server

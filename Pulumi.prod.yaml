@@ -13,15 +13,35 @@ config:
     name: infrastructure-services
     cidr: 10.21.0.0/16
     subnetCidr: 10.21.0.0/24
+    firewallRules:
+      http:
+        description: Allow incoming HTTP traffic
+        port: 80
+        protocol: tcp
+      https:
+        description: Allow incoming HTTPS traffic
+        port: 443
+        protocol: tcp
+      vault:
+        description: Allow incoming Vault traffic
+        port: 8200
+        protocol: tcp
+      wireguard:
+        description: Allow incoming Wireguard (user) traffic
+        port: 65000
+        protocol: udp
+        sourceIps:
+          - 144.208.195.224
+          - 88.217.198.211
+          - 178.63.69.250
   muehlbachler-core-infrastructure:oidc:
-    clientId: 262742851836814654@public_services
-    clientSecret:
-      secure: v1:98sPwUt2pIYVngd3:cDF/4gfwCqe4IyubZYRC7wMfWJDOyiYuGxYQlr0K2uYmOf2DJw0e2BnQsPiteZvw2++KjqX8GdLcawrX3uwxHkTL9nrh9+HRCwVcQxrkN1U=
     discoveryUrl: https://muehlbachler-mhvy5g.zitadel.cloud
-    redirectUrls:
-      - https://vault.platform.muehlbachler.io
-      - https://vault.internal.muehlbachler.io
-      - https://vault.platform.muehlbachler.io:8200
+    clients:
+      wireguard:
+        clientId:
+          secure: v1:fj3xTxb9Kp4jvzCu:adzvM79yKUqJsDYHvWt4QpWz/nynLzVdLpVoJScTInEh3w==
+        clientSecret:
+          secure: v1:XW8JpKsCOffKqUm+:iH3urhf/phyXa6hZjAJBlvD1GlLQeKt48NcbQ00Gf0FN4v9bce4jZQFEtbAH2e52E4QLQfjgBtvsmqg3CZ6EuWXI7NtHeVeHTZSrCSVfDSc=
   muehlbachler-core-infrastructure:server:
     location: fsn1
     type: cx22
@@ -30,4 +50,4 @@ config:
   muehlbachler-core-infrastructure:dns:
     project: muehlbachler-dns
     email: postmaster@muehlbachler.io
-    entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}}
+    entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}, wireguard: {zoneId: muehlbachler-io, domain: vpn.platform.muehlbachler.io}}

@@ -12,6 +12,8 @@ import { createSSHKey } from './lib/util/ssh_key';
 import { writeFilePulumiAndUploadToS3 } from './lib/util/storage';
 import { configureVault, createVaultResources } from './lib/vault';
 import { installVault } from './lib/vault/install';
+import { createWireguardResources } from './lib/wireguard';
+import { installWireguard } from './lib/wireguard/install';
 
 export = async () => {
   createDir('outputs');
@@ -68,6 +70,16 @@ export = async () => {
       ]),
   );
 
+  // wireguard
+  // FIXME: add backups?
+  const wireguardData = createWireguardResources();
+  all([traefik]).apply(([traefikInstall]) =>
+    installWireguard(instance.sshIPv4, sshKey.privateKeyPem, wireguardData, [
+      ...dnsEntries,
+      traefikInstall,
+    ]),
+  );
+
   // write output files
   writeFilePulumiAndUploadToS3('ssh.key', sshKey.privateKeyPem, {
     permissions: '0600',
@@ -102,6 +114,9 @@ export = async () => {
         mount: vaultInstanceData.ownedSecrets.mount.path,
         keys: vaultInstanceData.ownedSecrets.keys.path,
       },
+    },
+    wireguard: {
+      adminPassword: wireguardData.adminPassword,
     },
   };
 };

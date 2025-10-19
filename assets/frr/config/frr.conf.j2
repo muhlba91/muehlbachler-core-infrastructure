@@ -1,0 +1,35 @@
+frr defaults traditional
+hostname hostname # FIXME: Set hostname
+log syslog warnings
+!
+route-map ALLOW-ALL permit 100
+exit
+!
+route-map DENY-ALL deny 100
+exit
+!
+router bgp 65599 # FIXME: Set local AS number
+ bgp router-id 10.201.2.1 # FIXME: Set router ID
+ no bgp ebgp-requires-policy
+ no bgp default ipv4-unicast
+ neighbor fd80::201:2:1 remote-as 65501 # FIXME: Set remote peers
+ neighbor fd80::201:2:1 password mypassword
+ neighbor fd80::201:2:1 interface wg0
+ neighbor fd80::201:2:1 disable-connected-check
+ !
+ address-family ipv4 unicast
+  network 10.201.2.0/30 # FIXME: Set advertised networks
+  neighbor fd80::201:2:1 activate # FIXME: Set remote peers
+  neighbor fd80::201:2:1 next-hop-self
+  neighbor fd80::201:2:1 route-map ALLOW-ALL in
+  neighbor fd80::201:2:1 route-map ALLOW-ALL out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor fd80::201:2:1 activate # FIXME: Set remote peers
+  neighbor fd80::201:2:1 next-hop-self
+  neighbor fd80::201:2:1 route-map ALLOW-ALL in
+  neighbor fd80::201:2:1 route-map ALLOW-ALL out
+ exit-address-family
+exit
+!
