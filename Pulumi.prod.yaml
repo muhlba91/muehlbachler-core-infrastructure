@@ -30,10 +30,10 @@ config:
         description: Allow incoming Wireguard (user) traffic
         port: 65000
         protocol: udp
-        sourceIps:
-          - 144.208.195.224
-          - 88.217.198.211
-          - 178.63.69.250
+      wireguard-mesh:
+        description: Allow incoming Wireguard (tuxnet-mesh) traffic
+        port: 65001
+        protocol: udp
   muehlbachler-core-infrastructure:oidc:
     discoveryUrl: https://muehlbachler-mhvy5g.zitadel.cloud
     clients:
