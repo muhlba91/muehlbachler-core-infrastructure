@@ -6,9 +6,11 @@ After=docker.service
 [Service]
 Restart=always
 WorkingDirectory=/opt/wireguard
+ExecStartPre=/sbin/iptables -A FORWARD -i wg+ -j ACCEPT
 ExecStartPre=/usr/bin/docker compose --file /opt/wireguard/docker-compose.yml --project-name wireguard pull
 ExecStart=/usr/bin/docker compose --file /opt/wireguard/docker-compose.yml --project-name wireguard up --force-recreate
 ExecStop=/usr/bin/docker compose --file /opt/wireguard/docker-compose.yml --project-name wireguard stop
+ExecStop=/sbin/iptables -D FORWARD -i wg+ -j ACCEPT
 
 [Install]
 WantedBy=multi-user.target

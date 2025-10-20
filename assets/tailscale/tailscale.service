@@ -6,9 +6,11 @@ After=docker.service
 [Service]
 Restart=always
 WorkingDirectory=/opt/tailscale
+ExecStartPre=/sbin/iptables -A FORWARD -i tailscale+ -j ACCEPT
 ExecStartPre=/usr/bin/docker compose --file /opt/tailscale/docker-compose.yml --project-name tailscale pull
 ExecStart=/usr/bin/docker compose --file /opt/tailscale/docker-compose.yml --project-name tailscale up --force-recreate
 ExecStop=/usr/bin/docker compose --file /opt/tailscale/docker-compose.yml --project-name tailscale stop
+ExecStop=/sbin/iptables -D FORWARD -i tailscale+ -j ACCEPT
 
 [Install]
 WantedBy=multi-user.target
