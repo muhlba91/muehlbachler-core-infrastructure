@@ -6,9 +6,11 @@ After=docker.service
 [Service]
 Restart=always
 WorkingDirectory=/opt/frr
+ExecStartPre=/sbin/iptables -A FORWARD -s 10.0.0.0/8 -d 10.0.0.0/8 -j ACCEPT
 ExecStartPre=/usr/bin/docker compose --file /opt/frr/docker-compose.yml --project-name frr pull
 ExecStart=/usr/bin/docker compose --file /opt/frr/docker-compose.yml --project-name frr up --force-recreate
 ExecStop=/usr/bin/docker compose --file /opt/frr/docker-compose.yml --project-name frr stop
+ExecStop=/sbin/iptables -D FORWARD -s 10.0.0.0/8 -d 10.0.0.0/8 -j ACCEPT
 
 [Install]
 WantedBy=multi-user.target

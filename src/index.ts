@@ -130,11 +130,3 @@ export = async () => {
     },
   };
 };
-
-/**
-
-pulumi config set --path 'bgp.neighbors[0].remoteAsn' 65011
-pulumi config set --path 'bgp.neighbors[1].remoteAsn' 65021
-pulumi config set --path 'bgp.neighbors[2].remoteAsn' 65031
-
- */
