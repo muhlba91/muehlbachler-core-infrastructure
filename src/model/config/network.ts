@@ -5,6 +5,7 @@ import { StringMap } from '../map';
  */
 export interface NetworkConfig {
   readonly name: string;
+  readonly dnsSuffix: string;
   readonly cidr: string;
   readonly subnetCidr: string;
   readonly firewallRules: StringMap<NetworkFirewallRule>;

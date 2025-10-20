@@ -1,5 +1,5 @@
 frr defaults traditional
-hostname hostname # FIXME: Set hostname
+hostname {{ hostname }}
 log syslog warnings
 !
 route-map ALLOW-ALL permit 100
@@ -8,28 +8,41 @@ exit
 route-map DENY-ALL deny 100
 exit
 !
-router bgp 65599 # FIXME: Set local AS number
- bgp router-id 10.201.2.1 # FIXME: Set router ID
+router bgp {{ bgp.localAsn }}
+ bgp router-id {{ bgp.routerId }}
  no bgp ebgp-requires-policy
  no bgp default ipv4-unicast
- neighbor fd80::201:2:1 remote-as 65501 # FIXME: Set remote peers
- neighbor fd80::201:2:1 password mypassword
- neighbor fd80::201:2:1 interface wg0
- neighbor fd80::201:2:1 disable-connected-check
+{%- for neighbor in bgp.neighbors %}
+ neighbor {{ neighbor.address }} remote-as {{ neighbor.asn }}
+ ! neighbor {{ neighbor.address }} password {{ neighbor.password }}
+ neighbor {{ neighbor.address }} interface {{ neighbor.interface }}
+ neighbor {{ neighbor.address }} timers 60 180
+ neighbor {{ neighbor.address }} disable-connected-check
+ neighbor {{ neighbor.address }} soft-reconfiguration inbound
+{%- endfor %}
  !
  address-family ipv4 unicast
-  network 10.201.2.0/30 # FIXME: Set advertised networks
-  neighbor fd80::201:2:1 activate # FIXME: Set remote peers
-  neighbor fd80::201:2:1 next-hop-self
-  neighbor fd80::201:2:1 route-map ALLOW-ALL in
-  neighbor fd80::201:2:1 route-map ALLOW-ALL out
+{%- for network in bgp.advertisedIPv4Networks %}
+  network {{ network }}
+{%- endfor %}
+{%- for neighbor in bgp.neighbors %}
+  neighbor {{ neighbor.address }} activate
+  neighbor {{ neighbor.address }} next-hop-self
+  neighbor {{ neighbor.address }} route-map ALLOW-ALL in
+  neighbor {{ neighbor.address }} route-map ALLOW-ALL out
+{%- endfor %}
  exit-address-family
  !
  address-family ipv6 unicast
-  neighbor fd80::201:2:1 activate # FIXME: Set remote peers
-  neighbor fd80::201:2:1 next-hop-self
-  neighbor fd80::201:2:1 route-map ALLOW-ALL in
-  neighbor fd80::201:2:1 route-map ALLOW-ALL out
+{%- for network in bgp.advertisedIPv6Networks %}
+  network {{ network }}
+{%- endfor %}
+{%- for neighbor in bgp.neighbors %}
+  neighbor {{ neighbor.address }} activate
+  neighbor {{ neighbor.address }} next-hop-self
+  neighbor {{ neighbor.address }} route-map ALLOW-ALL in
+  neighbor {{ neighbor.address }} route-map ALLOW-ALL out
+{%- endfor %}
  exit-address-family
 exit
 !

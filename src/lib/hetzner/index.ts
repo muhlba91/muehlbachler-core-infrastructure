@@ -53,6 +53,7 @@ export const createHetznerInstance = async (
 
   return {
     resource: server,
+    hostname: server.name,
     privateIPv4: Output.create(serverConfig.ipv4),
     publicIPv4: primaryIPAddresses.ipv4,
     publicIPv6: primaryIPAddresses.ipv6,

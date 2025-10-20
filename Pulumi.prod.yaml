@@ -34,6 +34,7 @@ config:
         description: Allow incoming Wireguard (tuxnet-mesh) traffic
         port: 65001
         protocol: udp
+    dnsSuffix: de.hetzner.muehlbachler.io
   muehlbachler-core-infrastructure:oidc:
     discoveryUrl: https://muehlbachler-mhvy5g.zitadel.cloud
     clients:
@@ -51,3 +52,16 @@ config:
     project: muehlbachler-dns
     email: postmaster@muehlbachler.io
     entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}, wireguard: {zoneId: muehlbachler-io, domain: vpn.platform.muehlbachler.io}}
+  muehlbachler-core-infrastructure:bgp:
+    routerId: 10.255.0.1
+    localAsn: 65000
+    interface: wg0
+    advertisedIPv4Networks:
+      - 10.255.0.0/16
+    neighbors:
+      - remoteAsn: 65501
+        address: fd80::255:1:1
+      - remoteAsn: 65522
+        address: fd80::255:2:1
+      - remoteAsn: 65502
+        address: fd80::255:3:1

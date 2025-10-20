@@ -3,6 +3,8 @@ import { stringify } from 'yaml';
 
 import { createDNSRecords } from './lib/dns/record';
 import { installDocker } from './lib/docker';
+import { createFRRResources } from './lib/frr';
+import { installFRR } from './lib/frr/install';
 import { installGCloud } from './lib/gcloud';
 import { createHetznerInstance } from './lib/hetzner';
 import { createServiceAccount } from './lib/iam';
@@ -73,10 +75,18 @@ export = async () => {
   // wireguard
   // FIXME: add backups?
   const wireguardData = createWireguardResources();
-  all([traefik]).apply(([traefikInstall]) =>
+  const wireguard = all([traefik]).apply(([traefikInstall]) =>
     installWireguard(instance.sshIPv4, sshKey.privateKeyPem, wireguardData, [
       ...dnsEntries,
       traefikInstall,
+    ]),
+  );
+
+  // frr
+  const frrData = createFRRResources(instance.hostname);
+  all([wireguard]).apply(([wireguardInstall]) =>
+    installFRR(instance.sshIPv4, sshKey.privateKeyPem, frrData, [
+      wireguardInstall,
     ]),
   );
 
@@ -120,3 +130,11 @@ export = async () => {
     },
   };
 };
+
+/**
+
+pulumi config set --path 'bgp.neighbors[0].remoteAsn' 65011
+pulumi config set --path 'bgp.neighbors[1].remoteAsn' 65021
+pulumi config set --path 'bgp.neighbors[2].remoteAsn' 65031
+
+ */
