@@ -6,6 +6,7 @@ import { GCPConfig } from '../model/config/google';
 import { NetworkConfig } from '../model/config/network';
 import { OIDCConfig } from '../model/config/oidc';
 import { ServerConfig } from '../model/config/server';
+import { TailscaleConfig } from '../model/config/tailscale';
 
 export const environment = getStack();
 
@@ -17,6 +18,8 @@ export const oidcConfig = config.requireObject<OIDCConfig>('oidc');
 export const bucketId = config.require<string>('bucketId');
 export const dnsConfig = config.requireObject<DNSConfig>('dns');
 export const bgpConfig = config.requireObject<BGPConfig>('bgp');
+export const tailscaleConfig =
+  config.requireObject<TailscaleConfig>('tailscale');
 
 export const globalName = 'core';
 

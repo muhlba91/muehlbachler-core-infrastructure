@@ -1,0 +1,14 @@
+[Unit]
+Description=Run Tailscale
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+WorkingDirectory=/opt/tailscale
+ExecStartPre=/usr/bin/docker compose --file /opt/tailscale/docker-compose.yml --project-name tailscale pull
+ExecStart=/usr/bin/docker compose --file /opt/tailscale/docker-compose.yml --project-name tailscale up --force-recreate
+ExecStop=/usr/bin/docker compose --file /opt/tailscale/docker-compose.yml --project-name tailscale stop
+
+[Install]
+WantedBy=multi-user.target

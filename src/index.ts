@@ -8,6 +8,7 @@ import { installFRR } from './lib/frr/install';
 import { installGCloud } from './lib/gcloud';
 import { createHetznerInstance } from './lib/hetzner';
 import { createServiceAccount } from './lib/iam';
+import { installTailscale } from './lib/tailscale';
 import { installTraefik } from './lib/traefik';
 import { createDir } from './lib/util/create_dir';
 import { createSSHKey } from './lib/util/ssh_key';
@@ -84,9 +85,17 @@ export = async () => {
 
   // frr
   const frrData = createFRRResources(instance.hostname);
-  all([wireguard]).apply(([wireguardInstall]) =>
+  const frr = all([wireguard]).apply(([wireguardInstall]) =>
     installFRR(instance.sshIPv4, sshKey.privateKeyPem, frrData, [
       wireguardInstall,
+    ]),
+  );
+
+  // tailscale
+  all([wireguard, frr]).apply(([wireguardInstall, frrInstall]) =>
+    installTailscale(instance.sshIPv4, sshKey.privateKeyPem, [
+      wireguardInstall,
+      frrInstall,
     ]),
   );
 

@@ -1,0 +1,18 @@
+---
+services:
+  tailscale:
+    image: tailscale/tailscale:v1.88.4
+    container_name: tailscale
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TS_AUTHKEY={{ authKey }}
+      - TS_EXTRA_ARGS=--advertise-routes=10.0.0.0/8 --advertise-exit-node
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - /opt/tailscale/state:/var/lib/tailscale
