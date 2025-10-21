@@ -17,3 +17,7 @@ systemctl restart wireguard
 
 # finalize installation
 echo "installed" > /opt/wireguard.state
+
+# cleanup old images
+sleep 90
+docker image prune --all --force || true
