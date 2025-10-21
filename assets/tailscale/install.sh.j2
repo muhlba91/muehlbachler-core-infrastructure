@@ -1,0 +1,18 @@
+#!/bin/sh
+
+### tailscale ###
+
+# installation check
+if [ -f /opt/tailscale.state ]; then
+    /bin/tailscale-backup
+else
+    GOOGLE_APPLICATION_CREDENTIALS=/opt/google/credentials.json CLOUDSDK_CORE_PROJECT={{ project }} gcloud storage cp -r gs://{{ bucket.id }}/{{ bucket.path }}/backup/tailscale/state/* /opt/tailscale/state/
+fi
+
+# restart tailscale
+systemctl daemon-reload
+systemctl enable tailscale
+systemctl restart tailscale
+
+# finalize installation
+echo "installed" > /opt/tailscale.state

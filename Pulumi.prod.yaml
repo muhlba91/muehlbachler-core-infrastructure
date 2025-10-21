@@ -85,3 +85,4 @@ config:
   muehlbachler-core-infrastructure:tailscale:
     authKey:
       secure: v1:jA/QT10wLkNbjLg4:t76dqKbE4c/NQdDbCy17g5UHIdk0NrUcnJpSYgIZhmQpi6eXzgPnsqRDkR3mU+/+9vHcZ3UXmXbE6SCy87y0SD7bo1ZJUNc5yOKDDts=
+  muehlbachler-core-infrastructure:backupBucketId: infrastructure-backups-87d6dbd4-4928-4cdc-8d9d-2b19417489d9

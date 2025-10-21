@@ -2,8 +2,10 @@ import { remote } from '@pulumi/command';
 import { all, Output, Resource } from '@pulumi/pulumi';
 import { FileAsset } from '@pulumi/pulumi/asset';
 
-import { tailscaleConfig } from '../configuration';
+import { backupBucketId, tailscaleConfig } from '../configuration';
 import { getFileHash, readFileContents, writeFileContents } from '../util/file';
+import { getProject } from '../util/google/project';
+import { BUCKET_PATH } from '../util/storage';
 import { renderTemplate } from '../util/template';
 
 /**
@@ -34,6 +36,66 @@ export const installTailscale = (
     {
       dependsOn: [...dependsOn],
     },
+  );
+
+  const cronFileHash = getFileHash('./assets/tailscale/cron/cron');
+  const cronFileCopy = new remote.CopyToRemote(
+    'remote-copy-tailscale-cron',
+    {
+      source: new FileAsset('./assets/tailscale/cron/cron'),
+      remotePath: '/etc/cron.d/tailscale',
+      triggers: [Output.create(cronFileHash)],
+      connection: connection,
+    },
+    {
+      dependsOn: [...dependsOn, prepare],
+    },
+  );
+
+  const backupFileHash = Output.create(
+    renderTemplate('./assets/tailscale/cron/tailscale-backup.j2', {
+      project: getProject(),
+      bucket: {
+        id: backupBucketId,
+        path: BUCKET_PATH,
+      },
+    }),
+  )
+    .apply((content) =>
+      writeFileContents('./outputs/tailscale_backup', content, {}),
+    )
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    .apply((_) => getFileHash('./outputs/tailscale_backup'));
+  const backupFileCopy = backupFileHash.apply(
+    (hash) =>
+      new remote.CopyToRemote(
+        'remote-copy-tailscale-backup',
+        {
+          source: new FileAsset('./outputs/tailscale_backup'),
+          remotePath: '/bin/tailscale-backup',
+          triggers: [Output.create(hash)],
+          connection: connection,
+        },
+        {
+          dependsOn: [...dependsOn, prepare],
+        },
+      ),
+  );
+
+  const cronInstall = all([cronFileCopy, backupFileCopy]).apply(
+    ([cronCopy, backupCopy]) =>
+      new remote.Command(
+        'remote-command-install-tailscale-cron',
+        {
+          create: readFileContents('./assets/tailscale/cron/install.sh'),
+          update: readFileContents('./assets/tailscale/cron/install.sh'),
+          triggers: [cronFileHash, backupFileHash],
+          connection: connection,
+        },
+        {
+          dependsOn: [...dependsOn, prepare, cronCopy, backupCopy],
+        },
+      ),
   );
 
   const dockerComposeHash = Output.create(
@@ -78,19 +140,33 @@ export const installTailscale = (
     },
   );
 
-  return all([dockerComposeCopy]).apply(
-    ([composeCopy]) =>
-      new remote.Command(
+  return all([dockerComposeCopy, cronInstall]).apply(
+    ([composeCopy, cronInstaller]) => {
+      const installScript = renderTemplate('./assets/tailscale/install.sh.j2', {
+        project: getProject(),
+        bucket: {
+          id: backupBucketId,
+          path: BUCKET_PATH,
+        },
+      });
+
+      return new remote.Command(
         'remote-command-install-tailscale',
         {
-          create: readFileContents('./assets/tailscale/install.sh'),
-          update: readFileContents('./assets/tailscale/install.sh'),
+          create: installScript,
+          update: installScript,
           triggers: [dockerComposeHash, systemdServiceHash],
           connection: connection,
         },
         {
-          dependsOn: [...dependsOn, composeCopy, systemdServiceCopy],
+          dependsOn: [
+            ...dependsOn,
+            composeCopy,
+            systemdServiceCopy,
+            cronInstaller,
+          ],
         },
-      ),
+      );
+    },
   );
 };

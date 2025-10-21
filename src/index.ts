@@ -74,7 +74,6 @@ export = async () => {
   );
 
   // wireguard
-  // FIXME: add backups?
   const wireguardData = createWireguardResources();
   const wireguard = all([traefik]).apply(([traefikInstall]) =>
     installWireguard(instance.sshIPv4, sshKey.privateKeyPem, wireguardData, [

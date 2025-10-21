@@ -61,10 +61,11 @@ The following section describes the configuration which must be set in the Pulum
 
 ***Attention:*** do use [Secrets Encryption](https://www.pulumi.com/docs/concepts/secrets/#:~:text=Pulumi%20never%20sends%20authentication%20secrets,“secrets”%20for%20extra%20protection.) provided by Pulumi for secret values!
 
-### Bucket Identifier
+### Bucket
 
 ```yaml
-bucketId: the bucket identifier to upload assets to
+bucketId: the bucket identifier to store output assets in
+backupBucketId: the backup bucket identifier
 ```
 
 ### Google Cloud (GCP)
@@ -91,6 +92,13 @@ network:
   name: the Hetzner Cloud network name
   cidr: the CIDR of the internal network
   subnetCidr: the CIDR of the internal network subnet
+  dnsSuffix: the DNS suffix for internal DNS entries
+  firewallRules: a map containing the firewall rules
+    <name>:
+      description: the description of the rule
+      protocol: the protocol (tcp/udp/icmp/..., optional)
+      port: the port or port range
+      sourceIps: the source IPs (for inbound rules, optional)
 ```
 
 ### OIDC
@@ -129,6 +137,31 @@ dns:
       domain: the domain name
       zoneId: the Google Cloud DNS zone identifier
 ```
+
+### BGP
+
+```yaml
+bgp:
+  routerId: the BGP router identifier
+  localAsn: the local ASN
+  interface: the BGP interface (if not specified at the neighbor level)
+  advertisedIPv4Networks: a list of IPv4 networks to advertise
+  advertisedIPv6Networks: a list of IPv6 networks to advertise
+  neighbors: a list of BGP neighbors
+    - remoteAsn: the remote ASN
+      address: the neighbor address
+      interface: the BGP interface (optional, overrides the global one)
+```
+
+### Tailscale
+
+```yaml
+tailscale:
+  authKey: the Tailscale auth key
+```
+
+> [!IMPORTANT]  
+> The Tailscale auth key must be recreated periodically, if reused due to expiration.
 
 ---
 

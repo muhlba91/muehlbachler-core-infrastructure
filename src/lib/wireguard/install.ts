@@ -1,10 +1,11 @@
 import { remote } from '@pulumi/command';
-import { all, Output, Resource } from '@pulumi/pulumi';
+import { all, getProject, Output, Resource } from '@pulumi/pulumi';
 import { FileAsset } from '@pulumi/pulumi/asset';
 
 import { WireGuardData } from '../../model/wireguard';
-import { dnsConfig } from '../configuration';
+import { backupBucketId, dnsConfig } from '../configuration';
 import { getFileHash, readFileContents, writeFileContents } from '../util/file';
+import { BUCKET_PATH } from '../util/storage';
 import { renderTemplate } from '../util/template';
 
 /**
@@ -37,6 +38,66 @@ export const installWireguard = (
     {
       dependsOn: [...dependsOn],
     },
+  );
+
+  const cronFileHash = getFileHash('./assets/wireguard/cron/cron');
+  const cronFileCopy = new remote.CopyToRemote(
+    'remote-copy-wireguard-cron',
+    {
+      source: new FileAsset('./assets/wireguard/cron/cron'),
+      remotePath: '/etc/cron.d/wireguard',
+      triggers: [Output.create(cronFileHash)],
+      connection: connection,
+    },
+    {
+      dependsOn: [...dependsOn, prepare],
+    },
+  );
+
+  const backupFileHash = Output.create(
+    renderTemplate('./assets/wireguard/cron/wireguard-backup.j2', {
+      project: getProject(),
+      bucket: {
+        id: backupBucketId,
+        path: BUCKET_PATH,
+      },
+    }),
+  )
+    .apply((content) =>
+      writeFileContents('./outputs/wireguard_backup', content, {}),
+    )
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    .apply((_) => getFileHash('./outputs/wireguard_backup'));
+  const backupFileCopy = backupFileHash.apply(
+    (hash) =>
+      new remote.CopyToRemote(
+        'remote-copy-wireguard-backup',
+        {
+          source: new FileAsset('./outputs/wireguard_backup'),
+          remotePath: '/bin/wireguard-backup',
+          triggers: [Output.create(hash)],
+          connection: connection,
+        },
+        {
+          dependsOn: [...dependsOn, prepare],
+        },
+      ),
+  );
+
+  const cronInstall = all([cronFileCopy, backupFileCopy]).apply(
+    ([cronCopy, backupCopy]) =>
+      new remote.Command(
+        'remote-command-install-wireguard-cron',
+        {
+          create: readFileContents('./assets/wireguard/cron/install.sh'),
+          update: readFileContents('./assets/wireguard/cron/install.sh'),
+          triggers: [cronFileHash, backupFileHash],
+          connection: connection,
+        },
+        {
+          dependsOn: [...dependsOn, prepare, cronCopy, backupCopy],
+        },
+      ),
   );
 
   const dockerComposeHash = Output.create(
@@ -124,13 +185,21 @@ export const installWireguard = (
     },
   );
 
-  return all([dockerComposeCopy, wireguardConfigCopy]).apply(
-    ([composeCopy, wireguardCopy]) =>
-      new remote.Command(
+  return all([dockerComposeCopy, wireguardConfigCopy, cronInstall]).apply(
+    ([composeCopy, wireguardCopy, cronInstaller]) => {
+      const installScript = renderTemplate('./assets/wireguard/install.sh.j2', {
+        project: getProject(),
+        bucket: {
+          id: backupBucketId,
+          path: BUCKET_PATH,
+        },
+      });
+
+      return new remote.Command(
         'remote-command-install-wireguard',
         {
-          create: readFileContents('./assets/wireguard/install.sh'),
-          update: readFileContents('./assets/wireguard/install.sh'),
+          create: installScript,
+          update: installScript,
           triggers: [
             dockerComposeHash,
             systemdServiceHash,
@@ -144,8 +213,10 @@ export const installWireguard = (
             composeCopy,
             wireguardCopy,
             systemdServiceCopy,
+            cronInstaller,
           ],
         },
-      ),
+      );
+    },
   );
 };

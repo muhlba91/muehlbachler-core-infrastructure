@@ -11,11 +11,12 @@ import { TailscaleConfig } from '../model/config/tailscale';
 export const environment = getStack();
 
 const config = new Config();
+export const bucketId = config.require<string>('bucketId');
+export const backupBucketId = config.require<string>('backupBucketId');
 export const gcpConfig = config.requireObject<GCPConfig>('gcp');
 export const serverConfig = config.requireObject<ServerConfig>('server');
 export const networkConfig = config.requireObject<NetworkConfig>('network');
 export const oidcConfig = config.requireObject<OIDCConfig>('oidc');
-export const bucketId = config.require<string>('bucketId');
 export const dnsConfig = config.requireObject<DNSConfig>('dns');
 export const bgpConfig = config.requireObject<BGPConfig>('bgp');
 export const tailscaleConfig =
