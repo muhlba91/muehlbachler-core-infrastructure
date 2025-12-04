@@ -6,8 +6,8 @@
 if [ -f /opt/wireguard.state ]; then
     /bin/wireguard-backup
 else
-    GOOGLE_APPLICATION_CREDENTIALS=/opt/google/credentials.json CLOUDSDK_CORE_PROJECT={{ project }} gcloud storage cp -r gs://{{ bucket.id }}/{{ bucket.path }}/backup/wireguard/etc/* /opt/wireguard/etc/
-    GOOGLE_APPLICATION_CREDENTIALS=/opt/google/credentials.json CLOUDSDK_CORE_PROJECT={{ project }} gcloud storage cp -r gs://{{ bucket.id }}/{{ bucket.path }}/backup/wireguard/data/* /opt/wireguard/data/
+    GOOGLE_APPLICATION_CREDENTIALS=/opt/google/credentials.json CLOUDSDK_CORE_PROJECT={{ .project }} gcloud storage cp -r gs://{{ .bucket.id }}/{{ .bucket.path }}/backup/wireguard/etc/* /opt/wireguard/etc/
+    GOOGLE_APPLICATION_CREDENTIALS=/opt/google/credentials.json CLOUDSDK_CORE_PROJECT={{ .project }} gcloud storage cp -r gs://{{ .bucket.id }}/{{ .bucket.path }}/backup/wireguard/data/* /opt/wireguard/data/
 fi
 
 # restart wireguard

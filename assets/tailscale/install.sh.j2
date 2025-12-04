@@ -6,7 +6,7 @@
 if [ -f /opt/tailscale.state ]; then
     /bin/tailscale-backup
 else
-    GOOGLE_APPLICATION_CREDENTIALS=/opt/google/credentials.json CLOUDSDK_CORE_PROJECT={{ project }} gcloud storage cp -r gs://{{ bucket.id }}/{{ bucket.path }}/backup/tailscale/state/* /opt/tailscale/state/
+    GOOGLE_APPLICATION_CREDENTIALS=/opt/google/credentials.json CLOUDSDK_CORE_PROJECT={{ .project }} gcloud storage cp -r gs://{{ .bucket.id }}/{{ .bucket.path }}/backup/tailscale/state/* /opt/tailscale/state/
 fi
 
 # restart tailscale

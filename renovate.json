@@ -7,14 +7,6 @@
     ],
     "enabledManagers": [
         "github-actions",
-        "pre-commit",
-        "npm",
-        "docker-compose"
-    ],
-    "docker-compose": {
-        "managerFilePatterns": [
-            "/(^|/)(?:docker-)?compose[^/]*\\.ya?ml$/",
-            "/(^|/)(?:docker-)?compose[^/]*\\.ya?ml\\.j2$/"
-        ]
-    }
+        "gomod"
+    ]
 }

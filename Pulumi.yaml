@@ -1,6 +1,3 @@
 name: muehlbachler-core-infrastructure
 description: "muehlbachler: Core Infrastructure"
-runtime:
-  name: nodejs
-  options:
-    typescript: false
+runtime: go

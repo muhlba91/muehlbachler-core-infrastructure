@@ -1,5 +1,5 @@
 frr defaults traditional
-hostname {{ hostname }}
+hostname {{ .hostname }}
 log syslog warnings
 !
 route-map ALLOW-ALL permit 100
@@ -8,41 +8,41 @@ exit
 route-map DENY-ALL deny 100
 exit
 !
-router bgp {{ bgp.localAsn }}
- bgp router-id {{ bgp.routerId }}
+router bgp {{ .bgp.localAsn }}
+ bgp router-id {{ .bgp.routerId }}
  no bgp ebgp-requires-policy
  no bgp default ipv4-unicast
-{%- for neighbor in bgp.neighbors %}
- neighbor {{ neighbor.address }} remote-as {{ neighbor.asn }}
- ! neighbor {{ neighbor.address }} password {{ neighbor.password }}
- neighbor {{ neighbor.address }} interface {{ neighbor.interface }}
- neighbor {{ neighbor.address }} timers 60 180
- neighbor {{ neighbor.address }} disable-connected-check
- neighbor {{ neighbor.address }} soft-reconfiguration inbound
-{%- endfor %}
+{{- range .bgp.neighbors }}
+ neighbor {{ .address }} remote-as {{ .asn }}
+ ! neighbor {{ .address }} password {{ .password }}
+ neighbor {{ .address }} interface {{ .interface }}
+ neighbor {{ .address }} timers 60 180
+ neighbor {{ .address }} disable-connected-check
+ neighbor {{ .address }} soft-reconfiguration inbound
+{{- end }}
  !
  address-family ipv4 unicast
-{%- for network in bgp.advertisedIPv4Networks %}
-  network {{ network }}
-{%- endfor %}
-{%- for neighbor in bgp.neighbors %}
-  neighbor {{ neighbor.address }} activate
-  neighbor {{ neighbor.address }} next-hop-self
-  neighbor {{ neighbor.address }} route-map ALLOW-ALL in
-  neighbor {{ neighbor.address }} route-map ALLOW-ALL out
-{%- endfor %}
+{{- range .bgp.advertisedIPv4Networks }}
+  network {{ . }}
+{{- end }}
+{{- range .bgp.neighbors }}
+  neighbor {{ .address }} activate
+  neighbor {{ .address }} next-hop-self
+  neighbor {{ .address }} route-map ALLOW-ALL in
+  neighbor {{ .address }} route-map ALLOW-ALL out
+{{- end }}
  exit-address-family
  !
  address-family ipv6 unicast
-{%- for network in bgp.advertisedIPv6Networks %}
-  network {{ network }}
-{%- endfor %}
-{%- for neighbor in bgp.neighbors %}
-  neighbor {{ neighbor.address }} activate
-  neighbor {{ neighbor.address }} next-hop-self
-  neighbor {{ neighbor.address }} route-map ALLOW-ALL in
-  neighbor {{ neighbor.address }} route-map ALLOW-ALL out
-{%- endfor %}
+{{- range .bgp.advertisedIPv6Networks }}
+  network {{ . }}
+{{- end }}
+{{- range .bgp.neighbors }}
+  neighbor {{ .address }} activate
+  neighbor {{ .address }} next-hop-self
+  neighbor {{ .address }} route-map ALLOW-ALL in
+  neighbor {{ .address }} route-map ALLOW-ALL out
+{{- end }}
  exit-address-family
 exit
 !

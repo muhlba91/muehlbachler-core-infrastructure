@@ -9,14 +9,14 @@ services:
       - traefik.enable=true
       - traefik.docker.network=traefik_proxy
 
-      - traefik.http.routers.vault_http.rule=Host(`{{ domain }}`)
+      - traefik.http.routers.vault_http.rule=Host(`{{ .domain }}`)
       - traefik.http.routers.vault_http.entrypoints=web
       - traefik.http.routers.vault_http.service=vault_http
       - traefik.http.routers.vault_http.middlewares=redirect-to-vault-https
       - traefik.http.middlewares.redirect-to-vault-https.redirectscheme.scheme=8200 # TODO: this should be https
       - traefik.http.services.vault_http.loadbalancer.server.port=8200
 
-      - traefik.http.routers.vault_https.rule=Host(`{{ domain }}`)
+      - traefik.http.routers.vault_https.rule=Host(`{{ .domain }}`)
       - traefik.http.routers.vault_https.entrypoints=vault
       - traefik.http.routers.vault_https.service=vault_https
       - traefik.http.routers.vault_https.tls=true

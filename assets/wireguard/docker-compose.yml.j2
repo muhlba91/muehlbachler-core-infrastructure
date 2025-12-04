@@ -7,14 +7,14 @@ services:
     labels:
       - traefik.enable=true
 
-      - traefik.http.routers.wireguard_http.rule=Host(`{{ domain }}`)
+      - traefik.http.routers.wireguard_http.rule=Host(`{{ .domain }}`)
       - traefik.http.routers.wireguard_http.entrypoints=web
       - traefik.http.routers.wireguard_http.service=wireguard_http
       - traefik.http.routers.wireguard_http.middlewares=redirect-to-https
       - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
       - traefik.http.services.wireguard_http.loadbalancer.server.port=8888
 
-      - traefik.http.routers.wireguard_https.rule=Host(`{{ domain }}`)
+      - traefik.http.routers.wireguard_https.rule=Host(`{{ .domain }}`)
       - traefik.http.routers.wireguard_https.entrypoints=websecure
       - traefik.http.routers.wireguard_https.service=wireguard_https
       - traefik.http.routers.wireguard_https.tls=true

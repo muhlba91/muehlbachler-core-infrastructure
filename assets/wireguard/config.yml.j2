@@ -1,7 +1,7 @@
 ---
 core:
   admin_user: admin
-  admin_password: {{ adminPassword }}
+  admin_password: {{ .adminPassword }}
   admin_api_token: ""
   editable_keys: true
   create_default_peer: false
@@ -31,7 +31,7 @@ database:
   slow_query_threshold: "0"
   type: sqlite
   dsn: data/sqlite.db
-  encryption_passphrase: {{ database.encryptionPassphrase }}
+  encryption_passphrase: {{ .database.encryptionPassphrase }}
 
 statistics:
   use_ping_checks: true
@@ -52,7 +52,7 @@ mail:
   username: ""
   password: ""
   auth_type: plain
-  from: VPN Portal <noreply@{{ domain }}>
+  from: VPN Portal <noreply@{{ .domain }}>
   link_only: false
 
 auth:
@@ -62,9 +62,9 @@ auth:
     - id: tuxnet-sso
       provider_name: tuxnet-sso
       display_name: SSO
-      base_url: {{ oidc.baseUrl }}
-      client_id: {{ oidc.clientId }}
-      client_secret: {{ oidc.clientSecret }}
+      base_url: {{ .oidc.baseUrl }}
+      client_id: {{ .oidc.clientId }}
+      client_secret: {{ .oidc.clientSecret }}
       extra_scopes:
         - openid
         - profile
@@ -83,12 +83,12 @@ auth:
 
 web:
   listening_address: 0.0.0.0:8888
-  external_url: https://{{ domain }}
+  external_url: https://{{ .domain }}
   site_company_name: Tuxnet VPN Portal
   site_title: Tuxnet VPN Portal
   session_identifier: wgPortalSession
-  session_secret: {{ web.sessionSecret }}
-  csrf_secret: {{ web.csrfSecret }}
+  session_secret: {{ .web.sessionSecret }}
+  csrf_secret: {{ .web.csrfSecret }}
   request_logging: false
   expose_host_info: false
   cert_file: ""

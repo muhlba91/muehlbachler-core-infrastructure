@@ -1,5 +1,5 @@
 storage "gcs" {
-  bucket = "{{ bucket }}"
+  bucket = "{{ .bucket }}"
   chunk_size = "1024"
 }
 
@@ -13,10 +13,10 @@ listener "tcp" {
 }
 
 seal "gcpckms" {
-  project = "{{ gcp.project }}"
-  region = "{{ gcp.encryptionKey.location }}"
-  key_ring = "{{ gcp.encryptionKey.keyringId }}"
-  crypto_key = "{{ gcp.encryptionKey.cryptoKeyId }}"
+  project = "{{ .gcp.Project }}"
+  region = "{{ .gcp.EncryptionKey.Location }}"
+  key_ring = "{{ .gcp.EncryptionKey.KeyringID }}"
+  crypto_key = "{{ .gcp.EncryptionKey.CryptoKeyID }}"
 }
 
 api_addr = "http://127.0.0.1:8200"

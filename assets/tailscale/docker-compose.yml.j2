@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      - TS_AUTHKEY={{ authKey }}
+      - TS_AUTHKEY={{ .authKey }}
       - TS_EXTRA_ARGS=--advertise-routes=10.0.0.0/8 --advertise-exit-node
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_USERSPACE=false

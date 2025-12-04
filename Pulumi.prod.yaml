@@ -76,12 +76,16 @@ config:
       - remoteAsn: 65111
         address: fd80::254:1:1
         interface: wg1
+        interfaceName: wg1
       - remoteAsn: 65221
         address: fd80::254:2:1
         interface: wg2
+        interfaceName: wg2
       - remoteAsn: 65331
         address: fd80::254:3:1
         interface: wg3
+        interfaceName: wg3
+    interfaceName: wg0
   muehlbachler-core-infrastructure:tailscale:
     authKey:
       secure: v1:jA/QT10wLkNbjLg4:t76dqKbE4c/NQdDbCy17g5UHIdk0NrUcnJpSYgIZhmQpi6eXzgPnsqRDkR3mU+/+9vHcZ3UXmXbE6SCy87y0SD7bo1ZJUNc5yOKDDts=
