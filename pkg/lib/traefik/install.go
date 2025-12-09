@@ -36,7 +36,7 @@ func Install(
 		return nil, prepErr
 	}
 
-	dockerCompose, dcErr := template.Render("./assets/traefik/docker-compose.yml.j2", map[string]interface{}{
+	dockerCompose, dcErr := template.Render("./assets/traefik/docker-compose.yml.j2", map[string]any{
 		"gcpProject": dnsConfig.Project,
 	})
 	if dcErr != nil {
@@ -61,7 +61,7 @@ func Install(
 		return pulumi.DependsOn([]pulumi.Resource{cmd})
 	})
 
-	traefikYaml, dcErr := template.Render("./assets/traefik/traefik.yml.j2", map[string]interface{}{
+	traefikYaml, dcErr := template.Render("./assets/traefik/traefik.yml.j2", map[string]any{
 		"acmeEmail": dnsConfig.Email,
 	})
 	if dcErr != nil {

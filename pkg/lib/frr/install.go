@@ -93,13 +93,13 @@ func createConfigs(
 	conn *remote.ConnectionArgs,
 	opts ...pulumi.ResourceOption,
 ) ([]pulumi.Output, pulumi.Array, error) {
-	frrConfig, _ := pulumi.All(frrData.Hostname, frrData.NeighborPassword).ApplyT(func(args []interface{}) string {
+	frrConfig, _ := pulumi.All(frrData.Hostname, frrData.NeighborPassword).ApplyT(func(args []any) string {
 		hostname, _ := args[0].(string)
 		neighborPassword, _ := args[1].(string)
 
-		neighbors := []map[string]interface{}{}
+		neighbors := []map[string]any{}
 		for _, neighbor := range bgpConfig.Neighbors {
-			n := map[string]interface{}{
+			n := map[string]any{
 				"address":   neighbor.Address,
 				"asn":       neighbor.RemoteASN,
 				"interface": neighbor.InterfaceName,
@@ -110,9 +110,9 @@ func createConfigs(
 			}
 			neighbors = append(neighbors, n)
 		}
-		tpl, _ := template.Render("./assets/frr/config/frr.conf.j2", map[string]interface{}{
+		tpl, _ := template.Render("./assets/frr/config/frr.conf.j2", map[string]any{
 			"hostname": hostname,
-			"bgp": map[string]interface{}{
+			"bgp": map[string]any{
 				"localAsn":               bgpConfig.LocalASN,
 				"routerId":               bgpConfig.RouterID,
 				"interface":              bgpConfig.InterfaceName,

@@ -4,8 +4,12 @@
 
 # installation check
 if [ -f /opt/tailscale.state ]; then
+    sed -i '/- TS_AUTHKEY=/d' /opt/tailscale/docker-compose.yml
+
     /bin/tailscale-backup
 else
+    sed -i '/- TS_AUTHKEY=/d' /opt/tailscale/docker-compose.yml
+
     GOOGLE_APPLICATION_CREDENTIALS=/opt/google/credentials.json CLOUDSDK_CORE_PROJECT={{ .project }} gcloud storage cp -r gs://{{ .bucket.id }}/{{ .bucket.path }}/backup/tailscale/state/* /opt/tailscale/state/
 fi
 
@@ -15,6 +19,7 @@ systemctl enable tailscale
 systemctl restart tailscale
 
 # finalize installation
+sed -i '/- TS_AUTHKEY=/d' /opt/tailscale/docker-compose.yml
 echo "installed" > /opt/tailscale.state
 
 # cleanup old images

@@ -2,13 +2,14 @@ package wireguard
 
 import (
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
+	"github.com/muhlba91/pulumi-shared-library/pkg/util/google/project"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/template"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
-	gcpConfig "github.com/pulumi/pulumi-gcp/sdk/v9/go/gcp/config"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/dns"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/google"
 	wireguardData "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/wireguard"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
 )
@@ -19,6 +20,7 @@ import (
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
 // wireguardData: WireGuard configuration data.
 // dnsConfig: DNS configuration.
+// gcpConfig: GCP configuration.
 // dependsOn: Pulumi resource option to specify dependencies.
 func installer(
 	ctx *pulumi.Context,
@@ -26,6 +28,7 @@ func installer(
 	privateKeyPem pulumi.StringOutput,
 	wireguardData *wireguardData.Data,
 	dnsConfig *dns.Config,
+	gcpConfig *google.Config,
 	dependsOn pulumi.ResourceOrInvokeOption,
 ) (*remote.Command, error) {
 	conn := &remote.ConnectionArgs{
@@ -41,7 +44,7 @@ func installer(
 		return nil, prepErr
 	}
 
-	dockerCompose, dcErr := template.Render("./assets/wireguard/docker-compose.yml.j2", map[string]interface{}{
+	dockerCompose, dcErr := template.Render("./assets/wireguard/docker-compose.yml.j2", map[string]any{
 		"domain": dnsConfig.Entries["wireguard"].Domain,
 	})
 	if dcErr != nil {
@@ -68,7 +71,7 @@ func installer(
 
 	configResources, configHashes := createConfigs(ctx, wireguardData, dnsConfig, conn, opts...)
 
-	cronResources, cronErr := install.Cron(ctx, "wireguard", conn, opts...)
+	cronResources, cronErr := install.Cron(ctx, "wireguard", conn, gcpConfig, opts...)
 	if cronErr != nil {
 		return nil, cronErr
 	}
@@ -78,8 +81,8 @@ func installer(
 		return nil, shErr
 	}
 
-	installFn, iErr := template.Render("./assets/wireguard/install.sh.j2", map[string]interface{}{
-		"project": gcpConfig.GetProject(ctx),
+	installFn, iErr := template.Render("./assets/wireguard/install.sh.j2", map[string]any{
+		"project": project.GetOrDefault(ctx, gcpConfig.Project),
 		"bucket": map[string]string{
 			"id":   config.BackupBucketID,
 			"path": config.BucketPath,

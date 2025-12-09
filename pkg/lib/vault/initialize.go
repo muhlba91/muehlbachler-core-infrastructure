@@ -69,12 +69,12 @@ func initialize(
 	return &keys, nil
 }
 
-// parse parses a YAML-formatted string into a map[string]interface{}.
+// parse parses a YAML-formatted string into a map[string]any.
 // On error it returns an empty map.
-func parse(s string) map[string]interface{} {
-	var out map[string]interface{}
+func parse(s string) map[string]any {
+	var out map[string]any
 	if err := yaml.Unmarshal([]byte(s), &out); err != nil {
-		return map[string]interface{}{}
+		return map[string]any{}
 	}
 	return out
 }

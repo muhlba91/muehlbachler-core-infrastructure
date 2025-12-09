@@ -42,7 +42,7 @@ func installer(
 		return nil, prepErr
 	}
 
-	dockerCompose, dcErr := template.Render("./assets/vault/docker-compose.yml.j2", map[string]interface{}{
+	dockerCompose, dcErr := template.Render("./assets/vault/docker-compose.yml.j2", map[string]any{
 		"domain": dnsConfig.Entries["vault"].Domain,
 	})
 	if dcErr != nil {
@@ -68,7 +68,7 @@ func installer(
 	})
 
 	vaultConfig, _ := vaultData.Bucket.ID().ApplyT(func(bucket string) string {
-		tpl, _ := template.Render("./assets/vault/config.hcl.j2", map[string]interface{}{
+		tpl, _ := template.Render("./assets/vault/config.hcl.j2", map[string]any{
 			"gcp":    googleConfig,
 			"bucket": bucket,
 		})

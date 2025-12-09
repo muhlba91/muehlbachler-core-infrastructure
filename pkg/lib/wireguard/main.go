@@ -5,6 +5,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/dns"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/google"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/oidc"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/wireguard"
 )
@@ -15,12 +16,14 @@ import (
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
 // dnsConfig: DNS configuration.
 // oidcConfig: OIDC configuration.
+// gcpConfig: GCP configuration.
 // dependsOn: List of Pulumi resources that this installation depends on.
 func Install(ctx *pulumi.Context,
 	sshIPv4 pulumi.StringOutput,
 	privateKeyPem pulumi.StringOutput,
 	dnsConfig *dns.Config,
 	oidcConfig *oidc.Config,
+	gcpConfig *google.Config,
 	dependsOn []pulumi.Resource,
 ) (*wireguard.Data, *remote.Command, error) {
 	wireguardData, wdErr := createResources(ctx, oidcConfig)
@@ -33,6 +36,7 @@ func Install(ctx *pulumi.Context,
 		privateKeyPem,
 		wireguardData,
 		dnsConfig,
+		gcpConfig,
 		pulumi.DependsOn(dependsOn),
 	)
 	if wiErr != nil {

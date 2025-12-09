@@ -29,7 +29,7 @@ func createBucket(
 		return nil, bErr
 	}
 
-	_ = pulumi.All(serviceAccount, bucket.ID().ToStringOutput()).ApplyT(func(args []interface{}) error {
+	_ = pulumi.All(serviceAccount, bucket.ID().ToStringOutput()).ApplyT(func(args []any) error {
 		email, _ := args[0].(string)
 		bucketID, _ := args[1].(string)
 

@@ -2,12 +2,13 @@ package tailscale
 
 import (
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
+	"github.com/muhlba91/pulumi-shared-library/pkg/util/google/project"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/template"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
-	gcpConfig "github.com/pulumi/pulumi-gcp/sdk/v9/go/gcp/config"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/google"
 	tailscaleConf "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/tailscale"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
 )
@@ -17,12 +18,14 @@ import (
 // sshIPv4: The IPv4 address of the server to connect to via SSH.
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
 // tailscaleConfig: Configuration for Tailscale installation.
+// gcpConfig: GCP configuration.
 // dependsOn: Pulumi resource option to specify dependencies.
 func Install(
 	ctx *pulumi.Context,
 	sshIPv4 pulumi.StringOutput,
 	privateKeyPem pulumi.StringOutput,
 	tailscaleConfig *tailscaleConf.Config,
+	gcpConfig *google.Config,
 	dependsOn pulumi.ResourceOrInvokeOption,
 ) (*remote.Command, error) {
 	conn := &remote.ConnectionArgs{
@@ -38,7 +41,7 @@ func Install(
 		return nil, prepErr
 	}
 
-	dockerCompose, dcErr := template.Render("./assets/tailscale/docker-compose.yml.j2", map[string]interface{}{
+	dockerCompose, dcErr := template.Render("./assets/tailscale/docker-compose.yml.j2", map[string]any{
 		"authKey": tailscaleConfig.AuthKey,
 	})
 	if dcErr != nil {
@@ -63,7 +66,7 @@ func Install(
 		return pulumi.DependsOn([]pulumi.Resource{cmd})
 	})
 
-	cronResources, cronErr := install.Cron(ctx, "tailscale", conn, opts...)
+	cronResources, cronErr := install.Cron(ctx, "tailscale", conn, gcpConfig, opts...)
 	if cronErr != nil {
 		return nil, cronErr
 	}
@@ -73,8 +76,8 @@ func Install(
 		return nil, shErr
 	}
 
-	installFn, iErr := template.Render("./assets/tailscale/install.sh.j2", map[string]interface{}{
-		"project": gcpConfig.GetProject(ctx),
+	installFn, iErr := template.Render("./assets/tailscale/install.sh.j2", map[string]any{
+		"project": project.GetOrDefault(ctx, gcpConfig.Project),
 		"bucket": map[string]string{
 			"id":   config.BackupBucketID,
 			"path": config.BucketPath,
