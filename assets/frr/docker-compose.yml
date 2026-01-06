@@ -1,7 +1,7 @@
 ---
 services:
   frr:
-    image: quay.io/frrouting/frr:10.5.0
+    image: quay.io/frrouting/frr:10.5.1
     container_name: frr
     restart: unless-stopped
     network_mode: host
