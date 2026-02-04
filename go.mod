@@ -5,7 +5,7 @@ go 1.25.3
 require (
 	github.com/muhlba91/pulumi-shared-library v0.0.0-20260131071313-aa1000f8bd52
 	github.com/pulumi/pulumi-command/sdk v1.1.3
-	github.com/pulumi/pulumi-gcp/sdk/v9 v9.10.0
+	github.com/pulumi/pulumi-gcp/sdk/v9 v9.11.0
 	github.com/pulumi/pulumi-hcloud/sdk v1.32.0
 	github.com/pulumi/pulumi-tls/sdk/v5 v5.3.0
 	github.com/pulumi/pulumi-vault/sdk/v7 v7.6.0
