@@ -8,7 +8,7 @@ require (
 	github.com/pulumi/pulumi-gcp/sdk/v9 v9.11.0
 	github.com/pulumi/pulumi-hcloud/sdk v1.32.0
 	github.com/pulumi/pulumi-tls/sdk/v5 v5.3.0
-	github.com/pulumi/pulumi-vault/sdk/v7 v7.6.0
+	github.com/pulumi/pulumi-vault/sdk/v7 v7.7.0
 	github.com/pulumi/pulumi/sdk/v3 v3.219.0
 	gopkg.in/yaml.v3 v3.0.1
 )
