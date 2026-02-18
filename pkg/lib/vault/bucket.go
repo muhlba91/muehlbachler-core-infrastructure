@@ -35,7 +35,7 @@ func createBucket(
 
 		_, iamErr := iam.CreateIAMMember(
 			ctx,
-			&iam.MemberArgs{
+			&iam.MemberOptions{
 				BucketID: bucketID,
 				Member:   fmt.Sprintf("serviceAccount:%s", email),
 				Role:     "roles/storage.objectAdmin",

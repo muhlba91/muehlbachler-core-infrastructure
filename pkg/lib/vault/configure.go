@@ -91,7 +91,7 @@ func storeVaultSecrets(
 	provider *vault.Provider,
 ) (*vaultModel.OwnedSecrets, error) {
 	prefix := "mount"
-	mount, err := store.Create(ctx, "kv-vault", &store.CreateArgs{
+	mount, err := store.Create(ctx, "kv-vault", &store.CreateOptions{
 		NamePrefix:    &prefix,
 		Path:          pulumi.String("vault"),
 		Description:   pulumi.String("Vault related secrets"),
@@ -110,7 +110,7 @@ func storeVaultSecrets(
 		"recoveryKey5": keys.RecoveryKeys[4],
 	})
 	secret, _ := mount.Path.ApplyT(func(path string) *kv.SecretV2 {
-		kv, _ := secret.Write(ctx, &secret.WriteArgs{
+		kv, _ := secret.Create(ctx, &secret.CreateOptions{
 			Path:          path,
 			Key:           "keys",
 			Value:         pulumi.String(value),

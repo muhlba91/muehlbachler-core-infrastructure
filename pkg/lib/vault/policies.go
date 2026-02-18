@@ -18,7 +18,7 @@ func createDefaultPolicies(
 	if rErr != nil {
 		return rErr
 	}
-	_, pErr := policy.Create(ctx, &policy.CreateArgs{
+	_, pErr := policy.Create(ctx, &policy.CreateOptions{
 		Name:   "admin",
 		Policy: pulumi.String(policyDoc),
 		PulumiOptions: []pulumi.ResourceOption{
@@ -33,7 +33,7 @@ func createDefaultPolicies(
 	if rErr != nil {
 		return rErr
 	}
-	_, pErr = policy.Create(ctx, &policy.CreateArgs{
+	_, pErr = policy.Create(ctx, &policy.CreateOptions{
 		Name:   "manager",
 		Policy: pulumi.String(policyDoc),
 		PulumiOptions: []pulumi.ResourceOption{
@@ -48,7 +48,7 @@ func createDefaultPolicies(
 	if rErr != nil {
 		return rErr
 	}
-	_, pErr = policy.Create(ctx, &policy.CreateArgs{
+	_, pErr = policy.Create(ctx, &policy.CreateOptions{
 		Name:   "reader",
 		Policy: pulumi.String(policyDoc),
 		PulumiOptions: []pulumi.ResourceOption{

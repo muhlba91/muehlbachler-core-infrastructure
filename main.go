@@ -168,7 +168,7 @@ func main() {
 // sshKey: The SSH private key resource.
 // vaultInstanceData: The Vault instance data output.
 func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInstanceData *pulumi.AnyOutput) {
-	google.WriteFileAndUpload(ctx, &storage.WriteFileAndUploadArgs{
+	google.WriteFileAndUpload(ctx, &storage.WriteFileAndUploadOptions{
 		BucketID:    config.BucketID,
 		BucketPath:  fmt.Sprintf("%s/", config.BucketPath),
 		OutputPath:  "./outputs",
@@ -184,7 +184,7 @@ func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInst
 		})
 		return string(b)
 	}).(pulumi.StringOutput)
-	google.WriteFileAndUpload(ctx, &storage.WriteFileAndUploadArgs{
+	google.WriteFileAndUpload(ctx, &storage.WriteFileAndUploadOptions{
 		BucketID:    config.BucketID,
 		BucketPath:  fmt.Sprintf("%s/", config.BucketPath),
 		OutputPath:  "./outputs",

@@ -20,7 +20,7 @@ import (
 // googleConfig: Configuration details for Google Cloud.
 // dnsConfig: Configuration details for DNS management.
 func Create(ctx *pulumi.Context, googleConfig *google.Config, dnsConfig *dns.Config) (*gmodel.User, error) {
-	iam, err := slServiceAccount.CreateServiceAccountUser(ctx, &slServiceAccount.CreateServiceAccountUserArgs{
+	iam, err := slServiceAccount.CreateServiceAccountUser(ctx, &slServiceAccount.CreateOptions{
 		Name:    fmt.Sprintf("%s-%s-%s", config.GlobalName, config.GlobalName, config.Environment),
 		Project: pulumi.String(*googleConfig.Project),
 	})
@@ -35,34 +35,34 @@ func Create(ctx *pulumi.Context, googleConfig *google.Config, dnsConfig *dns.Con
 			*googleConfig.EncryptionKey.Location,
 			*googleConfig.EncryptionKey.KeyringID,
 		)
-		_, _ = kmsIam.CreateKeyringBinding(ctx, &kmsIam.KeyringBindingArgs{
+		_, _ = kmsIam.CreateKeyringBinding(ctx, &kmsIam.KeyringBindingOptions{
 			KeyRingID: keyringID,
 			Member:    fmt.Sprintf("serviceAccount:%s", email),
 			Role:      "roles/cloudkms.cryptoKeyEncrypterDecrypter",
 		})
-		_, _ = kmsIam.CreateKeyringBinding(ctx, &kmsIam.KeyringBindingArgs{
+		_, _ = kmsIam.CreateKeyringBinding(ctx, &kmsIam.KeyringBindingOptions{
 			KeyRingID: keyringID,
 			Member:    fmt.Sprintf("serviceAccount:%s", email),
 			Role:      "roles/cloudkms.signerVerifier",
 		})
-		_, _ = kmsIam.CreateKeyringBinding(ctx, &kmsIam.KeyringBindingArgs{
+		_, _ = kmsIam.CreateKeyringBinding(ctx, &kmsIam.KeyringBindingOptions{
 			KeyRingID: keyringID,
 			Member:    fmt.Sprintf("serviceAccount:%s", email),
 			Role:      "roles/cloudkms.viewer",
 		})
 
-		_, _ = gcsIam.CreateIAMMember(ctx, &gcsIam.MemberArgs{
+		_, _ = gcsIam.CreateIAMMember(ctx, &gcsIam.MemberOptions{
 			BucketID: config.BackupBucketID,
 			Member:   fmt.Sprintf("serviceAccount:%s", email),
 			Role:     "roles/storage.objectAdmin",
 		})
-		_, _ = gcsIam.CreateIAMMember(ctx, &gcsIam.MemberArgs{
+		_, _ = gcsIam.CreateIAMMember(ctx, &gcsIam.MemberOptions{
 			BucketID: config.BackupBucketID,
 			Member:   fmt.Sprintf("serviceAccount:%s", email),
 			Role:     "roles/storage.legacyBucketReader",
 		})
 
-		_, _ = role.CreateMember(ctx, fmt.Sprintf("%s-dns-admin", email), &role.MemberArgs{
+		_, _ = role.CreateMember(ctx, fmt.Sprintf("%s-dns-admin", email), &role.MemberOptions{
 			Member:  pulumi.Sprintf("serviceAccount:%s", email),
 			Roles:   []string{"roles/dns.admin"},
 			Project: pulumi.String(*dnsConfig.Project),
