@@ -27,6 +27,7 @@ type OIDC struct {
 	// ClientID is the client ID.
 	ClientID string
 	// ClientSecret is the client secret.
+	//nolint:gosec // This is a configuration value, not a hardcoded secret.
 	ClientSecret string
 }
 

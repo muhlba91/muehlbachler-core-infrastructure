@@ -13,5 +13,6 @@ type ClientConfig struct {
 	// ClientID is the OIDC client ID.
 	ClientID *string `yaml:"clientId,omitempty"`
 	// ClientSecret is the OIDC client secret.
+	//nolint:gosec // This is a configuration value, not a hardcoded secret.
 	ClientSecret *string `yaml:"clientSecret,omitempty"`
 }
