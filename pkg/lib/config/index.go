@@ -11,6 +11,7 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/google"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/network"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/oidc"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/scaleway"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/server"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/tailscale"
 )
@@ -21,6 +22,8 @@ var (
 	Environment string
 	// GlobalName is a constant name used across resources.
 	GlobalName = "core"
+	// ScalewayDefaultRegion is the default Scaleway region for deployments.
+	ScalewayDefaultRegion = "fr-par"
 	// BucketPath is the path within the buckets for this project.
 	BucketPath string
 	// BucketID is the ID of the main storage bucket.
@@ -33,7 +36,7 @@ var (
 // ctx: The Pulumi context.
 func LoadConfig(
 	ctx *pulumi.Context,
-) (*google.Config, *server.Config, *network.Config, *oidc.Config, *dns.Config, *bgp.Config, *tailscale.Config, error) {
+) (*google.Config, *scaleway.Config, *server.Config, *network.Config, *oidc.Config, *dns.Config, *bgp.Config, *tailscale.Config, error) {
 	Environment = ctx.Stack()
 
 	cfg := config.New(ctx, "")
@@ -44,6 +47,9 @@ func LoadConfig(
 
 	var googleConfig google.Config
 	cfg.RequireObject("gcp", &googleConfig)
+
+	var scalewayConfig scaleway.Config
+	cfg.RequireObject("scaleway", &scalewayConfig)
 
 	var serverConfig server.Config
 	cfg.RequireObject("server", &serverConfig)
@@ -63,7 +69,7 @@ func LoadConfig(
 	var tailscaleConfig tailscale.Config
 	cfg.RequireObject("tailscale", &tailscaleConfig)
 
-	return &googleConfig, &serverConfig, &networkConfig, &oidcConfig, &dnsConfig, &bgpConfig, &tailscaleConfig, nil
+	return &googleConfig, &scalewayConfig, &serverConfig, &networkConfig, &oidcConfig, &dnsConfig, &bgpConfig, &tailscaleConfig, nil
 }
 
 // CommonLabels returns a map of common labels to be used across resources.

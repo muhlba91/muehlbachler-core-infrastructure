@@ -21,6 +21,8 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/google/dns"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/google/serviceaccount"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/hetzner/server"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/scaleway"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/scaleway/application"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/tailscale"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/traefik"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/vault"
@@ -39,7 +41,7 @@ func main() {
 		}
 
 		// configuration
-		googleConfig, serverConfig, networkConfig, oidcConfig, dnsConfig, bgpConfig, tailscaleConfig, err := config.LoadConfig(
+		googleConfig, scalewayConfig, serverConfig, networkConfig, oidcConfig, dnsConfig, bgpConfig, tailscaleConfig, err := config.LoadConfig(
 			ctx,
 		)
 		if err != nil {
@@ -84,6 +86,24 @@ func main() {
 			return gcErr
 		}
 		dependsOn = append(dependsOn, gcloudInstall)
+
+		// scaleway
+		scwApplication, scaErr := application.Create(ctx, scalewayConfig)
+		if scaErr != nil {
+			return scaErr
+		}
+		scalewayInstall, gcErr := scaleway.Install(
+			ctx,
+			instance.SSHIPv4,
+			sshKey.PrivateKeyPem,
+			scwApplication,
+			scalewayConfig,
+			pulumi.DependsOn(dependsOn),
+		)
+		if gcErr != nil {
+			return gcErr
+		}
+		dependsOn = append(dependsOn, scalewayInstall)
 
 		// traefik
 		traefikInstall, tErr := traefik.Install(
