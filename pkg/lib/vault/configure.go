@@ -26,7 +26,7 @@ func configure(
 	ctx *pulumi.Context,
 	sshIPv4 pulumi.StringOutput,
 	privateKeyPem pulumi.StringOutput,
-	bucket pulumi.IDOutput,
+	bucket pulumi.StringOutput,
 	dnsConfig *dns.Config,
 	dependsOn pulumi.ResourceOrInvokeOption,
 ) (*pulumi.AnyOutput, error) {
@@ -63,7 +63,7 @@ func configure(
 		return nil, ghErr
 	}
 
-	data, _ := pulumi.All(bucket.ToStringOutput(), address, keys).ApplyT(func(vs []any) *vaultModel.Instance {
+	data, _ := pulumi.All(bucket, address, keys).ApplyT(func(vs []any) *vaultModel.Instance {
 		vBucket, _ := vs[0].(string)
 		vAddress, _ := vs[1].(string)
 		vKeys, _ := vs[2].(*vaultModel.Keys)

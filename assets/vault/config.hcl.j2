@@ -1,15 +1,10 @@
-storage "gcs" {
-  bucket = "{{ .gcsBucket }}"
-  chunk_size = "1024"
+storage "s3" {
+  bucket     = "{{ .scaleway.bucket }}"
+  endpoint   = "https://s3.{{ .scaleway.region }}.scw.cloud"
+  region     = "{{ .scaleway.region }}"
+  access_key = "{{ .scaleway.accessKey }}"
+  secret_key = "{{ .scaleway.secretKey }}"
 }
-
-# storage "s3" {
-#   bucket     = "{{ .scaleway.bucket }}"
-#   endpoint   = "https://s3.{{ .scaleway.region }}.scw.cloud"
-#   region     = "{{ .scaleway.region }}"
-#   access_key = "{{ .scaleway.accessKey }}"
-#   secret_key = "{{ .scaleway.secretKey }}"
-# }
 
 # storage "file" {
 #   path = "/vault/config/data"

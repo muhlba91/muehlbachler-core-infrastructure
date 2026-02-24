@@ -28,7 +28,7 @@ func Install(ctx *pulumi.Context,
 	googleConfig *google.Config,
 	dependsOn []pulumi.Resource,
 ) (*vault.Data, *pulumi.AnyOutput, pulumi.Resource, error) {
-	vaultData, vdErr := createResources(ctx, serviceAccount, application, googleConfig)
+	vaultData, vdErr := createResources(ctx, serviceAccount, application)
 	if vdErr != nil {
 		return nil, nil, nil, vdErr
 	}
@@ -50,7 +50,7 @@ func Install(ctx *pulumi.Context,
 		ctx,
 		sshIPv4,
 		privateKeyPem,
-		vaultData.GCSBucket.ID(),
+		vaultData.ScalewayBucket.Name,
 		dnsConfig,
 		pulumi.DependsOn(append([]pulumi.Resource{vaultInstall}, dependsOn...)),
 	)

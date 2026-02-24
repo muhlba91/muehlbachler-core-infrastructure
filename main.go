@@ -237,8 +237,8 @@ func exportPulumiOutputs(
 
 		return map[string]any{
 			"storage": map[string]any{
-				"type":   "gcs",
-				"bucket": vaultData.GCSBucket.ID(),
+				"type":   "s3",
+				"bucket": vaultData.ScalewayBucket.Name,
 			},
 			"address": instanceData.Address,
 			"keys": pulumi.ToSecret(map[string]any{

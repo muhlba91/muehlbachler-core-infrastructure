@@ -68,15 +68,13 @@ func installer(
 		return pulumi.DependsOn([]pulumi.Resource{cmd})
 	})
 
-	vaultConfig, _ := pulumi.All(vaultData.GCSBucket.ID().ToStringOutput(), vaultData.ScalewayBucket.Name, vaultData.Application.Key.AccessKey, vaultData.Application.Key.SecretKey).ApplyT(func(args []any) string {
-		gcsBucket, _ := args[0].(string)
-		scalewayBucket, _ := args[1].(string)
-		accessKey, _ := args[2].(string)
-		secretKey, _ := args[3].(string)
+	vaultConfig, _ := pulumi.All(vaultData.ScalewayBucket.Name, vaultData.Application.Key.AccessKey, vaultData.Application.Key.SecretKey).ApplyT(func(args []any) string {
+		scalewayBucket, _ := args[0].(string)
+		accessKey, _ := args[1].(string)
+		secretKey, _ := args[2].(string)
 
 		tpl, _ := template.Render("./assets/vault/config.hcl.j2", map[string]any{
-			"gcp":       googleConfig,
-			"gcsBucket": gcsBucket,
+			"gcp": googleConfig,
 			"scaleway": map[string]string{
 				"bucket":    scalewayBucket,
 				"region":    config.ScalewayDefaultRegion,
