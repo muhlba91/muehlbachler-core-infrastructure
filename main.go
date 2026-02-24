@@ -11,7 +11,7 @@ import (
 	"github.com/muhlba91/pulumi-shared-library/pkg/lib/tls"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/dir"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/storage"
-	"github.com/muhlba91/pulumi-shared-library/pkg/util/storage/google"
+	scwUpload "github.com/muhlba91/pulumi-shared-library/pkg/util/storage/scaleway"
 	tlsProv "github.com/pulumi/pulumi-tls/sdk/v5/go/tls"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
@@ -186,7 +186,7 @@ func main() {
 // sshKey: The SSH private key resource.
 // vaultInstanceData: The Vault instance data output.
 func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInstanceData *pulumi.AnyOutput) {
-	google.WriteFileAndUpload(ctx, &storage.WriteFileAndUploadOptions{
+	scwUpload.WriteFileAndUpload(ctx, &storage.WriteFileAndUploadOptions{
 		BucketID:    config.BucketID,
 		BucketPath:  fmt.Sprintf("%s/", config.BucketPath),
 		OutputPath:  "./outputs",
@@ -202,7 +202,7 @@ func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInst
 		})
 		return string(b)
 	}).(pulumi.StringOutput)
-	google.WriteFileAndUpload(ctx, &storage.WriteFileAndUploadOptions{
+	scwUpload.WriteFileAndUpload(ctx, &storage.WriteFileAndUploadOptions{
 		BucketID:    config.BucketID,
 		BucketPath:  fmt.Sprintf("%s/", config.BucketPath),
 		OutputPath:  "./outputs",
