@@ -4,35 +4,30 @@ import (
 	"fmt"
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
-	"github.com/muhlba91/pulumi-shared-library/pkg/util/google/project"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/template"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
-	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/google"
 )
 
 // Cron executes the cron job setup for the given software on the remote server.
 // ctx: Pulumi context.
 // name: The name of the software (used to locate the cron job script).
 // conn: The remote connection arguments.
-// gcpConfig: GCP configuration.
 // opts: Additional Pulumi resource options.
 func Cron(
 	ctx *pulumi.Context,
 	name string,
 	conn *remote.ConnectionArgs,
-	gcpConfig *google.Config,
 	opts ...pulumi.ResourceOption,
 ) ([]pulumi.Output, error) {
 	backupFile, dcErr := template.Render(
 		fmt.Sprintf("./assets/%s/cron/%s-backup.j2", name, name),
 		map[string]any{
-			"project": project.GetOrDefault(ctx, gcpConfig.Project),
 			"bucket": map[string]string{
 				"id":   config.BackupBucketID,
-				"path": config.BucketPath,
+				"path": config.BackupBucketPath,
 			},
 		},
 	)

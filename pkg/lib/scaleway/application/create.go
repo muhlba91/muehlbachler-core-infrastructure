@@ -26,7 +26,8 @@ func Create(ctx *pulumi.Context, scalewayConfig *scaleway.Config) (*smodel.Appli
 	resourceName := fmt.Sprintf("%s-%s", config.GlobalName, config.Environment)
 
 	app, err := slApplication.CreateApplication(ctx, &slApplication.CreateOptions{
-		Name: resourceName,
+		Name:             resourceName,
+		DefaultProjectID: pulumi.StringPtrFromPtr(scalewayConfig.Project),
 	})
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func Create(ctx *pulumi.Context, scalewayConfig *scaleway.Config) (*smodel.Appli
 	if errPolicy != nil {
 		log.Error().
 			Err(errPolicy).
-			Msgf("[buckets][scaleway][application] failed to create IAM policy for %s", resourceName)
+			Msgf("[scaleway][application] failed to create IAM policy for %s", resourceName)
 	}
 
 	return app, nil

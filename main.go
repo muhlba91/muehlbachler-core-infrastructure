@@ -139,7 +139,6 @@ func main() {
 			sshKey.PrivateKeyPem,
 			dnsConfig,
 			oidcConfig,
-			googleConfig,
 			dependsOn,
 		)
 		if wiErr != nil {
@@ -166,7 +165,6 @@ func main() {
 			instance.SSHIPv4,
 			sshKey.PrivateKeyPem,
 			tailscaleConfig,
-			googleConfig,
 			pulumi.DependsOn(dependsOn),
 		)
 		if tsErr != nil {

@@ -10,7 +10,7 @@ if [ -f /opt/tailscale.state ]; then
 else
     sed -i '/- TS_AUTHKEY=/d' /opt/tailscale/docker-compose.yml
 
-    GOOGLE_APPLICATION_CREDENTIALS=/opt/google/credentials.json CLOUDSDK_CORE_PROJECT={{ .project }} gcloud storage cp -r gs://{{ .bucket.id }}/{{ .bucket.path }}/backup/tailscale/state/* /opt/tailscale/state/
+    rclone --config /opt/scaleway/rclone.conf sync -P scaleway:{{ .bucket.id }}/{{ .bucket.path }}/tailscale/state/ /opt/tailscale/state/
 fi
 
 # restart tailscale

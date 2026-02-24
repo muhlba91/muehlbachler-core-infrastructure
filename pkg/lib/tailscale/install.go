@@ -2,13 +2,11 @@ package tailscale
 
 import (
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
-	"github.com/muhlba91/pulumi-shared-library/pkg/util/google/project"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/template"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
-	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/google"
 	tailscaleConf "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/tailscale"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
 )
@@ -25,7 +23,6 @@ func Install(
 	sshIPv4 pulumi.StringOutput,
 	privateKeyPem pulumi.StringOutput,
 	tailscaleConfig *tailscaleConf.Config,
-	gcpConfig *google.Config,
 	dependsOn pulumi.ResourceOrInvokeOption,
 ) (*remote.Command, error) {
 	conn := &remote.ConnectionArgs{
@@ -66,7 +63,7 @@ func Install(
 		return pulumi.DependsOn([]pulumi.Resource{cmd})
 	})
 
-	cronResources, cronErr := install.Cron(ctx, "tailscale", conn, gcpConfig, opts...)
+	cronResources, cronErr := install.Cron(ctx, "tailscale", conn, opts...)
 	if cronErr != nil {
 		return nil, cronErr
 	}
@@ -77,10 +74,9 @@ func Install(
 	}
 
 	installFn, iErr := template.Render("./assets/tailscale/install.sh.j2", map[string]any{
-		"project": project.GetOrDefault(ctx, gcpConfig.Project),
 		"bucket": map[string]string{
 			"id":   config.BackupBucketID,
-			"path": config.BucketPath,
+			"path": config.BackupBucketPath,
 		},
 	})
 	if iErr != nil {

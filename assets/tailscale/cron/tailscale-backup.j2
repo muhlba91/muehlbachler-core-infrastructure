@@ -1,4 +1,4 @@
 #!/bin/sh
 
-# upload data to google cloud storage
-GOOGLE_APPLICATION_CREDENTIALS=/opt/google/credentials.json CLOUDSDK_CORE_PROJECT={{ .project }} gcloud storage rsync -r /opt/tailscale/state/ gs://{{ .bucket.id }}/{{ .bucket.path }}/backup/tailscale/state/ --delete-unmatched-destination-objects || true
+# upload data to scaleway
+rclone --config /opt/scaleway/rclone.conf sync -P /opt/tailscale/state/ scaleway:{{ .bucket.id }}/{{ .bucket.path }}/tailscale/state/ || true

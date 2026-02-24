@@ -26,6 +26,8 @@ var (
 	ScalewayDefaultRegion = "fr-par"
 	// BucketPath is the path within the buckets for this project.
 	BucketPath string
+	// BackupBucketPath is the path within the backup buckets for this project.
+	BackupBucketPath string
 	// BucketID is the ID of the main storage bucket.
 	BucketID string
 	// BackupBucketID is the ID of the backup storage bucket.
@@ -44,6 +46,7 @@ func LoadConfig(
 	BucketID = cfg.Require("bucketId")
 	BackupBucketID = cfg.Require("backupBucketId")
 	BucketPath = fmt.Sprintf("%s/%s", GlobalName, Environment)
+	BackupBucketPath = fmt.Sprintf("%s/backup", BucketPath)
 
 	var googleConfig google.Config
 	cfg.RequireObject("gcp", &googleConfig)
