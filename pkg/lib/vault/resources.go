@@ -2,6 +2,7 @@ package vault
 
 import (
 	"github.com/muhlba91/pulumi-shared-library/pkg/model/google/iam/serviceaccount"
+	"github.com/muhlba91/pulumi-shared-library/pkg/model/scaleway/iam/application"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/google"
@@ -16,15 +17,18 @@ import (
 func createResources(
 	ctx *pulumi.Context,
 	serviceAccount *serviceaccount.User,
+	application *application.Application,
 	googleConfig *google.Config,
 ) (*vault.Data, error) {
-	bucket, err := createBucket(ctx, serviceAccount.ServiceAccount.Email, googleConfig)
+	gcsBucket, scwBucket, err := createBucket(ctx, serviceAccount.ServiceAccount.Email, googleConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	return &vault.Data{
 		ServiceAccount: serviceAccount,
-		Bucket:         bucket,
+		Application:    application,
+		GCSBucket:      gcsBucket,
+		ScalewayBucket: scwBucket,
 	}, nil
 }

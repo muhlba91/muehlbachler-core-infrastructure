@@ -2,6 +2,7 @@ package vault
 
 import (
 	"github.com/muhlba91/pulumi-shared-library/pkg/model/google/iam/serviceaccount"
+	"github.com/muhlba91/pulumi-shared-library/pkg/model/scaleway/iam/application"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/dns"
@@ -13,18 +14,21 @@ import (
 // ctx: Pulumi context.
 // sshIPv4: The IPv4 address of the server to connect to via SSH.
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
+// serviceAccount: The Google service account used for authentication.
+// application: The Scaleway application used for authentication.
 // dnsConfig: DNS configuration.
-// oidcConfig: OIDC configuration.
+// googleConfig: Google configuration containing project and other settings.
 // dependsOn: List of Pulumi resources that this installation depends on.
 func Install(ctx *pulumi.Context,
 	sshIPv4 pulumi.StringOutput,
 	privateKeyPem pulumi.StringOutput,
 	serviceAccount *serviceaccount.User,
+	application *application.Application,
 	dnsConfig *dns.Config,
 	googleConfig *google.Config,
 	dependsOn []pulumi.Resource,
 ) (*vault.Data, *pulumi.AnyOutput, pulumi.Resource, error) {
-	vaultData, vdErr := createResources(ctx, serviceAccount, googleConfig)
+	vaultData, vdErr := createResources(ctx, serviceAccount, application, googleConfig)
 	if vdErr != nil {
 		return nil, nil, nil, vdErr
 	}
@@ -46,7 +50,7 @@ func Install(ctx *pulumi.Context,
 		ctx,
 		sshIPv4,
 		privateKeyPem,
-		vaultData.Bucket.ID(),
+		vaultData.GCSBucket.ID(),
 		dnsConfig,
 		pulumi.DependsOn(append([]pulumi.Resource{vaultInstall}, dependsOn...)),
 	)

@@ -124,6 +124,7 @@ func main() {
 			instance.SSHIPv4,
 			sshKey.PrivateKeyPem,
 			serviceAccount,
+			scwApplication,
 			dnsConfig,
 			googleConfig,
 			dependsOn,
@@ -237,7 +238,7 @@ func exportPulumiOutputs(
 		return map[string]any{
 			"storage": map[string]any{
 				"type":   "gcs",
-				"bucket": vaultData.Bucket.ID(),
+				"bucket": vaultData.GCSBucket.ID(),
 			},
 			"address": instanceData.Address,
 			"keys": pulumi.ToSecret(map[string]any{

@@ -6,6 +6,7 @@ import (
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/dns"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/google"
 	vaultData "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/vault"
@@ -67,10 +68,21 @@ func installer(
 		return pulumi.DependsOn([]pulumi.Resource{cmd})
 	})
 
-	vaultConfig, _ := vaultData.Bucket.ID().ApplyT(func(bucket string) string {
+	vaultConfig, _ := pulumi.All(vaultData.GCSBucket.ID().ToStringOutput(), vaultData.ScalewayBucket.Name, vaultData.Application.Key.AccessKey, vaultData.Application.Key.SecretKey).ApplyT(func(args []any) string {
+		gcsBucket, _ := args[0].(string)
+		scalewayBucket, _ := args[1].(string)
+		accessKey, _ := args[2].(string)
+		secretKey, _ := args[3].(string)
+
 		tpl, _ := template.Render("./assets/vault/config.hcl.j2", map[string]any{
-			"gcp":    googleConfig,
-			"bucket": bucket,
+			"gcp":       googleConfig,
+			"gcsBucket": gcsBucket,
+			"scaleway": map[string]string{
+				"bucket":    scalewayBucket,
+				"region":    config.ScalewayDefaultRegion,
+				"accessKey": accessKey,
+				"secretKey": secretKey,
+			},
 		})
 		return tpl
 	}).(pulumi.StringOutput)
