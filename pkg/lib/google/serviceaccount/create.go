@@ -5,7 +5,6 @@ import (
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/lib/google/iam/role"
 	kmsIam "github.com/muhlba91/pulumi-shared-library/pkg/lib/google/kms/iam"
-	gcsIam "github.com/muhlba91/pulumi-shared-library/pkg/lib/google/storage/iam"
 	gmodel "github.com/muhlba91/pulumi-shared-library/pkg/model/google/iam/serviceaccount"
 	slServiceAccount "github.com/muhlba91/pulumi-shared-library/pkg/util/google/iam/serviceaccount"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -49,17 +48,6 @@ func Create(ctx *pulumi.Context, googleConfig *google.Config, dnsConfig *dns.Con
 			KeyRingID: keyringID,
 			Member:    fmt.Sprintf("serviceAccount:%s", email),
 			Role:      "roles/cloudkms.viewer",
-		})
-
-		_, _ = gcsIam.CreateIAMMember(ctx, &gcsIam.MemberOptions{
-			BucketID: config.BackupBucketID,
-			Member:   fmt.Sprintf("serviceAccount:%s", email),
-			Role:     "roles/storage.objectAdmin",
-		})
-		_, _ = gcsIam.CreateIAMMember(ctx, &gcsIam.MemberOptions{
-			BucketID: config.BackupBucketID,
-			Member:   fmt.Sprintf("serviceAccount:%s", email),
-			Role:     "roles/storage.legacyBucketReader",
 		})
 
 		_, _ = role.CreateMember(ctx, fmt.Sprintf("%s-dns-admin", email), &role.MemberOptions{

@@ -66,7 +66,8 @@ func Create(
 	primaryIPv4, pv4Err := primaryip.Create(ctx, config.GlobalName, &primaryip.CreateOptions{
 		Name:       fmt.Sprintf("%s-%s", config.GlobalName, config.Environment),
 		IPType:     "ipv4",
-		Datacenter: dc,
+		Location:   *serverConfig.Location,
+		Datacenter: &dc,
 		AutoDelete: pulumi.Bool(false),
 		Labels:     config.CommonLabels(),
 	})
@@ -76,7 +77,8 @@ func Create(
 	primaryIPv6, pv6Err := primaryip.Create(ctx, config.GlobalName, &primaryip.CreateOptions{
 		Name:       fmt.Sprintf("%s-%s", config.GlobalName, config.Environment),
 		IPType:     "ipv6",
-		Datacenter: dc,
+		Location:   *serverConfig.Location,
+		Datacenter: &dc,
 		AutoDelete: pulumi.Bool(false),
 		Labels:     config.CommonLabels(),
 	})
