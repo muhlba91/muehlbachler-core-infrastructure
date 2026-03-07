@@ -46,6 +46,10 @@ config:
         description: Allow incoming Wireguard (wg2) traffic
         port: 65201
         protocol: udp
+      wireguard-wg4:
+        description: Allow incoming Wireguard (wg4) traffic
+        port: 65401
+        protocol: udp
     dnsSuffix: de.hetzner.muehlbachler.io
   muehlbachler-core-infrastructure:oidc:
     discoveryUrl: https://muehlbachler-mhvy5g.zitadel.cloud
@@ -72,6 +76,7 @@ config:
       - 10.254.1.0/30
       - 10.254.2.0/30
       - 10.254.3.0/30
+      - 10.254.4.0/30
     neighbors:
       - remoteAsn: 65111
         address: fd80::254:1:1
@@ -85,6 +90,10 @@ config:
         address: fd80::254:3:1
         interface: wg3
         interfaceName: wg3
+      - remoteAsn: 65441
+        address: fd80::254:4:1
+        interface: wg4
+        interfaceName: wg4
     interfaceName: wg0
   muehlbachler-core-infrastructure:tailscale:
     authKey:
