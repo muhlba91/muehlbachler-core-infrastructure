@@ -78,23 +78,19 @@ config:
       - 10.254.3.0/30
       - 10.254.4.0/30
     neighbors:
-      - remoteAsn: 65111
-        address: fd80::254:1:1
+      - address: fd80::254:1:1
         interface: wg1
         interfaceName: wg1
         isPublic: false
-      - remoteAsn: 65221
-        address: fd80::254:2:1
+      - address: fd80::254:2:1
         interface: wg2
         interfaceName: wg2
         isPublic: false
-      - remoteAsn: 65331
-        address: fd80::254:3:1
+      - address: fd80::254:3:1
         interface: wg3
         interfaceName: wg3
         isPublic: false
-      - remoteAsn: 65441
-        address: fd80::254:4:1
+      - address: fd80::254:4:1
         interface: wg4
         interfaceName: wg4
         isPublic: false

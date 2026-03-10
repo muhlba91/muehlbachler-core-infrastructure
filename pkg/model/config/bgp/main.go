@@ -23,7 +23,7 @@ type NeighborConfig struct {
 	// Address is the BGP neighbor address.
 	Address *string `yaml:"address,omitempty"`
 	// RemoteASN is the BGP neighbor remote autonomous system number.
-	RemoteASN uint32 `yaml:"remoteAsn,omitempty"`
+	RemoteASN *uint32 `yaml:"remoteAsn,omitempty"`
 	// InterfaceName is the name of the interface.
 	InterfaceName *string `yaml:"interfaceName,omitempty"`
 	// IsPublic indicates if the neighbor is a public peer.

@@ -55,7 +55,7 @@ router bgp {{ .bgp.localAsn }}
 {{- if .isPublic }}
   neighbor {{ .address }} peer-group EXTERNAL-PEERS
 {{ else }}
-  neighbor {{ .address }} peer-group EXTERNAL-PEERS
+  neighbor {{ .address }} peer-group INTERNAL-PEERS
 {{- end }}
   ! neighbor {{ .address }} password {{ .password }}
   neighbor {{ .address }} interface {{ .interface }}
@@ -70,14 +70,15 @@ router bgp {{ .bgp.localAsn }}
     neighbor EXTERNAL-PEERS capability extended-next-hop
     neighbor EXTERNAL-PEERS activate
     neighbor EXTERNAL-PEERS next-hop-self
-    neighbor EXTERNAL-PEERS route-map ALLOW-ALL out
-    neighbor EXTERNAL-PEERS route-map ALLOW-ALL in
+    neighbor EXTERNAL-PEERS route-map PUBLIC-NETWORKS out
+    neighbor EXTERNAL-PEERS route-map DENY-ALL in
 
     neighbor INTERNAL-PEERS capability extended-next-hop
     neighbor INTERNAL-PEERS activate
     neighbor INTERNAL-PEERS next-hop-self
-    neighbor EXTERNAL-PEERS route-map ALLOW-ALL out
-    neighbor EXTERNAL-PEERS route-map ALLOW-ALL in
+    neighbor INTERNAL-PEERS route-reflector-client
+    neighbor INTERNAL-PEERS route-map ALLOW-ALL out
+    neighbor INTERNAL-PEERS route-map ALLOW-ALL in
   exit-address-family
 
  ! IPv6 configuration
@@ -88,12 +89,13 @@ router bgp {{ .bgp.localAsn }}
 
     neighbor EXTERNAL-PEERS activate
     neighbor EXTERNAL-PEERS next-hop-self
-    neighbor EXTERNAL-PEERS route-map ALLOW-ALL out
-    neighbor EXTERNAL-PEERS route-map ALLOW-ALL in
+    neighbor EXTERNAL-PEERS route-map PUBLIC-NETWORKS out
+    neighbor EXTERNAL-PEERS route-map DENY-ALL in
 
     neighbor INTERNAL-PEERS activate
     neighbor INTERNAL-PEERS next-hop-self
-    neighbor EXTERNAL-PEERS route-map ALLOW-ALL out
-    neighbor EXTERNAL-PEERS route-map ALLOW-ALL in
+    neighbor INTERNAL-PEERS route-reflector-client
+    neighbor INTERNAL-PEERS route-map ALLOW-ALL out
+    neighbor INTERNAL-PEERS route-map ALLOW-ALL in
   exit-address-family
 exit
