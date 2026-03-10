@@ -14,6 +14,8 @@ type Config struct {
 	AdvertisedIPv4Networks []string `yaml:"advertisedIPv4Networks,omitempty"`
 	// AdvertisedIPv6Networks are the advertised IPv6 networks.
 	AdvertisedIPv6Networks []string `yaml:"advertisedIPv6Networks,omitempty"`
+	// PublicIPv6Networks are the public IPv6 networks.
+	PublicIPv6Networks []string `yaml:"publicIPv6Networks,omitempty"`
 }
 
 // NeighborConfig defines configuration data for a BGP neighbor.
@@ -24,4 +26,6 @@ type NeighborConfig struct {
 	RemoteASN uint32 `yaml:"remoteAsn,omitempty"`
 	// InterfaceName is the name of the interface.
 	InterfaceName *string `yaml:"interfaceName,omitempty"`
+	// IsPublic indicates if the neighbor is a public peer.
+	IsPublic bool `yaml:"isPublic,omitempty"`
 }

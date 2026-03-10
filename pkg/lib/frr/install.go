@@ -104,6 +104,7 @@ func createConfigs(
 				"asn":       neighbor.RemoteASN,
 				"interface": neighbor.InterfaceName,
 				"password":  neighborPassword,
+				"isPublic":  neighbor.IsPublic,
 			}
 			if n["interface"] == nil || n["interface"] == "" {
 				n["interface"] = bgpConfig.InterfaceName
@@ -118,6 +119,7 @@ func createConfigs(
 				"interface":              bgpConfig.InterfaceName,
 				"advertisedIPv4Networks": bgpConfig.AdvertisedIPv4Networks,
 				"advertisedIPv6Networks": bgpConfig.AdvertisedIPv6Networks,
+				"publicIPv6Networks":     bgpConfig.PublicIPv6Networks,
 				"neighbors":              neighbors,
 			},
 		})

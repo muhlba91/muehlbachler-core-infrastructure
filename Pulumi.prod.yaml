@@ -70,7 +70,7 @@ config:
     entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}, wireguard: {zoneId: muehlbachler-io, domain: vpn.platform.muehlbachler.io}}
   muehlbachler-core-infrastructure:bgp:
     routerId: 10.254.1.1
-    localAsn: 65000
+    localAsn: 201421
     interface: wg0
     advertisedIPv4Networks:
       - 10.254.1.0/30
@@ -82,19 +82,27 @@ config:
         address: fd80::254:1:1
         interface: wg1
         interfaceName: wg1
+        isPublic: false
       - remoteAsn: 65221
         address: fd80::254:2:1
         interface: wg2
         interfaceName: wg2
+        isPublic: false
       - remoteAsn: 65331
         address: fd80::254:3:1
         interface: wg3
         interfaceName: wg3
+        isPublic: false
       - remoteAsn: 65441
         address: fd80::254:4:1
         interface: wg4
         interfaceName: wg4
+        isPublic: false
     interfaceName: wg0
+    advertisedIPv6Networks:
+      - 2001:678:dc0::/48
+    publicIPv6Networks:
+      - 2001:678:dc0::/48
   muehlbachler-core-infrastructure:tailscale:
     authKey:
       secure: v1:jA/QT10wLkNbjLg4:t76dqKbE4c/NQdDbCy17g5UHIdk0NrUcnJpSYgIZhmQpi6eXzgPnsqRDkR3mU+/+9vHcZ3UXmXbE6SCy87y0SD7bo1ZJUNc5yOKDDts=
