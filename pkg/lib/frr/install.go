@@ -97,31 +97,15 @@ func createConfigs(
 		hostname, _ := args[0].(string)
 		neighborPassword, _ := args[1].(string)
 
-		neighbors := []map[string]any{}
-		for _, neighbor := range bgpConfig.Neighbors {
-			n := map[string]any{
-				"address":   neighbor.Address,
-				"asn":       neighbor.RemoteASN,
-				"interface": neighbor.InterfaceName,
-				"password":  neighborPassword,
-				"isPublic":  neighbor.IsPublic,
+		for i := range bgpConfig.Neighbors {
+			neighbor := &bgpConfig.Neighbors[i]
+			if neighbor.Password == nil && !neighbor.IsPublic {
+				neighbor.Password = &neighborPassword
 			}
-			if n["interface"] == nil || n["interface"] == "" {
-				n["interface"] = bgpConfig.InterfaceName
-			}
-			neighbors = append(neighbors, n)
 		}
 		tpl, _ := template.Render("./assets/frr/config/frr.conf.j2", map[string]any{
 			"hostname": hostname,
-			"bgp": map[string]any{
-				"localAsn":               bgpConfig.LocalASN,
-				"routerId":               bgpConfig.RouterID,
-				"interface":              bgpConfig.InterfaceName,
-				"advertisedIPv4Networks": bgpConfig.AdvertisedIPv4Networks,
-				"advertisedIPv6Networks": bgpConfig.AdvertisedIPv6Networks,
-				"publicIPv6Networks":     bgpConfig.PublicIPv6Networks,
-				"neighbors":              neighbors,
-			},
+			"bgp":      bgpConfig,
 		})
 		return tpl
 	}).(pulumi.StringOutput)

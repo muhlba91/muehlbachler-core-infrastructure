@@ -134,13 +134,20 @@ dns:
 bgp:
   routerId: the BGP router identifier
   localAsn: the local ASN
-  interface: the BGP interface (if not specified at the neighbor level)
   advertisedIPv4Networks: a list of IPv4 networks to advertise
   advertisedIPv6Networks: a list of IPv6 networks to advertise
   neighbors: a list of BGP neighbors
-    - remoteAsn: the remote ASN
+    - asn: the ASN (optional due to usage of peer groups)
       address: the neighbor address
-      interface: the BGP interface (optional, overrides the global one)
+      interfaceName: the BGP interface
+      isPublic: whether the neighbor is a public peer
+      password: the BGP neighbor password (optional, will be set automatically for internal peers if not specified)
+  internalNetworks: the internal networks to be advertised
+    ipv4: a list of IPv4 networks to advertise internally
+    ipv6: a list of IPv6 networks to advertise internally
+  publicNetworks: the public networks to be advertised
+    ipv4: a list of IPv4 networks to advertise publicly
+    ipv6: a list of IPv6 networks to advertise publicly
 ```
 
 ### Tailscale

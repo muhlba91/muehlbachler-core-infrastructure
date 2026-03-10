@@ -71,12 +71,6 @@ config:
   muehlbachler-core-infrastructure:bgp:
     routerId: 10.254.1.1
     localAsn: 201421
-    interface: wg0
-    advertisedIPv4Networks:
-      - 10.254.1.0/30
-      - 10.254.2.0/30
-      - 10.254.3.0/30
-      - 10.254.4.0/30
     neighbors:
       - address: fd80::254:1:1
         interface: wg1
@@ -94,11 +88,15 @@ config:
         interface: wg4
         interfaceName: wg4
         isPublic: false
-    interfaceName: wg0
-    advertisedIPv6Networks:
-      - 2001:678:dc0::/48
-    publicIPv6Networks:
-      - 2001:678:dc0::/48
+    internalNetworks:
+      ipv4:
+        - 10.254.1.0/30
+        - 10.254.2.0/30
+        - 10.254.3.0/30
+        - 10.254.4.0/30
+    publicNetworks:
+      ipv6:
+        - 2001:678:dc0::/48
   muehlbachler-core-infrastructure:tailscale:
     authKey:
       secure: v1:jA/QT10wLkNbjLg4:t76dqKbE4c/NQdDbCy17g5UHIdk0NrUcnJpSYgIZhmQpi6eXzgPnsqRDkR3mU+/+9vHcZ3UXmXbE6SCy87y0SD7bo1ZJUNc5yOKDDts=

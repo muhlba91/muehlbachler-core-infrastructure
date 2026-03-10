@@ -5,13 +5,13 @@ log syslog warnings
 
 
 ! black holes
-{{- range .bgp.publicIPv6Networks }}
+{{- range .bgp.PublicNetworks.IPv6 }}
 ipv6 route {{ . }} Null0
 {{- end }}
 
 
 ! prefix lists
-{{- range .bgp.publicIPv6Networks }}
+{{- range .bgp.PublicNetworks.IPv6 }}
 ipv6 prefix-list PUBLIC-IPV6 permit {{ . }}
 {{- end }}
 
@@ -24,16 +24,16 @@ route-map DENY-ALL deny 100
 exit
 
 route-map PUBLIC-NETWORKS permit 100
-{{- if .bgp.publicIPv6Networks }}
+{{- if .bgp.PublicNetworks.IPv6 }}
   match ipv6 address prefix-list PUBLIC-IPV6
 {{- end }}
 exit
 
 
 ! BGP configuration
-router bgp {{ .bgp.localAsn }}
+router bgp {{ .bgp.LocalASN }}
   ! global configuration
-  bgp router-id {{ .bgp.routerId }}
+  bgp router-id {{ .bgp.RouterID }}
   no bgp ebgp-requires-policy
   no bgp default ipv4-unicast
 
@@ -51,19 +51,21 @@ router bgp {{ .bgp.localAsn }}
   neighbor INTERNAL-PEERS soft-reconfiguration inbound
 
   ! neighbors
-{{- range .bgp.neighbors }}
-{{- if .isPublic }}
-  neighbor {{ .address }} peer-group EXTERNAL-PEERS
+{{- range .bgp.Neighbors }}
+{{- if .IsPublic }}
+  neighbor {{ .Address }} peer-group EXTERNAL-PEERS
 {{ else }}
-  neighbor {{ .address }} peer-group INTERNAL-PEERS
+  neighbor {{ .Address }} peer-group INTERNAL-PEERS
 {{- end }}
-  ! neighbor {{ .address }} password {{ .password }}
-  neighbor {{ .address }} interface {{ .interface }}
+{{- if .Password }}
+  ! neighbor {{ .Address }} password {{ .Password }}
+{{- end }}
+  neighbor {{ .Address }} interface {{ .InterfaceName }}
 {{- end }}
 
   ! IPv4 configuration
   address-family ipv4 unicast
-{{- range .bgp.advertisedIPv4Networks }}
+{{- range .bgp.InternalNetworks.IPv4 }}
     network {{ . }}
 {{- end }}
 
@@ -83,7 +85,10 @@ router bgp {{ .bgp.localAsn }}
 
  ! IPv6 configuration
   address-family ipv6 unicast
-{{- range .bgp.advertisedIPv6Networks }}
+{{- range .bgp.InternalNetworks.IPv6 }}
+    network {{ . }}
+{{- end }}
+{{- range .bgp.PublicNetworks.IPv6 }}
     network {{ . }}
 {{- end }}
 
