@@ -58,7 +58,7 @@ func installer(
 	}
 	opts = append(opts, pulumi.DependsOn([]pulumi.Resource{dockerComposeCopy}))
 
-	configResources, configHashes, cErr := createConfigs(ctx, frrData, bgpConfig, conn, opts...)
+	configResources, configHashes, cErr := createConfigs(ctx, frrData, bgpConfig, sshIPv4, conn, opts...)
 	if cErr != nil {
 		return nil, cErr
 	}
@@ -84,27 +84,31 @@ func installer(
 // ctx: Pulumi context.
 // frrData: The FRR configuration data.
 // bgpConfig: The BGP configuration details.
+// publicIP: The public IP address to be used in the configuration.
 // conn: The remote connection arguments.
 // opts: Additional Pulumi resource options.
 func createConfigs(
 	ctx *pulumi.Context,
 	frrData *frr.Data,
 	bgpConfig *bgp.Config,
+	publicIP pulumi.StringOutput,
 	conn *remote.ConnectionArgs,
 	opts ...pulumi.ResourceOption,
 ) ([]pulumi.Output, pulumi.Array, error) {
-	frrConfig, _ := pulumi.All(frrData.Hostname, frrData.NeighborPassword).ApplyT(func(args []any) string {
+	frrConfig, _ := pulumi.All(frrData.Hostname, frrData.NeighborPassword, publicIP).ApplyT(func(args []any) string {
 		hostname, _ := args[0].(string)
 		neighborPassword, _ := args[1].(string)
+		ip, _ := args[2].(string)
 
 		for i := range bgpConfig.Neighbors {
-			neighbor := &bgpConfig.Neighbors[i]
+			neighbor := bgpConfig.Neighbors[i]
 			if neighbor.Password == nil && !neighbor.IsPublic {
 				neighbor.Password = &neighborPassword
 			}
 		}
 		tpl, _ := template.Render("./assets/frr/config/frr.conf.j2", map[string]any{
 			"hostname": hostname,
+			"publicIp": ip,
 			"bgp":      bgpConfig,
 		})
 		return tpl

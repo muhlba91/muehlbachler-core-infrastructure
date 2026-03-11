@@ -69,25 +69,27 @@ config:
     email: postmaster@muehlbachler.io
     entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}, wireguard: {zoneId: muehlbachler-io, domain: vpn.platform.muehlbachler.io}}
   muehlbachler-core-infrastructure:bgp:
-    routerId: 10.254.1.1
     localAsn: 201421
     neighbors:
       - address: fd80::254:1:1
-        interface: wg1
         interfaceName: wg1
         isPublic: false
       - address: fd80::254:2:1
-        interface: wg2
         interfaceName: wg2
         isPublic: false
       - address: fd80::254:3:1
-        interface: wg3
         interfaceName: wg3
         isPublic: false
       - address: fd80::254:4:1
-        interface: wg4
         interfaceName: wg4
         isPublic: false
+      - asn: 212895
+        address: 2a11:6c7:f13:21::1
+        interfaceName: gre-r64-fra2
+        isPublic: true
+        gre:
+          remoteIp: 185.121.24.139
+          tunnelIp: 2a11:6c7:f13:21::2/64
     internalNetworks:
       ipv4:
         - 10.254.1.0/30

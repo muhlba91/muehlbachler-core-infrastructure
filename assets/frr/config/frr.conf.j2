@@ -33,13 +33,12 @@ exit
 ! BGP configuration
 router bgp {{ .bgp.LocalASN }}
   ! global configuration
-  bgp router-id {{ .bgp.RouterID }}
+  bgp router-id {{ .publicIp }}
   no bgp ebgp-requires-policy
   no bgp default ipv4-unicast
 
   ! peer groups
   neighbor EXTERNAL-PEERS peer-group
-  neighbor EXTERNAL-PEERS remote-as external
   neighbor EXTERNAL-PEERS timers 60 180
   neighbor EXTERNAL-PEERS disable-connected-check
   neighbor EXTERNAL-PEERS soft-reconfiguration inbound
@@ -54,13 +53,15 @@ router bgp {{ .bgp.LocalASN }}
 {{- range .bgp.Neighbors }}
 {{- if .IsPublic }}
   neighbor {{ .Address }} peer-group EXTERNAL-PEERS
-{{ else }}
+  neighbor {{ .Address }} remote-as {{ .ASN }}
+{{- else }}
   neighbor {{ .Address }} peer-group INTERNAL-PEERS
 {{- end }}
 {{- if .Password }}
   ! neighbor {{ .Address }} password {{ .Password }}
 {{- end }}
   neighbor {{ .Address }} interface {{ .InterfaceName }}
+  neighbor {{ .Address }} ebgp-multihop 255
 {{- end }}
 
   ! IPv4 configuration
@@ -69,13 +70,11 @@ router bgp {{ .bgp.LocalASN }}
     network {{ . }}
 {{- end }}
 
-    neighbor EXTERNAL-PEERS capability extended-next-hop
     neighbor EXTERNAL-PEERS activate
     neighbor EXTERNAL-PEERS next-hop-self
     neighbor EXTERNAL-PEERS route-map PUBLIC-NETWORKS out
     neighbor EXTERNAL-PEERS route-map DENY-ALL in
 
-    neighbor INTERNAL-PEERS capability extended-next-hop
     neighbor INTERNAL-PEERS activate
     neighbor INTERNAL-PEERS next-hop-self
     neighbor INTERNAL-PEERS route-reflector-client

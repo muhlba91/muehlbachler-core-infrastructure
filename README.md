@@ -132,7 +132,6 @@ dns:
 
 ```yaml
 bgp:
-  routerId: the BGP router identifier
   localAsn: the local ASN
   advertisedIPv4Networks: a list of IPv4 networks to advertise
   advertisedIPv6Networks: a list of IPv6 networks to advertise
@@ -142,6 +141,9 @@ bgp:
       interfaceName: the BGP interface
       isPublic: whether the neighbor is a public peer
       password: the BGP neighbor password (optional, will be set automatically for internal peers if not specified)
+      gre: the GRE tunnel configuration for this neighbor, if applicable
+        remoteIp: the GRE neighbor address
+        tunnelIp: the GRE tunnel IP address
   internalNetworks: the internal networks to be advertised
     ipv4: a list of IPv4 networks to advertise internally
     ipv6: a list of IPv6 networks to advertise internally

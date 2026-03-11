@@ -1,0 +1,11 @@
+---
+network:
+  version: 2
+  tunnels:
+    {{ .Name }}:
+      mode: gre
+      local: {{ .LocalIP }}
+      remote: {{ .RemoteIP }}
+      addresses:
+        - "{{ .TunnelIP }}"
+      mtu: 1472

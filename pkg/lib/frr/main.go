@@ -4,6 +4,7 @@ import (
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/frr/gre"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/bgp"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/network"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/frr"
@@ -27,13 +28,20 @@ func Install(ctx *pulumi.Context,
 	if frrErr != nil {
 		return nil, nil, frrErr
 	}
+
+	greInstall, greErr := gre.Install(ctx, sshIPv4, privateKeyPem, bgpConfig, dependsOn)
+	if greErr != nil {
+		return nil, nil, greErr
+	}
+	pulumiResources := append([]pulumi.Resource{greInstall}, dependsOn...)
+
 	frrInstall, frrErr := installer(
 		ctx,
 		sshIPv4,
 		privateKeyPem,
 		frrData,
 		bgpConfig,
-		pulumi.DependsOn(dependsOn),
+		pulumi.DependsOn(pulumiResources),
 	)
 	if frrErr != nil {
 		return nil, nil, frrErr

@@ -1,0 +1,35 @@
+#!/bin/sh
+
+### kernel module ###
+modprobe ip_gre
+echo "ip_gre" > /etc/modules-load.d/gre.conf
+
+### netplan ###
+# cleanup old configurations
+tunnels="{{ .tunnels }}"
+for file in /etc/netplan/*.yaml; do
+  [ -e "$file" ] || continue
+
+  filename=$(basename "$file")
+  short_name="${filename%.yaml}"
+
+  case "$filename" in
+    [0-9]*)
+      echo "skipping system config: $filename"
+      continue
+      ;;
+  esac
+  case " $tunnels " in
+    *" $short_name "*)
+      echo "keeping active tunnel: $filename"
+      ;;
+    *)
+      echo "found orphaned config: $filename. removing..."
+      rm "$file"
+      ;;
+  esac
+done
+
+# set permissions and apply
+chmod 0600 /etc/netplan/gre-*.yaml
+netplan apply
