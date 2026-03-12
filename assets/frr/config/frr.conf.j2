@@ -6,7 +6,7 @@ log syslog warnings
 
 ! black holes
 {{- range .bgp.PublicNetworks.IPv6 }}
-ipv6 route {{ . }} Null0
+ipv6 route {{ . }} blackhole 254
 {{- end }}
 
 
@@ -40,12 +40,14 @@ router bgp {{ .bgp.LocalASN }}
   ! peer groups
   neighbor EXTERNAL-PEERS peer-group
   neighbor EXTERNAL-PEERS timers 60 180
+  neighbor EXTERNAL-PEERS ebgp-multihop 255
   neighbor EXTERNAL-PEERS disable-connected-check
   neighbor EXTERNAL-PEERS soft-reconfiguration inbound
 
   neighbor INTERNAL-PEERS peer-group
   neighbor INTERNAL-PEERS remote-as internal
   neighbor INTERNAL-PEERS timers 60 180
+  neighbor INTERNAL-PEERS ebgp-multihop 255
   neighbor INTERNAL-PEERS disable-connected-check
   neighbor INTERNAL-PEERS soft-reconfiguration inbound
 
@@ -56,12 +58,11 @@ router bgp {{ .bgp.LocalASN }}
   neighbor {{ .Address }} remote-as {{ .ASN }}
 {{- else }}
   neighbor {{ .Address }} peer-group INTERNAL-PEERS
+  neighbor {{ .Address }} interface {{ .InterfaceName }}
 {{- end }}
 {{- if .Password }}
   ! neighbor {{ .Address }} password {{ .Password }}
 {{- end }}
-  neighbor {{ .Address }} interface {{ .InterfaceName }}
-  neighbor {{ .Address }} ebgp-multihop 255
 {{- end }}
 
   ! IPv4 configuration
@@ -70,13 +71,15 @@ router bgp {{ .bgp.LocalASN }}
     network {{ . }}
 {{- end }}
 
-    neighbor EXTERNAL-PEERS activate
-    neighbor EXTERNAL-PEERS next-hop-self
-    neighbor EXTERNAL-PEERS route-map PUBLIC-NETWORKS out
-    neighbor EXTERNAL-PEERS route-map DENY-ALL in
+    ! neighbor EXTERNAL-PEERS activate
+    ! neighbor EXTERNAL-PEERS next-hop-self force
+    ! neighbor EXTERNAL-PEERS nexthop-local unchanged
+    ! neighbor EXTERNAL-PEERS attribute-unchanged next-hop
+    ! neighbor EXTERNAL-PEERS route-map PUBLIC-NETWORKS out
+    ! neighbor EXTERNAL-PEERS route-map DENY-ALL in
 
     neighbor INTERNAL-PEERS activate
-    neighbor INTERNAL-PEERS next-hop-self
+    neighbor INTERNAL-PEERS next-hop-self force
     neighbor INTERNAL-PEERS route-reflector-client
     neighbor INTERNAL-PEERS route-map ALLOW-ALL out
     neighbor INTERNAL-PEERS route-map ALLOW-ALL in
@@ -92,12 +95,14 @@ router bgp {{ .bgp.LocalASN }}
 {{- end }}
 
     neighbor EXTERNAL-PEERS activate
-    neighbor EXTERNAL-PEERS next-hop-self
+    neighbor EXTERNAL-PEERS next-hop-self force
+    neighbor EXTERNAL-PEERS nexthop-local unchanged
+    neighbor EXTERNAL-PEERS attribute-unchanged next-hop
     neighbor EXTERNAL-PEERS route-map PUBLIC-NETWORKS out
     neighbor EXTERNAL-PEERS route-map DENY-ALL in
 
     neighbor INTERNAL-PEERS activate
-    neighbor INTERNAL-PEERS next-hop-self
+    neighbor INTERNAL-PEERS next-hop-self force
     neighbor INTERNAL-PEERS route-reflector-client
     neighbor INTERNAL-PEERS route-map ALLOW-ALL out
     neighbor INTERNAL-PEERS route-map ALLOW-ALL in
