@@ -5,7 +5,7 @@ type Config struct {
 	// LocalASN is the BGP local autonomous system number.
 	LocalASN uint32 `yaml:"localAsn,omitempty"`
 	// Neighbors are the BGP neighbors.
-	Neighbors []*NeighborConfig `yaml:"neighbors,omitempty"`
+	Neighbors map[string]*NeighborConfig `yaml:"neighbors,omitempty"`
 	// InternalNetworks are the internal networks to be advertised.
 	InternalNetworks *AdvertisedNetworksConfig `yaml:"internalNetworks,omitempty"`
 	// PublicNetworks are the public networks to be advertised.

@@ -2,8 +2,11 @@ package gre
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 
+	"github.com/muhlba91/pulumi-shared-library/pkg/util/defaults"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/template"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
@@ -34,10 +37,18 @@ func installer(
 
 	opts := []pulumi.ResourceOption{dependsOn}
 
+	opts, prepErr := install.Prepare(ctx, "frr/gre", conn, opts...)
+	if prepErr != nil {
+		return nil, prepErr
+	}
+
 	tunnels := []string{}
 	configResources := []pulumi.Output{}
 	configHashes := pulumi.Array{}
-	for _, neighbor := range bgpConfig.Neighbors {
+	keys := slices.Collect(maps.Keys(bgpConfig.Neighbors))
+	slices.Sort(keys)
+	for _, key := range keys {
+		neighbor := bgpConfig.Neighbors[key]
 		if neighbor.GRE == nil {
 			continue
 		}
@@ -79,11 +90,13 @@ func createConfig(
 			LocalIP  string
 			RemoteIP string
 			TunnelIP string
+			Type     string
 		}{
 			Name:     *neighbor.InterfaceName,
 			LocalIP:  localIP,
 			RemoteIP: *neighbor.GRE.RemoteIP,
 			TunnelIP: *neighbor.GRE.TunnelIP,
+			Type:     defaults.GetOrDefault(neighbor.GRE.Type, "gre"),
 		}
 
 		config, _ := template.Render("./assets/frr/gre/config/netplan.yml.j2", netplanData)

@@ -135,8 +135,9 @@ bgp:
   localAsn: the local ASN
   advertisedIPv4Networks: a list of IPv4 networks to advertise
   advertisedIPv6Networks: a list of IPv6 networks to advertise
-  neighbors: a list of BGP neighbors
-    - asn: the ASN (optional due to usage of peer groups)
+  neighbors: a map of BGP neighbors
+    <name>:
+      asn: the ASN (optional due to usage of peer groups)
       address: the neighbor address
       interfaceName: the BGP interface
       isPublic: whether the neighbor is a public peer
@@ -144,6 +145,7 @@ bgp:
       gre: the GRE tunnel configuration for this neighbor, if applicable
         remoteIp: the GRE neighbor address
         tunnelIp: the GRE tunnel IP address
+        type: the type of the GRE network interface (optional, default: "gre")
   internalNetworks: the internal networks to be advertised
     ipv4: a list of IPv4 networks to advertise internally
     ipv6: a list of IPv6 networks to advertise internally

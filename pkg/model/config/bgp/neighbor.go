@@ -22,4 +22,6 @@ type GreConfig struct {
 	RemoteIP *string `yaml:"remoteIp,omitempty"`
 	// TunnelIP is the GRE tunnel IP address.
 	TunnelIP *string `yaml:"tunnelIp,omitempty"`
+	// Type is the type of the GRE network interface.
+	Type *string `yaml:"type,omitempty"`
 }

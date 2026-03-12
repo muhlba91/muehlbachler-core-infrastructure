@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
+	"github.com/muhlba91/pulumi-shared-library/pkg/util/sanitize"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/template"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -42,7 +43,7 @@ func Cron(
 	backupFileCopy := backupFileHash.ApplyT(func(_ string) pulumi.ResourceOption {
 		cmd, _ := remote.NewCopyToRemote(
 			ctx,
-			fmt.Sprintf("remote-copy-%s-backup", name),
+			fmt.Sprintf("remote-copy-%s-backup", sanitize.Text(name)),
 			&remote.CopyToRemoteArgs{
 				Source:     pulumi.NewFileAsset(fmt.Sprintf("./outputs/%s_backup", name)),
 				RemotePath: pulumi.Sprintf("/bin/%s-backup", name),
@@ -59,7 +60,7 @@ func Cron(
 	}
 	cronFileCopy, cfErr := remote.NewCopyToRemote(
 		ctx,
-		fmt.Sprintf("remote-copy-%s-cron", name),
+		fmt.Sprintf("remote-copy-%s-cron", sanitize.Text(name)),
 		&remote.CopyToRemoteArgs{
 			Source:     pulumi.NewFileAsset(fmt.Sprintf("./assets/%s/cron/cron", name)),
 			RemotePath: pulumi.String(fmt.Sprintf("/etc/cron.d/%s", name)),
@@ -78,7 +79,7 @@ func Cron(
 	}
 	cronInstall, ciErr := remote.NewCommand(
 		ctx,
-		fmt.Sprintf("remote-command-install-%s-cron", name),
+		fmt.Sprintf("remote-command-install-%s-cron", sanitize.Text(name)),
 		&remote.CommandArgs{
 			Create:     pulumi.StringPtr(cronInstallFn),
 			Update:     pulumi.StringPtr(cronInstallFn),

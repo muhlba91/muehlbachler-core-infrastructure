@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
+	"github.com/muhlba91/pulumi-shared-library/pkg/util/sanitize"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
@@ -23,10 +24,14 @@ func Prepare(
 	if pErr != nil {
 		return nil, pErr
 	}
-	prepare, prepErr := remote.NewCommand(ctx, fmt.Sprintf("remote-command-prepare-%s", name), &remote.CommandArgs{
-		Create:     pulumi.StringPtr(prepareFn),
-		Connection: conn,
-	}, opts...)
+	prepare, prepErr := remote.NewCommand(
+		ctx,
+		fmt.Sprintf("remote-command-prepare-%s", sanitize.Text(name)),
+		&remote.CommandArgs{
+			Create:     pulumi.StringPtr(prepareFn),
+			Connection: conn,
+		},
+		opts...)
 	if prepErr != nil {
 		return nil, prepErr
 	}

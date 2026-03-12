@@ -100,8 +100,8 @@ func createConfigs(
 		neighborPassword, _ := args[1].(string)
 		ip, _ := args[2].(string)
 
-		for i := range bgpConfig.Neighbors {
-			neighbor := bgpConfig.Neighbors[i]
+		for name := range bgpConfig.Neighbors {
+			neighbor := bgpConfig.Neighbors[name]
 			if neighbor.Password == nil && !neighbor.IsPublic {
 				neighbor.Password = &neighborPassword
 			}

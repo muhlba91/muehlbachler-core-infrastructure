@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
+	"github.com/muhlba91/pulumi-shared-library/pkg/util/sanitize"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
@@ -25,7 +26,7 @@ func SystemDService(
 	}
 	systemdServiceCopy, tyErr := remote.NewCopyToRemote(
 		ctx,
-		fmt.Sprintf("remote-copy-%s-service", name),
+		fmt.Sprintf("remote-copy-%s-service", sanitize.Text(name)),
 		&remote.CopyToRemoteArgs{
 			Source:     pulumi.NewFileAsset(fmt.Sprintf("./assets/%s/%s.service", name, name)),
 			RemotePath: pulumi.Sprintf("/etc/systemd/system/%s.service", name),

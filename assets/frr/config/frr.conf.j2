@@ -52,16 +52,18 @@ router bgp {{ .bgp.LocalASN }}
   neighbor INTERNAL-PEERS soft-reconfiguration inbound
 
   ! neighbors
-{{- range .bgp.Neighbors }}
-{{- if .IsPublic }}
-  neighbor {{ .Address }} peer-group EXTERNAL-PEERS
-  neighbor {{ .Address }} remote-as {{ .ASN }}
+{{- range $name, $neighbor := .bgp.Neighbors }}
+  ! name: {{ $name }}
+  neighbor {{ $neighbor.Address }} description {{ $name }}
+{{- if $neighbor.IsPublic }}
+  neighbor {{ $neighbor.Address }} peer-group EXTERNAL-PEERS
+  neighbor {{ $neighbor.Address }} remote-as {{ $neighbor.ASN }}
 {{- else }}
-  neighbor {{ .Address }} peer-group INTERNAL-PEERS
-  neighbor {{ .Address }} interface {{ .InterfaceName }}
+  neighbor {{ $neighbor.Address }} peer-group INTERNAL-PEERS
+  neighbor {{ $neighbor.Address }} interface {{ $neighbor.InterfaceName }}
 {{- end }}
-{{- if .Password }}
-  ! neighbor {{ .Address }} password {{ .Password }}
+{{- if $neighbor.Password }}
+  ! neighbor {{ $neighbor.Address }} password {{ $neighbor.Password }}
 {{- end }}
 {{- end }}
 

@@ -70,26 +70,6 @@ config:
     entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}, wireguard: {zoneId: muehlbachler-io, domain: vpn.platform.muehlbachler.io}}
   muehlbachler-core-infrastructure:bgp:
     localAsn: 201421
-    neighbors:
-      - address: fd80::254:1:1
-        interfaceName: wg1
-        isPublic: false
-      - address: fd80::254:2:1
-        interfaceName: wg2
-        isPublic: false
-      - address: fd80::254:3:1
-        interfaceName: wg3
-        isPublic: false
-      - address: fd80::254:4:1
-        interfaceName: wg4
-        isPublic: false
-      - asn: 212895
-        address: 2a11:6c7:f13:21::1
-        interfaceName: gre-r64-fra2
-        isPublic: true
-        gre:
-          remoteIp: 185.121.24.139
-          tunnelIp: 2a11:6c7:f13:21::2/64
     internalNetworks:
       ipv4:
         - 10.254.1.0/30
@@ -99,6 +79,40 @@ config:
     publicNetworks:
       ipv6:
         - 2001:678:dc0::/48
+    neighbors:
+      at-vie-001:
+        address: fd80::254:1:1
+        interfaceName: wg1
+        isPublic: false
+      de-muc-001:
+        address: fd80::254:2:1
+        interfaceName: wg2
+        isPublic: false
+      de-hetzner-001:
+        address: fd80::254:3:1
+        interfaceName: wg3
+        isPublic: false
+      ca-ovh-001:
+        address: fd80::254:4:1
+        interfaceName: wg4
+        isPublic: false
+      de-route64-fra2-001:
+        asn: 212895
+        address: 2a11:6c7:f13:21::1
+        interfaceName: gre-r64-fra2
+        isPublic: true
+        gre:
+          remoteIp: 185.121.24.139
+          tunnelIp: 2a11:6c7:f13:21::2/64
+      de-bgpexchange-fra-001:
+        asn: 24381
+        address: 2a0e:8f01:1000:24::1
+        interfaceName: gre-bgpxch-fra
+        isPublic: true
+        gre:
+          remoteIp: 193.148.249.248
+          tunnelIp: 2a0e:8f01:1000:24::1f4/64
+          type: gretap
   muehlbachler-core-infrastructure:tailscale:
     authKey:
       secure: v1:jA/QT10wLkNbjLg4:t76dqKbE4c/NQdDbCy17g5UHIdk0NrUcnJpSYgIZhmQpi6eXzgPnsqRDkR3mU+/+9vHcZ3UXmXbE6SCy87y0SD7bo1ZJUNc5yOKDDts=
