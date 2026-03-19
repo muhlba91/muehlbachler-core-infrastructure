@@ -8,7 +8,7 @@ require (
 	github.com/pulumi/pulumi-hcloud/sdk v1.32.1
 	github.com/pulumi/pulumi-tls/sdk/v5 v5.3.0
 	github.com/pulumi/pulumi-vault/sdk/v7 v7.7.0
-	github.com/pulumi/pulumi/sdk/v3 v3.226.0
+	github.com/pulumi/pulumi/sdk/v3 v3.227.0
 	github.com/pulumiverse/pulumi-scaleway/sdk v1.44.1
 	github.com/rs/zerolog v1.34.0
 	gopkg.in/yaml.v3 v3.0.1
