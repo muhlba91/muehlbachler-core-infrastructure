@@ -1,7 +1,7 @@
 ---
 services:
   vault:
-    image: hashicorp/vault:1.21.4
+    image: hashicorp/vault:2.0.0
     container_name: vault
     command: server
     restart: unless-stopped
@@ -25,6 +25,8 @@ services:
       vault:
       proxy:
     environment:
+      # FIXME: remove once https://github.com/hashicorp/vault/issues/31919 is released (next release)
+      - SKIP_SETCAP=true
       - VAULT_ADDR=http://127.0.0.1:8200
       - GOOGLE_APPLICATION_CREDENTIALS=/vault/credentials.json
     cap_add:
