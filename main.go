@@ -199,7 +199,8 @@ func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInst
 	vaultYaml, _ := vaultInstanceData.ApplyT(func(data any) string {
 		b, _ := yaml.Marshal(map[string]any{
 			"address": data.(*vaultModel.Instance).Address,
-			"keys":    data.(*vaultModel.Instance).Keys,
+			//nolint:goconst // keys is not a constant
+			"keys": data.(*vaultModel.Instance).Keys,
 		})
 		return string(b)
 	}).(pulumi.StringOutput)
