@@ -3,13 +3,13 @@ module github.com/muhlba91/muehlbachler-core-infrastructure
 go 1.26.0
 
 require (
-	github.com/muhlba91/pulumi-shared-library v0.0.0-20260513093156-13fb5ea885b4
+	github.com/muhlba91/pulumi-shared-library v0.0.0-20260514084035-f6ed48911d90
 	github.com/pulumi/pulumi-command/sdk v1.2.1
 	github.com/pulumi/pulumi-hcloud/sdk v1.35.0
-	github.com/pulumi/pulumi-tls/sdk/v5 v5.3.1
+	github.com/pulumi/pulumi-tls/sdk/v5 v5.4.0
 	github.com/pulumi/pulumi-vault/sdk/v7 v7.8.0
 	github.com/pulumi/pulumi/sdk/v3 v3.238.0
-	github.com/pulumiverse/pulumi-scaleway/sdk v1.48.1
+	github.com/pulumiverse/pulumi-scaleway/sdk v1.49.0
 	github.com/rs/zerolog v1.35.1
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -84,7 +84,7 @@ require (
 	github.com/pulumi/esc v0.23.0 // indirect
 	github.com/pulumi/pulumi-gcp/sdk/v9 v9.23.0 // indirect
 	github.com/pulumi/pulumi-google-native/sdk v0.32.0 // indirect
-	github.com/pulumi/pulumi-random/sdk/v4 v4.19.2 // indirect
+	github.com/pulumi/pulumi-random/sdk/v4 v4.20.0 // indirect
 	github.com/pulumiverse/pulumi-time/sdk v0.1.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
