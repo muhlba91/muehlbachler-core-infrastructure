@@ -42,10 +42,6 @@ config:
         description: Allow incoming Wireguard (wg3) traffic
         port: 65301
         protocol: udp
-      wireguard-wg2:
-        description: Allow incoming Wireguard (wg2) traffic
-        port: 65201
-        protocol: udp
       wireguard-wg4:
         description: Allow incoming Wireguard (wg4) traffic
         port: 65401
@@ -73,7 +69,6 @@ config:
     internalNetworks:
       ipv4:
         - 10.254.1.0/30
-        - 10.254.2.0/30
         - 10.254.3.0/30
         - 10.254.4.0/30
       ipv6:
@@ -85,10 +80,6 @@ config:
       at-vie-001:
         address: fd80::254:1:1
         interfaceName: wg1
-        isPublic: false
-      de-muc-001:
-        address: fd80::254:2:1
-        interfaceName: wg2
         isPublic: false
       de-hetzner-001:
         address: fd80::254:3:1
