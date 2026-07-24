@@ -3,7 +3,7 @@ module github.com/muhlba91/muehlbachler-core-infrastructure
 go 1.26.0
 
 require (
-	github.com/muhlba91/pulumi-shared-library v0.0.0-20260723170827-0fd5ec0ee575
+	github.com/muhlba91/pulumi-shared-library v0.0.0-20260724022716-ecf82de48a64
 	github.com/pulumi/pulumi-command/sdk v1.2.1
 	github.com/pulumi/pulumi-hcloud/sdk v1.39.1
 	github.com/pulumi/pulumi-tls/sdk/v5 v5.5.1
