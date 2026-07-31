@@ -2,8 +2,8 @@ package bgp
 
 // NeighborConfig defines configuration data for a BGP neighbor.
 type NeighborConfig struct {
-	// Address is the BGP neighbor address.
-	Address *string `yaml:"address,omitempty"`
+	// Addresses is the list of BGP neighbor addresses.
+	Addresses []string `yaml:"addresses,omitempty"`
 	// ASN is the BGP neighbor autonomous system number.
 	ASN *uint32 `yaml:"asn,omitempty"`
 	// InterfaceName is the name of the interface.

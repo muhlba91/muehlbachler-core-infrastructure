@@ -54,16 +54,18 @@ router bgp {{ .bgp.LocalASN }}
   ! neighbors
 {{- range $name, $neighbor := .bgp.Neighbors }}
   ! name: {{ $name }}
-  neighbor {{ $neighbor.Address }} description {{ $name }}
+{{- range $i, $addr := $neighbor.Addresses }}
 {{- if $neighbor.IsPublic }}
-  neighbor {{ $neighbor.Address }} peer-group EXTERNAL-PEERS
-  neighbor {{ $neighbor.Address }} remote-as {{ $neighbor.ASN }}
+  neighbor {{ $addr }} peer-group EXTERNAL-PEERS
+  neighbor {{ $addr }} remote-as {{ $neighbor.ASN }}
 {{- else }}
-  neighbor {{ $neighbor.Address }} peer-group INTERNAL-PEERS
-  neighbor {{ $neighbor.Address }} interface {{ $neighbor.InterfaceName }}
+  neighbor {{ $addr }} peer-group INTERNAL-PEERS
+  neighbor {{ $addr }} interface {{ $neighbor.InterfaceName }}
 {{- end }}
 {{- if $neighbor.Password }}
-  ! neighbor {{ $neighbor.Address }} password {{ $neighbor.Password }}
+  ! neighbor {{ $addr }} password {{ $neighbor.Password }}
+{{- end }}
+  neighbor {{ $addr }} description {{ $name }}-{{ $i }}
 {{- end }}
 {{- end }}
 
