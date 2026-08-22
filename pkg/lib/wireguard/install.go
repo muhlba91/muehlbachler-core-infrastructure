@@ -147,9 +147,7 @@ func createConfigs(
 		return pulumi.DependsOn([]pulumi.Resource{cmd})
 	})
 
-	return []pulumi.Output{
-			wireguardConfigCopy,
-		}, pulumi.Array{
-			wireguardConfigHash,
-		}
+	return []pulumi.Output{wireguardConfigCopy}, pulumi.Array{
+		wireguardConfigHash,
+	}
 }

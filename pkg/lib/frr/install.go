@@ -156,13 +156,9 @@ func createConfigs(
 		return pulumi.DependsOn([]pulumi.Resource{cmd})
 	})
 
-	return []pulumi.Output{
-			frrConfigCopy,
-			vtyshConfigCopy,
-			daemonsCopy,
-		}, pulumi.Array{
-			frrConfigHash,
-			pulumi.String(*vtyshConfigHash),
-			pulumi.String(*daemonsHash),
-		}, nil
+	return []pulumi.Output{frrConfigCopy, vtyshConfigCopy, daemonsCopy}, pulumi.Array{
+		frrConfigHash,
+		pulumi.String(*vtyshConfigHash),
+		pulumi.String(*daemonsHash),
+	}, nil
 }
