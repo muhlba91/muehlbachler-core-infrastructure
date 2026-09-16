@@ -21,6 +21,7 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/google/dns"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/google/serviceaccount"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/hetzner/server"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/journal"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/scaleway"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/scaleway/application"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/tailscale"
@@ -62,6 +63,12 @@ func main() {
 		// dns
 		dnsEntries := dns.Create(ctx, dnsConfig, instance.PublicIPv4, instance.PublicIPv6)
 		dependsOn = append(dependsOn, dnsEntries...)
+
+		// journal
+		jErr := journal.Install(ctx, instance.SSHIPv4, sshKey.PrivateKeyPem, pulumi.DependsOn(dependsOn))
+		if jErr != nil {
+			return jErr
+		}
 
 		// docker
 		dockerInstall, doErr := docker.Install(ctx, instance.SSHIPv4, sshKey.PrivateKeyPem, pulumi.DependsOn(dependsOn))
