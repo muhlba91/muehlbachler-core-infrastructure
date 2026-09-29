@@ -50,6 +50,7 @@ router bgp {{ .bgp.LocalASN }}
   neighbor INTERNAL-PEERS ebgp-multihop 255
   neighbor INTERNAL-PEERS disable-connected-check
   neighbor INTERNAL-PEERS soft-reconfiguration inbound
+  neighbor INTERNAL-PEERS bfd
 
   ! neighbors
 {{- range $name, $neighbor := .bgp.Neighbors }}
