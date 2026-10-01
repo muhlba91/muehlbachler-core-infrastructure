@@ -9,6 +9,7 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/bgp"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/frr"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
 )
 
 // Install FRR on the remote server via SSH.
@@ -77,7 +78,7 @@ func installer(
 		Update:     pulumi.StringPtr(installFn),
 		Triggers:   append(configHashes, pulumi.String(*dockerComposeHash), pulumi.String(*systemdServiceHash)),
 		Connection: conn,
-	}, append(opts, install.CollectResourceOptions(configResources)...)...)
+	}, append(opts, remotefile.DependsOnAll(configResources...))...)
 }
 
 // createConfigs generates the FRR configuration files and uploads them to the remote server.
@@ -94,7 +95,7 @@ func createConfigs(
 	publicIP pulumi.StringOutput,
 	conn *remote.ConnectionArgs,
 	opts ...pulumi.ResourceOption,
-) ([]pulumi.Output, pulumi.Array, error) {
+) ([]pulumi.ResourceOutput, pulumi.Array, error) {
 	frrConfig, _ := pulumi.All(frrData.Hostname, frrData.NeighborPassword, publicIP).ApplyT(func(args []any) string {
 		hostname, _ := args[0].(string)
 		neighborPassword, _ := args[1].(string)
@@ -113,50 +114,49 @@ func createConfigs(
 		})
 		return tpl
 	}).(pulumi.StringOutput)
-	frrConfigHash, _ := file.WritePulumi("./outputs/frr_frr.conf", frrConfig).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash("./outputs/frr_frr.conf")
-			return *hash
-		}).(pulumi.StringOutput)
-	frrConfigCopy := frrConfigHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(ctx, "remote-copy-frr-config", &remote.CopyToRemoteArgs{
-			Source:     pulumi.NewFileAsset("./outputs/frr_frr.conf"),
-			RemotePath: pulumi.String("/opt/frr/config/frr.conf"),
-			Triggers:   pulumi.Array{frrConfigHash},
-			Connection: conn,
-		}, opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	frrConfigHash, frrConfigCopy := remotefile.CopyRendered(
+		ctx,
+		"remote-copy-frr-config",
+		"./outputs/frr_frr.conf",
+		pulumi.String("/opt/frr/config/frr.conf"),
+		frrConfig,
+		conn,
+		opts...,
+	)
 
 	vtyshConfigHash, vtErr := file.Hash("./assets/frr/config/vtysh.conf")
 	if vtErr != nil {
 		return nil, nil, vtErr
 	}
-	vtyshConfigCopy := pulumi.String(*vtyshConfigHash).ToStringOutput().ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(ctx, "remote-copy-frr-vtysh", &remote.CopyToRemoteArgs{
-			Source:     pulumi.NewFileAsset("./assets/frr/config/vtysh.conf"),
-			RemotePath: pulumi.String("/opt/frr/config/vtysh.conf"),
-			Triggers:   pulumi.Array{pulumi.String(*vtyshConfigHash)},
-			Connection: conn,
-		}, opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	vtyshConfigCopy, vcErr := remote.NewCopyToRemote(ctx, "remote-copy-frr-vtysh", &remote.CopyToRemoteArgs{
+		Source:     pulumi.NewFileAsset("./assets/frr/config/vtysh.conf"),
+		RemotePath: pulumi.String("/opt/frr/config/vtysh.conf"),
+		Triggers:   pulumi.Array{pulumi.String(*vtyshConfigHash)},
+		Connection: conn,
+	}, opts...)
+	if vcErr != nil {
+		return nil, nil, vcErr
+	}
 
 	daemonsHash, dhErr := file.Hash("./assets/frr/config/daemons")
 	if dhErr != nil {
 		return nil, nil, dhErr
 	}
-	daemonsCopy := pulumi.String(*daemonsHash).ToStringOutput().ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(ctx, "remote-copy-frr-daemons", &remote.CopyToRemoteArgs{
-			Source:     pulumi.NewFileAsset("./assets/frr/config/daemons"),
-			RemotePath: pulumi.String("/opt/frr/config/daemons"),
-			Triggers:   pulumi.Array{pulumi.String(*daemonsHash)},
-			Connection: conn,
-		}, opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	daemonsCopy, dcErr := remote.NewCopyToRemote(ctx, "remote-copy-frr-daemons", &remote.CopyToRemoteArgs{
+		Source:     pulumi.NewFileAsset("./assets/frr/config/daemons"),
+		RemotePath: pulumi.String("/opt/frr/config/daemons"),
+		Triggers:   pulumi.Array{pulumi.String(*daemonsHash)},
+		Connection: conn,
+	}, opts...)
+	if dcErr != nil {
+		return nil, nil, dcErr
+	}
 
-	return []pulumi.Output{frrConfigCopy, vtyshConfigCopy, daemonsCopy}, pulumi.Array{
+	return []pulumi.ResourceOutput{
+		frrConfigCopy,
+		pulumi.NewResourceOutput(vtyshConfigCopy),
+		pulumi.NewResourceOutput(daemonsCopy),
+	}, pulumi.Array{
 		frrConfigHash,
 		pulumi.String(*vtyshConfigHash),
 		pulumi.String(*daemonsHash),

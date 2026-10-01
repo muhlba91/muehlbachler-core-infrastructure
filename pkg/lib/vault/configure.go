@@ -19,7 +19,7 @@ import (
 // ctx: Pulumi context.
 // sshIPv4: The IPv4 address of the server to connect to via SSH.
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
-// bucket: The GCS bucket to be used by Vault for storage.
+// bucket: The Scaleway bucket used by Vault for storage.
 // dnsConfig: DNS configuration.
 // dependsOn: Pulumi resource option to specify dependencies.
 func configure(
@@ -75,6 +75,7 @@ func configure(
 			Address:      vAddress,
 			Keys:         vKeys,
 			OwnedSecrets: ownedSecrets,
+			Provider:     provider,
 		}
 	}).(pulumi.AnyOutput)
 

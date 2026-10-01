@@ -1,0 +1,29 @@
+---
+services:
+  client:
+    image: netbirdio/netbird:0.79.0
+    container_name: netbird-client
+    restart: unless-stopped
+    environment:
+      - NB_MANAGEMENT_URL=https://{{ .domain }}
+      - NB_HOSTNAME={{ .hostname }}
+      - NB_INTERFACE_NAME=wt0
+      - NB_WIREGUARD_PORT={{ .wireguardPort }}
+      - NB_MTU={{ .mtu }}
+      # routing is done by EVPN/BGP, not by NetBird: no DNS takeover, no route install, no firewall management
+      - NB_DISABLE_DNS=true
+      - NB_DISABLE_CLIENT_ROUTES=true
+      - NB_DISABLE_SERVER_ROUTES=true
+      - NB_DISABLE_FIREWALL=true
+      - NB_LOG_LEVEL=info
+      # the setup key is only needed for the first registration: it is removed from the server once the client is connected
+      - NB_SETUP_KEY={{ .setupKey }}
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - /opt/netbird-client/state:/var/lib/netbird

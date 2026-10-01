@@ -2,6 +2,8 @@ package firewall
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strconv"
 
 	slFirewall "github.com/muhlba91/pulumi-shared-library/pkg/lib/hetzner/firewall"
@@ -40,7 +42,8 @@ func Create(
 	}
 
 	rules := []slFirewall.Rule{sshRule}
-	for _, rule := range networkConfig.FirewallRules {
+	for _, name := range slices.Sorted(maps.Keys(networkConfig.FirewallRules)) {
+		rule := networkConfig.FirewallRules[name]
 		rSourceIps := networkAllCIDR
 		if rule.SourceIPs != nil {
 			rSourceIps = []pulumi.StringInput{}

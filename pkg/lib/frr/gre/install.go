@@ -14,6 +14,7 @@ import (
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/bgp"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
 )
 
 // Install GRE tunnels on the remote server via SSH.
@@ -43,7 +44,7 @@ func installer(
 	}
 
 	tunnels := []string{}
-	configResources := []pulumi.Output{}
+	configResources := []pulumi.ResourceOutput{}
 	configHashes := pulumi.Array{}
 	keys := slices.Collect(maps.Keys(bgpConfig.Neighbors))
 	slices.Sort(keys)
@@ -74,7 +75,7 @@ func installer(
 		Delete:     pulumi.StringPtr(installFn),
 		Triggers:   configHashes,
 		Connection: conn,
-	}, append(opts, install.CollectResourceOptions(configResources)...)...)
+	}, append(opts, remotefile.DependsOnAll(configResources...))...)
 }
 
 // createConfig generates the GRE netplan configuration file.
@@ -123,9 +124,9 @@ func writeToRemote(
 	interfaceName *string,
 	conn *remote.ConnectionArgs,
 	opts ...pulumi.ResourceOption,
-) pulumi.Output {
-	netplanConfigCopy := hash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(
+) pulumi.ResourceOutput {
+	netplanConfigCopy, _ := hash.ApplyT(func(_ string) (pulumi.Resource, error) {
+		return remote.NewCopyToRemote(
 			ctx,
 			fmt.Sprintf("remote-copy-gre-netplan-%s", *interfaceName),
 			&remote.CopyToRemoteArgs{
@@ -135,8 +136,7 @@ func writeToRemote(
 				Connection: conn,
 			},
 			opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	}).(pulumi.ResourceOutput)
 
 	return netplanConfigCopy
 }

@@ -1,0 +1,16 @@
+[Unit]
+Description=Run NetBird Client
+Requires=docker.service
+After=docker.service netbird.service
+
+[Service]
+Restart=always
+WorkingDirectory=/opt/netbird-client
+ExecStartPre=/sbin/iptables -A FORWARD -i wt+ -j ACCEPT
+ExecStartPre=/usr/bin/docker compose --file /opt/netbird-client/docker-compose.yml --project-name netbird-client pull
+ExecStart=/usr/bin/docker compose --file /opt/netbird-client/docker-compose.yml --project-name netbird-client up --force-recreate
+ExecStop=/usr/bin/docker compose --file /opt/netbird-client/docker-compose.yml --project-name netbird-client stop
+ExecStop=/sbin/iptables -D FORWARD -i wt+ -j ACCEPT
+
+[Install]
+WantedBy=multi-user.target

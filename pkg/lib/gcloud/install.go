@@ -8,6 +8,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
 )
 
 // Install gcloud on the remote server via SSH.
@@ -40,24 +41,15 @@ func Install(
 		decKey, _ := encoding.B64Decode(key)
 		return decKey
 	}).(pulumi.StringOutput)
-	gcpCredentialsHash := file.WritePulumi("./outputs/google_credentials.json", privateKey).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash("./outputs/google_credentials.json")
-			return *hash
-		})
-	gcpCredentialsCopy := gcpCredentialsHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(
-			ctx,
-			"remote-copy-gcloud-service-account",
-			&remote.CopyToRemoteArgs{
-				Source:     pulumi.NewFileAsset("./outputs/google_credentials.json"),
-				RemotePath: pulumi.String("/opt/google/credentials.json"),
-				Triggers:   pulumi.Array{gcpCredentialsHash},
-				Connection: conn,
-			},
-			opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	gcpCredentialsHash, gcpCredentialsCopy := remotefile.CopyRendered(
+		ctx,
+		"remote-copy-gcloud-service-account",
+		"./outputs/google_credentials.json",
+		pulumi.String("/opt/google/credentials.json"),
+		privateKey,
+		conn,
+		opts...,
+	)
 
 	installFn, iErr := file.ReadContents("./assets/gcloud/install.sh")
 	if iErr != nil {
@@ -68,5 +60,5 @@ func Install(
 		Update:     pulumi.StringPtr(installFn),
 		Triggers:   pulumi.Array{gcpCredentialsHash},
 		Connection: conn,
-	}, append(opts, install.CollectResourceOptions([]pulumi.Output{gcpCredentialsCopy})...)...)
+	}, append(opts, remotefile.DependsOnAll(gcpCredentialsCopy))...)
 }

@@ -1,0 +1,47 @@
+#!/bin/sh
+
+### netbird ###
+cd /opt/netbird
+
+# installation check
+if [ -f /opt/netbird.state ]; then
+    /bin/netbird-backup
+else
+    # restore from backup, if exists
+    rclone --config /opt/scaleway/rclone.conf sync -P scaleway:{{ .bucket.id }}/{{ .bucket.path }}/netbird/data/ /opt/netbird/data/
+    rclone --config /opt/scaleway/rclone.conf sync -P scaleway:{{ .bucket.id }}/{{ .bucket.path }}/netbird/postgres/ /opt/backup/netbird/
+    if [ ! -s /opt/netbird.pat ]; then
+        rclone --config /opt/scaleway/rclone.conf copyto -P scaleway:{{ .bucket.id }}/{{ .bucket.path }}/netbird/pat/netbird.pat /opt/netbird.pat || true
+        [ -f /opt/netbird.pat ] && chmod 600 /opt/netbird.pat
+    fi
+
+    # temporary start of the database only to restore the dump
+    docker compose --project-name netbird up -d postgres
+    until docker exec netbird-postgres pg_isready -h 127.0.0.1 -U netbird -d netbird > /dev/null 2>&1; do
+        echo "Waiting for postgres to be ready..."
+        sleep 5
+    done
+
+    BACKUP_FILE=$(find /opt/backup/netbird -maxdepth 1 -name "netbird-*.dump" | sort -r | head -n 1)
+    if [ -z "$BACKUP_FILE" ]; then
+        echo "no backup file found in /opt/backup/netbird. Skipping restore."
+    else
+        BACKUP_BASENAME=$(basename "$BACKUP_FILE")
+        docker exec netbird-postgres pg_restore -U netbird -d netbird --clean --if-exists --no-owner --no-privileges --role=netbird "/backups/$BACKUP_BASENAME"
+    fi
+
+    # stop the temporary database for the systemd service to take precedence
+    docker compose --project-name netbird down
+fi
+
+# restart netbird
+systemctl daemon-reload
+systemctl enable netbird
+systemctl restart netbird
+
+# finalize installation
+echo "installed" > /opt/netbird.state
+
+# cleanup old images
+sleep 90
+docker image prune --all --force || true

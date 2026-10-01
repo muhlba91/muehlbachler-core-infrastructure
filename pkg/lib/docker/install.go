@@ -36,6 +36,7 @@ func Install(
 	}
 	return remote.NewCommand(ctx, "remote-command-install-docker", &remote.CommandArgs{
 		Create:     pulumi.StringPtr(createFn),
+		Update:     pulumi.StringPtr("true"),
 		Connection: conn,
 	}, dependsOn)
 }

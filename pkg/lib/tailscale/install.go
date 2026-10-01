@@ -1,7 +1,6 @@
 package tailscale
 
 import (
-	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/template"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -9,6 +8,7 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
 	tailscaleConf "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/tailscale"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
 )
 
 // Install Tailscale on the remote server via SSH.
@@ -16,7 +16,6 @@ import (
 // sshIPv4: The IPv4 address of the server to connect to via SSH.
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
 // tailscaleConfig: Configuration for Tailscale installation.
-// gcpConfig: GCP configuration.
 // dependsOn: Pulumi resource option to specify dependencies.
 func Install(
 	ctx *pulumi.Context,
@@ -44,24 +43,15 @@ func Install(
 	if dcErr != nil {
 		return nil, dcErr
 	}
-	dockerComposeHash := file.WritePulumi("./outputs/tailscale_docker-compose.yml", pulumi.String(dockerCompose)).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash("./outputs/tailscale_docker-compose.yml")
-			return *hash
-		})
-	dockerComposeCopy := dockerComposeHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(
-			ctx,
-			"remote-copy-tailscale-docker-compose",
-			&remote.CopyToRemoteArgs{
-				Source:     pulumi.NewFileAsset("./outputs/tailscale_docker-compose.yml"),
-				RemotePath: pulumi.String("/opt/tailscale/docker-compose.yml"),
-				Triggers:   pulumi.Array{dockerComposeHash},
-				Connection: conn,
-			},
-			opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	dockerComposeHash, dockerComposeCopy := remotefile.CopyRendered(
+		ctx,
+		"remote-copy-tailscale-docker-compose",
+		"./outputs/tailscale_docker-compose.yml",
+		pulumi.String("/opt/tailscale/docker-compose.yml"),
+		pulumi.String(dockerCompose),
+		conn,
+		opts...,
+	)
 
 	cronResources, cronErr := install.Cron(ctx, "tailscale", conn, opts...)
 	if cronErr != nil {
@@ -87,5 +77,5 @@ func Install(
 		Update:     pulumi.StringPtr(installFn),
 		Triggers:   pulumi.Array{dockerComposeHash, pulumi.String(*systemdServiceHash)},
 		Connection: conn,
-	}, append(opts, install.CollectResourceOptions(append(cronResources, dockerComposeCopy))...)...)
+	}, append(opts, remotefile.DependsOnAll(append(cronResources, dockerComposeCopy)...))...)
 }

@@ -7,7 +7,7 @@ DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes
 
 ### docker ###
 # add docker repository
-DEBIAN_FRONTEND=noninteractive apt-get install ca-certificates curl
+DEBIAN_FRONTEND=noninteractive apt-get install --yes ca-certificates curl
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 chmod a+r /etc/apt/keyrings/docker.asc

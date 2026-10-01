@@ -164,6 +164,28 @@ tailscale:
 > [!IMPORTANT]  
 > The Tailscale auth key must be recreated periodically, if reused due to expiration.
 
+### NetBird
+
+Only the NetBird **server** is installed by Pulumi (DNS entry `netbird` is required, see [DNS](#dns)).
+The `netbird-stun` firewall rule (UDP `3478`) must exist, see [Network](#network).
+
+```yaml
+netbird:
+  storeEncryptionKey: the base64 encoded 32 byte key encrypting sensitive data in the database (e.g. openssl rand -base64 32)
+  admin: the initial owner, created once via the setup API
+    name: the display name
+    email: the login email
+```
+
+> [!IMPORTANT]  
+> `netbird.storeEncryptionKey` **must stay the same** across restores and full re-bootstraps:
+> the restored database cannot be decrypted without the key.
+> After a full re-bootstrap with lost Pulumi state, the owner already
+> exists in the restored data, so a newly generated password does not apply: reset it in NetBird.
+
+> [!IMPORTANT]  
+> If the NetBird database is lost, all clients must be registered again with a new setup key.
+
 ---
 
 ## Continuous Integration and Automations

@@ -4,12 +4,11 @@
 
 # installation check
 if [ -f /opt/tailscale.state ]; then
+    # already registered: the auth key is not needed anymore (and may have expired), so it must be removed before restarting
     sed -i '/- TS_AUTHKEY=/d' /opt/tailscale/docker-compose.yml
 
     /bin/tailscale-backup
 else
-    sed -i '/- TS_AUTHKEY=/d' /opt/tailscale/docker-compose.yml
-
     rclone --config /opt/scaleway/rclone.conf sync -P scaleway:{{ .bucket.id }}/{{ .bucket.path }}/tailscale/state/ /opt/tailscale/state/
 fi
 
@@ -18,9 +17,22 @@ systemctl daemon-reload
 systemctl enable tailscale
 systemctl restart tailscale
 
-# finalize installation
-sed -i '/- TS_AUTHKEY=/d' /opt/tailscale/docker-compose.yml
-echo "installed" > /opt/tailscale.state
+# first run: the auth key is needed to register (or tailscale uses the restored state), so it is removed once tailscale is connected
+if [ ! -f /opt/tailscale.state ]; then
+    ATTEMPTS=0
+    until docker exec tailscale tailscale status > /dev/null 2>&1; do
+        ATTEMPTS=$((ATTEMPTS + 1))
+        if [ "$ATTEMPTS" -ge 60 ]; then
+            echo "tailscale is not connected: keeping the auth key and not finalizing the installation." >&2
+            exit 1
+        fi
+        sleep 5
+    done
+    sed -i '/- TS_AUTHKEY=/d' /opt/tailscale/docker-compose.yml
+
+    # finalize installation
+    echo "installed" > /opt/tailscale.state
+fi
 
 # cleanup old images
 sleep 90

@@ -6,10 +6,11 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      - TS_AUTHKEY={{ .authKey }}
       - TS_EXTRA_ARGS=--advertise-routes=10.0.0.0/8 --advertise-exit-node
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_USERSPACE=false
+      # the auth key is only needed for the first registration: it is removed from the server once tailscale is connected
+      - TS_AUTHKEY={{ .authKey }}
     cap_add:
       - NET_ADMIN
     devices:

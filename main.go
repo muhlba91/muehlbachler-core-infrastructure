@@ -22,12 +22,15 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/google/serviceaccount"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/hetzner/server"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/journal"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/netbird"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/scaleway"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/scaleway/application"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/tailscale"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/traefik"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/vault"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/wireguard"
+	dnsModel "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/dns"
+	netbirdModel "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/netbird"
 	serverModel "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/server"
 	vaultModel "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/vault"
 	wireguardModel "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/wireguard"
@@ -42,7 +45,7 @@ func main() {
 		}
 
 		// configuration
-		googleConfig, scalewayConfig, serverConfig, networkConfig, oidcConfig, dnsConfig, bgpConfig, tailscaleConfig, err := config.LoadConfig(
+		googleConfig, scalewayConfig, serverConfig, networkConfig, oidcConfig, dnsConfig, bgpConfig, tailscaleConfig, netbirdConfig, err := config.LoadConfig(
 			ctx,
 		)
 		if err != nil {
@@ -179,11 +182,34 @@ func main() {
 			return tsErr
 		}
 
+		// netbird (server): installed after vault as the token is stored in vault
+		netbirdData, netbirdPAT, _, nbErr := netbird.Install(
+			ctx,
+			instance.SSHIPv4,
+			sshKey.PrivateKeyPem,
+			dnsConfig,
+			netbirdConfig,
+			vaultInstanceData,
+			dependsOn,
+		)
+		if nbErr != nil {
+			return nbErr
+		}
+
 		// write output files
 		writeOutputFiles(ctx, sshKey, vaultInstanceData)
 
 		// outputs
-		exportPulumiOutputs(ctx, instance, vaultData, vaultInstanceData, wireguardData)
+		exportPulumiOutputs(
+			ctx,
+			instance,
+			vaultData,
+			vaultInstanceData,
+			wireguardData,
+			dnsConfig,
+			netbirdData,
+			netbirdPAT,
+		)
 
 		return nil
 	})
@@ -205,6 +231,7 @@ func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInst
 	})
 	vaultYaml, _ := vaultInstanceData.ApplyT(func(data any) string {
 		b, _ := yaml.Marshal(map[string]any{
+			//nolint:goconst // address is not a constant
 			"address": data.(*vaultModel.Instance).Address,
 			//nolint:goconst // keys is not a constant
 			"keys": data.(*vaultModel.Instance).Keys,
@@ -228,12 +255,18 @@ func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInst
 // vaultData: The Vault resources data.
 // vaultInstanceData: The Vault instance data output.
 // wireguardData: The WireGuard resources data.
+// dnsConfig: The DNS configuration.
+// netbirdData: The NetBird resources data.
+// netbirdPAT: The NetBird personal access token.
 func exportPulumiOutputs(
 	ctx *pulumi.Context,
 	instance *serverModel.Data,
 	vaultData *vaultModel.Data,
 	vaultInstanceData *pulumi.AnyOutput,
 	wireguardData *wireguardModel.Data,
+	dnsConfig *dnsModel.Config,
+	netbirdData *netbirdModel.Data,
+	netbirdPAT pulumi.StringOutput,
 ) {
 	ctx.Export("server", pulumi.ToMap(map[string]any{
 		"ipv4": instance.PublicIPv4,
@@ -265,5 +298,14 @@ func exportPulumiOutputs(
 
 	ctx.Export("wireguard", pulumi.ToMap(map[string]any{
 		"adminPassword": wireguardData.AdminPassword,
+	}))
+
+	ctx.Export("netbird", pulumi.ToMap(map[string]any{
+		"address": fmt.Sprintf("https://%s", *dnsConfig.Entries["netbird"].Domain),
+		"admin": pulumi.ToSecret(map[string]any{
+			"email":    netbirdData.Admin.Email,
+			"password": netbirdData.Admin.Password,
+		}),
+		"pat": pulumi.ToSecret(netbirdPAT),
 	}))
 }

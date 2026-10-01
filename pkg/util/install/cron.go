@@ -10,6 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
 )
 
 // Cron executes the cron job setup for the given software on the remote server.
@@ -22,7 +23,7 @@ func Cron(
 	name string,
 	conn *remote.ConnectionArgs,
 	opts ...pulumi.ResourceOption,
-) ([]pulumi.Output, error) {
+) ([]pulumi.ResourceOutput, error) {
 	backupFile, dcErr := template.Render(
 		fmt.Sprintf("./assets/%s/cron/%s-backup.j2", name, name),
 		map[string]any{
@@ -35,24 +36,15 @@ func Cron(
 	if dcErr != nil {
 		return nil, dcErr
 	}
-	backupFileHash := file.WritePulumi(fmt.Sprintf("./outputs/%s_backup", name), pulumi.String(backupFile)).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash(fmt.Sprintf("./outputs/%s_backup", name))
-			return *hash
-		})
-	backupFileCopy := backupFileHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(
-			ctx,
-			fmt.Sprintf("remote-copy-%s-backup", sanitize.Text(name)),
-			&remote.CopyToRemoteArgs{
-				Source:     pulumi.NewFileAsset(fmt.Sprintf("./outputs/%s_backup", name)),
-				RemotePath: pulumi.Sprintf("/bin/%s-backup", name),
-				Triggers:   pulumi.Array{backupFileHash},
-				Connection: conn,
-			},
-			opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	backupFileHash, backupFileCopy := remotefile.CopyRendered(
+		ctx,
+		fmt.Sprintf("remote-copy-%s-backup", sanitize.Text(name)),
+		fmt.Sprintf("./outputs/%s_backup", name),
+		pulumi.Sprintf("/bin/%s-backup", name),
+		pulumi.String(backupFile),
+		conn,
+		opts...,
+	)
 
 	cronFileHash, shErr := file.Hash(fmt.Sprintf("./assets/%s/cron/cron", name))
 	if shErr != nil {
@@ -91,8 +83,5 @@ func Cron(
 		return nil, ciErr
 	}
 
-	return []pulumi.Output{
-		backupFileCopy,
-		pulumi.ToOutput(pulumi.DependsOn([]pulumi.Resource{cronInstall})),
-	}, nil
+	return []pulumi.ResourceOutput{backupFileCopy, pulumi.NewResourceOutput(cronInstall)}, nil
 }

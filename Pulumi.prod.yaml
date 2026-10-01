@@ -22,6 +22,10 @@ config:
         description: Allow incoming HTTPS traffic
         port: 443
         protocol: tcp
+      netbird-stun:
+        description: Allow incoming NetBird STUN traffic
+        port: 3478
+        protocol: udp
       vault:
         description: Allow incoming Vault traffic
         port: 8200
@@ -63,7 +67,7 @@ config:
   muehlbachler-core-infrastructure:dns:
     project: muehlbachler-dns
     email: postmaster@muehlbachler.io
-    entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}, wireguard: {zoneId: muehlbachler-io, domain: vpn.platform.muehlbachler.io}}
+    entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}, wireguard: {zoneId: muehlbachler-io, domain: vpn.platform.muehlbachler.io}, netbird: {zoneId: muehlbachler-io, domain: netbird.platform.muehlbachler.io}}
   muehlbachler-core-infrastructure:bgp:
     localAsn: 201421
     internalNetworks:
@@ -120,3 +124,9 @@ config:
     project: d3291e99-319b-43db-9703-b67dc3e10cbb
     dnsProject: bc87ca3f-e096-46cc-b849-fef5cb361511
     organizationID: 2535e3b0-5c19-476b-8c0b-8a2a5bfac7c3
+  muehlbachler-core-infrastructure:netbird:
+    storeEncryptionKey:
+      secure: v1:gxhw+vju2eAHg4Fp:BUBZG3O/yvoqu1D3D4Dh47R9S29MkWepaFdlygQSZRBZvwjzjHXopO2bIfYayCr1FARZ+vWUyqlUyaAh
+    admin:
+      name: admin
+      email: daniel@muehlbachler.io

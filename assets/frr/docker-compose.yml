@@ -6,8 +6,8 @@ services:
     restart: unless-stopped
     network_mode: host
     cap_add:
-      - CAP_NET_RAW
       - NET_ADMIN
+      - NET_RAW
       - SYS_ADMIN
     volumes:
       - /opt/frr/config:/etc/frr

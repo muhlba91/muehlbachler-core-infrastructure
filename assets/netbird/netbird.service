@@ -1,0 +1,14 @@
+[Unit]
+Description=Run NetBird
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+WorkingDirectory=/opt/netbird
+ExecStartPre=/usr/bin/docker compose --file /opt/netbird/docker-compose.yml --project-name netbird pull
+ExecStart=/usr/bin/docker compose --file /opt/netbird/docker-compose.yml --project-name netbird up --force-recreate
+ExecStop=/usr/bin/docker compose --file /opt/netbird/docker-compose.yml --project-name netbird stop
+
+[Install]
+WantedBy=multi-user.target

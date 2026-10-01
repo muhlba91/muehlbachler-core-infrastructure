@@ -1,7 +1,6 @@
 package wireguard
 
 import (
-	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/template"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -10,6 +9,7 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/dns"
 	wireguardData "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/wireguard"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
 )
 
 // Install WireGuard on the remote server via SSH.
@@ -46,24 +46,15 @@ func installer(
 	if dcErr != nil {
 		return nil, dcErr
 	}
-	dockerComposeHash := file.WritePulumi("./outputs/wireguard_docker-compose.yml", pulumi.String(dockerCompose)).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash("./outputs/wireguard_docker-compose.yml")
-			return *hash
-		})
-	dockerComposeCopy := dockerComposeHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(
-			ctx,
-			"remote-copy-wireguard-docker-compose",
-			&remote.CopyToRemoteArgs{
-				Source:     pulumi.NewFileAsset("./outputs/wireguard_docker-compose.yml"),
-				RemotePath: pulumi.String("/opt/wireguard/docker-compose.yml"),
-				Triggers:   pulumi.Array{dockerComposeHash},
-				Connection: conn,
-			},
-			opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	dockerComposeHash, dockerComposeCopy := remotefile.CopyRendered(
+		ctx,
+		"remote-copy-wireguard-docker-compose",
+		"./outputs/wireguard_docker-compose.yml",
+		pulumi.String("/opt/wireguard/docker-compose.yml"),
+		pulumi.String(dockerCompose),
+		conn,
+		opts...,
+	)
 
 	configResources, configHashes := createConfigs(ctx, wireguardData, dnsConfig, conn, opts...)
 
@@ -92,13 +83,13 @@ func installer(
 		Update:     pulumi.StringPtr(installFn),
 		Triggers:   append(configHashes, dockerComposeHash, pulumi.String(*systemdServiceHash)),
 		Connection: conn,
-	}, append(opts, install.CollectResourceOptions(append(append(cronResources, configResources...), dockerComposeCopy))...)...)
+	}, append(opts, remotefile.DependsOnAll(append(append(cronResources, configResources...), dockerComposeCopy)...))...)
 }
 
-// createConfigs generates the FRR configuration files and uploads them to the remote server.
+// createConfigs generates the WireGuard configuration files and uploads them to the remote server.
 // ctx: Pulumi context.
-// frrData: The FRR configuration data.
-// bgpConfig: The BGP configuration details.
+// wireguardData: The WireGuard configuration data.
+// dnsConfig: The DNS configuration.
 // conn: The remote connection arguments.
 // opts: Additional Pulumi resource options.
 func createConfigs(
@@ -107,7 +98,7 @@ func createConfigs(
 	dnsConfig *dns.Config,
 	conn *remote.ConnectionArgs,
 	opts ...pulumi.ResourceOption,
-) ([]pulumi.Output, pulumi.Array) {
+) ([]pulumi.ResourceOutput, pulumi.Array) {
 	wireguardConfig, _ := pulumi.All(wireguardData.AdminPassword, wireguardData.Database.EncryptionPassphrase, wireguardData.Web.SessionSecret, wireguardData.Web.CSRFSecret).ApplyT(func(args []any) string {
 		adminPassword, _ := args[0].(string)
 		encryptionPassphrase, _ := args[1].(string)
@@ -132,22 +123,17 @@ func createConfigs(
 		})
 		return tpl
 	}).(pulumi.StringOutput)
-	wireguardConfigHash := file.WritePulumi("./outputs/wireguard_config.yml", wireguardConfig).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash("./outputs/wireguard_config.yml")
-			return *hash
-		})
-	wireguardConfigCopy := wireguardConfigHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(ctx, "remote-copy-wireguard-config", &remote.CopyToRemoteArgs{
-			Source:     pulumi.NewFileAsset("./outputs/wireguard_config.yml"),
-			RemotePath: pulumi.String("/opt/wireguard/config/config.yml"),
-			Triggers:   pulumi.Array{wireguardConfigHash},
-			Connection: conn,
-		}, opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	wireguardConfigHash, wireguardConfigCopy := remotefile.CopyRendered(
+		ctx,
+		"remote-copy-wireguard-config",
+		"./outputs/wireguard_config.yml",
+		pulumi.String("/opt/wireguard/config/config.yml"),
+		wireguardConfig,
+		conn,
+		opts...,
+	)
 
-	return []pulumi.Output{wireguardConfigCopy}, pulumi.Array{
+	return []pulumi.ResourceOutput{wireguardConfigCopy}, pulumi.Array{
 		wireguardConfigHash,
 	}
 }

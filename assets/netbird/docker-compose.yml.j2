@@ -1,0 +1,104 @@
+---
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    container_name: netbird-postgres
+    restart: unless-stopped
+    healthcheck:
+      # note: 127.0.0.1 makes sure the temporary init server of the entrypoint is not reported as ready
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U {{ .db.user }} -d {{ .db.database }}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      netbird:
+    environment:
+      POSTGRES_DB: "{{ .db.database }}"
+      POSTGRES_USER: "{{ .db.user }}"
+      POSTGRES_PASSWORD: "{{ .db.password }}"
+    volumes:
+      - /opt/netbird/postgres:/var/lib/postgresql
+      - /opt/backup/netbird:/backups
+
+  server:
+    image: netbirdio/netbird-server:0.79.0
+    container_name: netbird-server
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      - "--config"
+      - /etc/netbird/config.yml
+    environment:
+      - NB_SETUP_PAT_ENABLED=true
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik_proxy
+
+      - traefik.http.routers.netbird_grpc.rule=Host(`{{ .domain }}`) && (PathPrefix(`/signalexchange.SignalExchange/`) || PathPrefix(`/management.ManagementService/`))
+      - traefik.http.routers.netbird_grpc.entrypoints=websecure
+      - traefik.http.routers.netbird_grpc.tls=true
+      - traefik.http.routers.netbird_grpc.tls.certresolver=letsencrypt
+      - traefik.http.routers.netbird_grpc.service=netbird-server-h2c
+
+      - traefik.http.routers.netbird_backend.rule=Host(`{{ .domain }}`) && (PathPrefix(`/relay`) || PathPrefix(`/ws-proxy/`) || PathPrefix(`/api`) || PathPrefix(`/oauth2`))
+      - traefik.http.routers.netbird_backend.entrypoints=websecure
+      - traefik.http.routers.netbird_backend.tls=true
+      - traefik.http.routers.netbird_backend.tls.certresolver=letsencrypt
+      - traefik.http.routers.netbird_backend.service=netbird-server
+
+      - traefik.http.services.netbird-server.loadbalancer.server.port=80
+      - traefik.http.services.netbird-server-h2c.loadbalancer.server.port=80
+      - traefik.http.services.netbird-server-h2c.loadbalancer.server.scheme=h2c
+    networks:
+      netbird:
+      proxy:
+    ports:
+      - "3478:3478/udp"
+    volumes:
+      - /opt/netbird/config.yml:/etc/netbird/config.yml
+      - /opt/netbird/data:/var/lib/netbird
+
+  dashboard:
+    image: netbirdio/dashboard:v2.94.0
+    container_name: netbird-dashboard
+    restart: unless-stopped
+    environment:
+      - NETBIRD_MGMT_API_ENDPOINT=https://{{ .domain }}
+      - NETBIRD_MGMT_GRPC_API_ENDPOINT=https://{{ .domain }}
+      - AUTH_AUDIENCE=netbird-dashboard
+      - AUTH_CLIENT_ID=netbird-dashboard
+      - AUTH_CLIENT_SECRET=
+      - AUTH_AUTHORITY=https://{{ .domain }}/oauth2
+      - USE_AUTH0=false
+      - AUTH_SUPPORTED_SCOPES=openid profile email groups
+      - AUTH_REDIRECT_URI=/nb-auth
+      - AUTH_SILENT_REDIRECT_URI=/nb-silent-auth
+      - NGINX_SSL_PORT=443
+      - LETSENCRYPT_DOMAIN=none
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik_proxy
+
+      - traefik.http.routers.netbird_http.rule=Host(`{{ .domain }}`)
+      - traefik.http.routers.netbird_http.entrypoints=web
+      - traefik.http.routers.netbird_http.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+
+      - traefik.http.routers.netbird_https.rule=Host(`{{ .domain }}`)
+      - traefik.http.routers.netbird_https.entrypoints=websecure
+      - traefik.http.routers.netbird_https.tls=true
+      - traefik.http.routers.netbird_https.tls.certresolver=letsencrypt
+      - traefik.http.routers.netbird_https.service=netbird
+
+      - traefik.http.services.netbird.loadbalancer.server.port=80
+    networks:
+      netbird:
+      proxy:
+
+networks:
+  netbird:
+  proxy:
+    name: traefik_proxy
+    external: true

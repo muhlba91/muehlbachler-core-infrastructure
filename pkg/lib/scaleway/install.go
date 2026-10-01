@@ -11,6 +11,7 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/scaleway"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
 )
 
 // Install scaleway CLI on the remote server via SSH.
@@ -60,24 +61,15 @@ func Install(
 
 		return tpl
 	}).(pulumi.StringOutput)
-	scalewayRcloneHash := file.WritePulumi("./outputs/scaleway_rclone.conf", rclone).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash("./outputs/scaleway_rclone.conf")
-			return *hash
-		})
-	scalewayRcloneCopy := scalewayRcloneHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(
-			ctx,
-			"remote-copy-scaleway-rclone-conf",
-			&remote.CopyToRemoteArgs{
-				Source:     pulumi.NewFileAsset("./outputs/scaleway_rclone.conf"),
-				RemotePath: pulumi.String("/opt/scaleway/rclone.conf"),
-				Triggers:   pulumi.Array{scalewayRcloneHash},
-				Connection: conn,
-			},
-			opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	scalewayRcloneHash, scalewayRcloneCopy := remotefile.CopyRendered(
+		ctx,
+		"remote-copy-scaleway-rclone-conf",
+		"./outputs/scaleway_rclone.conf",
+		pulumi.String("/opt/scaleway/rclone.conf"),
+		rclone,
+		conn,
+		opts...,
+	)
 
 	installFn, iErr := file.ReadContents("./assets/scaleway/install.sh")
 	if iErr != nil {
@@ -88,5 +80,5 @@ func Install(
 		Update:     pulumi.StringPtr(installFn),
 		Triggers:   pulumi.Array{scalewayRcloneHash},
 		Connection: conn,
-	}, append(opts, install.CollectResourceOptions([]pulumi.Output{scalewayRcloneCopy})...)...)
+	}, append(opts, remotefile.DependsOnAll(scalewayRcloneCopy))...)
 }

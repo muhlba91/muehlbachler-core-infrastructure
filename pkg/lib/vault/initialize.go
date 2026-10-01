@@ -1,23 +1,18 @@
 package vault
 
 import (
-	"strings"
-
-	"gopkg.in/yaml.v3"
-
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/vault"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/script"
 )
 
 // Initializes Vault on the remote server via SSH.
 // ctx: Pulumi context.
 // sshIPv4: The IPv4 address of the server to connect to via SSH.
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
-// bucket: The GCS bucket to be used by Vault for storage.
-// dnsConfig: DNS configuration.
 // dependsOn: Pulumi resource option to specify dependencies.
 func initialize(
 	ctx *pulumi.Context,
@@ -31,13 +26,13 @@ func initialize(
 		User:       pulumi.String("root"),
 	}
 
-	script, sErr := file.ReadContents("./assets/vault/init.sh")
+	initScript, sErr := file.ReadContents("./assets/vault/init.sh")
 	if sErr != nil {
 		return nil, sErr
 	}
 
 	cmd, cErr := remote.NewCommand(ctx, "vault-init", &remote.CommandArgs{
-		Create:     pulumi.StringPtr(script),
+		Create:     pulumi.StringPtr(initScript),
 		Connection: conn,
 	}, dependsOn, pulumi.Timeouts(&pulumi.CustomTimeouts{
 		Create: "40m",
@@ -47,12 +42,13 @@ func initialize(
 		return nil, cErr
 	}
 
-	keys, _ := cmd.Stdout.ApplyT(func(stdout string) *vault.Keys {
-		startBlock := strings.LastIndex(stdout, "--START TOKENS--")
-		endBlock := strings.LastIndex(stdout, "--END TOKENS--")
-		tokens := stdout[startBlock+len("--START TOKENS--") : endBlock]
-		parsedTokens := parse(tokens)
+	keys, _ := cmd.Stdout.ApplyT(func(stdout string) (*vault.Keys, error) {
+		parsedTokens, err := script.ParseTokens(stdout)
+		if err != nil {
+			return nil, err
+		}
 
+		rootToken, _ := parsedTokens["root_token"].(string)
 		var recoveryKeys []string
 		if rk, ok := parsedTokens["recovery_keys"].([]any); ok {
 			for _, key := range rk {
@@ -61,20 +57,10 @@ func initialize(
 		}
 
 		return &vault.Keys{
-			RootToken:    parsedTokens["root_token"].(string),
+			RootToken:    rootToken,
 			RecoveryKeys: recoveryKeys,
-		}
+		}, nil
 	}).(pulumi.AnyOutput)
 
 	return &keys, nil
-}
-
-// parse parses a YAML-formatted string into a map[string]any.
-// On error it returns an empty map.
-func parse(s string) map[string]any {
-	var out map[string]any
-	if err := yaml.Unmarshal([]byte(s), &out); err != nil {
-		return map[string]any{}
-	}
-	return out
 }

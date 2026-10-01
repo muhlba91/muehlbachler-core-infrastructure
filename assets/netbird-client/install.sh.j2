@@ -1,0 +1,39 @@
+#!/bin/sh
+
+### netbird-client ###
+
+# installation check
+if [ -f /opt/netbird-client.state ]; then
+    # already registered: the setup key is not needed anymore (and may have expired), so it must be removed before restarting
+    sed -i '/- NB_SETUP_KEY=/d' /opt/netbird-client/docker-compose.yml
+
+    /bin/netbird-client-backup
+else
+    rclone --config /opt/scaleway/rclone.conf sync -P scaleway:{{ .bucket.id }}/{{ .bucket.path }}/netbird-client/state/ /opt/netbird-client/state/
+fi
+
+# restart netbird-client
+systemctl daemon-reload
+systemctl enable netbird-client
+systemctl restart netbird-client
+
+# first run: the setup key is needed to register (or the client uses the restored state), so it is removed once the client is connected
+if [ ! -f /opt/netbird-client.state ]; then
+    ATTEMPTS=0
+    until docker exec netbird-client netbird status 2>/dev/null | grep -q "Management: Connected"; do
+        ATTEMPTS=$((ATTEMPTS + 1))
+        if [ "$ATTEMPTS" -ge 60 ]; then
+            echo "netbird-client is not connected: keeping the setup key and not finalizing the installation." >&2
+            exit 1
+        fi
+        sleep 5
+    done
+    sed -i '/- NB_SETUP_KEY=/d' /opt/netbird-client/docker-compose.yml
+
+    # finalize installation
+    echo "installed" > /opt/netbird-client.state
+fi
+
+# cleanup old images
+sleep 90
+docker image prune --all --force || true

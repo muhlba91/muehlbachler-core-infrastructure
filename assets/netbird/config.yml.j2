@@ -1,0 +1,38 @@
+---
+server:
+  listenAddress: ":80"
+  exposedAddress: "https://{{ .domain }}:443"
+  stunPorts:
+    - 3478
+  metricsPort: 9090
+  healthcheckAddress: ":9000"
+
+  logLevel: info
+  logFile: console
+
+  dataDir: /var/lib/netbird
+
+  authSecret: "{{ .authSecret }}"
+  auth:
+    localAuthDisabled: false
+    signKeyRefreshEnabled: true
+    sessionCookieEncryptionKey: "{{ .sessionCookieEncryptionKey }}"
+    issuer: "https://{{ .domain }}/oauth2"
+    dashboardRedirectURIs:
+      - "https://{{ .domain }}/nb-auth"
+      - "https://{{ .domain }}/nb-silent-auth"
+    cliRedirectURIs:
+      - "http://localhost:53000/"
+
+  disableAnonymousMetrics: true
+
+  reverseProxy:
+    trustedHTTPProxies:
+      - "10.0.0.0/8"
+      - "172.16.0.0/12"
+      - "192.168.0.0/16"
+
+  store:
+    engine: postgres
+    dsn: "host=postgres user={{ .db.user }} password={{ .db.password }} dbname={{ .db.database }} port=5432 sslmode=disable"
+    encryptionKey: "{{ .storeEncryptionKey }}"

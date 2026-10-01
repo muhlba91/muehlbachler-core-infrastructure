@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# filename format: netbird-YYYYMMDD_HHMMSS.dump
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+FILENAME="netbird-${TIMESTAMP}.dump"
+
+# run backup
+docker exec netbird-postgres pg_dump -U netbird -d netbird -Fc -f "/backups/${FILENAME}"
+
+# retention policy: delete backups older than 3 days
+find /opt/backup/netbird -maxdepth 1 -name "netbird-*.dump" -mtime +3 -print -delete
+
+# upload data to scaleway
+rclone --config /opt/scaleway/rclone.conf sync -P /opt/backup/netbird/ scaleway:{{ .bucket.id }}/{{ .bucket.path }}/netbird/postgres/ || true
+rclone --config /opt/scaleway/rclone.conf sync -P /opt/netbird/data/ scaleway:{{ .bucket.id }}/{{ .bucket.path }}/netbird/data/ || true
+[ -f /opt/netbird.pat ] && rclone --config /opt/scaleway/rclone.conf copyto -P /opt/netbird.pat scaleway:{{ .bucket.id }}/{{ .bucket.path }}/netbird/pat/netbird.pat || true

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# upload data to scaleway
+rclone --config /opt/scaleway/rclone.conf sync -P /opt/netbird-client/state/ scaleway:{{ .bucket.id }}/{{ .bucket.path }}/netbird-client/state/ || true

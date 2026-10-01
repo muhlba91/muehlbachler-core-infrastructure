@@ -8,6 +8,7 @@ import (
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/dns"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
 )
 
 // Install Traefik on the remote server via SSH.
@@ -42,24 +43,15 @@ func Install(
 	if dcErr != nil {
 		return nil, dcErr
 	}
-	dockerComposeHash := file.WritePulumi("./outputs/traefik_docker-compose.yml", pulumi.String(dockerCompose)).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash("./outputs/traefik_docker-compose.yml")
-			return *hash
-		})
-	dockerComposeCopy := dockerComposeHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(
-			ctx,
-			"remote-copy-traefik-docker-compose",
-			&remote.CopyToRemoteArgs{
-				Source:     pulumi.NewFileAsset("./outputs/traefik_docker-compose.yml"),
-				RemotePath: pulumi.String("/opt/traefik/docker-compose.yml"),
-				Triggers:   pulumi.Array{dockerComposeHash},
-				Connection: conn,
-			},
-			opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	dockerComposeHash, dockerComposeCopy := remotefile.CopyRendered(
+		ctx,
+		"remote-copy-traefik-docker-compose",
+		"./outputs/traefik_docker-compose.yml",
+		pulumi.String("/opt/traefik/docker-compose.yml"),
+		pulumi.String(dockerCompose),
+		conn,
+		opts...,
+	)
 
 	traefikYaml, dcErr := template.Render("./assets/traefik/traefik.yml.j2", map[string]any{
 		"acmeEmail": dnsConfig.Email,
@@ -67,20 +59,15 @@ func Install(
 	if dcErr != nil {
 		return nil, dcErr
 	}
-	traefikYmlHash := file.WritePulumi("./outputs/traefik_traefik.yml", pulumi.String(traefikYaml)).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash("./outputs/traefik_traefik.yml")
-			return *hash
-		})
-	traefikYmlCopy := traefikYmlHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(ctx, "remote-copy-traefik-config", &remote.CopyToRemoteArgs{
-			Source:     pulumi.NewFileAsset("./outputs/traefik_traefik.yml"),
-			RemotePath: pulumi.String("/opt/traefik/traefik.yml"),
-			Triggers:   pulumi.Array{traefikYmlHash},
-			Connection: conn,
-		}, opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	traefikYmlHash, traefikYmlCopy := remotefile.CopyRendered(
+		ctx,
+		"remote-copy-traefik-config",
+		"./outputs/traefik_traefik.yml",
+		pulumi.String("/opt/traefik/traefik.yml"),
+		pulumi.String(traefikYaml),
+		conn,
+		opts...,
+	)
 
 	opts, systemdServiceHash, shErr := install.SystemDService(ctx, "traefik", conn, opts...)
 	if shErr != nil {
@@ -96,5 +83,5 @@ func Install(
 		Update:     pulumi.StringPtr(installFn),
 		Triggers:   pulumi.Array{dockerComposeHash, pulumi.String(*systemdServiceHash), traefikYmlHash},
 		Connection: conn,
-	}, append(opts, install.CollectResourceOptions([]pulumi.Output{dockerComposeCopy, traefikYmlCopy})...)...)
+	}, append(opts, remotefile.DependsOnAll(dockerComposeCopy, traefikYmlCopy))...)
 }

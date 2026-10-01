@@ -11,6 +11,7 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/google"
 	vaultData "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/vault"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
 )
 
 // Install Vault on the remote server via SSH.
@@ -49,24 +50,15 @@ func installer(
 	if dcErr != nil {
 		return nil, dcErr
 	}
-	dockerComposeHash := file.WritePulumi("./outputs/vault_docker-compose.yml", pulumi.String(dockerCompose)).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash("./outputs/vault_docker-compose.yml")
-			return *hash
-		})
-	dockerComposeCopy := dockerComposeHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(
-			ctx,
-			"remote-copy-vault-docker-compose",
-			&remote.CopyToRemoteArgs{
-				Source:     pulumi.NewFileAsset("./outputs/vault_docker-compose.yml"),
-				RemotePath: pulumi.String("/opt/vault/docker-compose.yml"),
-				Triggers:   pulumi.Array{dockerComposeHash},
-				Connection: conn,
-			},
-			opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	dockerComposeHash, dockerComposeCopy := remotefile.CopyRendered(
+		ctx,
+		"remote-copy-vault-docker-compose",
+		"./outputs/vault_docker-compose.yml",
+		pulumi.String("/opt/vault/docker-compose.yml"),
+		pulumi.String(dockerCompose),
+		conn,
+		opts...,
+	)
 
 	vaultConfig, _ := pulumi.All(vaultData.ScalewayBucket.Name, vaultData.Application.Key.AccessKey, vaultData.Application.Key.SecretKey).ApplyT(func(args []any) string {
 		scalewayBucket, _ := args[0].(string)
@@ -84,20 +76,15 @@ func installer(
 		})
 		return tpl
 	}).(pulumi.StringOutput)
-	vaultConfigHash := file.WritePulumi("./outputs/vault_vault-config.hcl", vaultConfig).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash("./outputs/vault_vault-config.hcl")
-			return *hash
-		})
-	vaultConfigCopy := vaultConfigHash.ApplyT(func(_ string) pulumi.ResourceOption {
-		cmd, _ := remote.NewCopyToRemote(ctx, "remote-copy-vault-config", &remote.CopyToRemoteArgs{
-			Source:     pulumi.NewFileAsset("./outputs/vault_vault-config.hcl"),
-			RemotePath: pulumi.String("/opt/vault/config/vault-config.hcl"),
-			Triggers:   pulumi.Array{vaultConfigHash},
-			Connection: conn,
-		}, opts...)
-		return pulumi.DependsOn([]pulumi.Resource{cmd})
-	})
+	vaultConfigHash, vaultConfigCopy := remotefile.CopyRendered(
+		ctx,
+		"remote-copy-vault-config",
+		"./outputs/vault_vault-config.hcl",
+		pulumi.String("/opt/vault/config/vault-config.hcl"),
+		vaultConfig,
+		conn,
+		opts...,
+	)
 
 	opts, systemdServiceHash, shErr := install.SystemDService(ctx, "vault", conn, opts...)
 	if shErr != nil {
@@ -113,5 +100,5 @@ func installer(
 		Update:     pulumi.StringPtr(installFn),
 		Triggers:   pulumi.Array{dockerComposeHash, pulumi.String(*systemdServiceHash), vaultConfigHash},
 		Connection: conn,
-	}, append(opts, install.CollectResourceOptions([]pulumi.Output{dockerComposeCopy, vaultConfigCopy})...)...)
+	}, append(opts, remotefile.DependsOnAll(dockerComposeCopy, vaultConfigCopy))...)
 }
