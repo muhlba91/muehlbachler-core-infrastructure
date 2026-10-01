@@ -3,12 +3,12 @@ module github.com/muhlba91/muehlbachler-core-infrastructure
 go 1.27.0
 
 require (
-	github.com/muhlba91/pulumi-shared-library v0.0.0-20260926044517-16c92de2caa3
+	github.com/muhlba91/pulumi-shared-library v0.0.0-20261001060935-616c76e01609
 	github.com/pulumi/pulumi-command/sdk v1.2.1
 	github.com/pulumi/pulumi-hcloud/sdk v1.42.0
 	github.com/pulumi/pulumi-tls/sdk/v5 v5.6.1
 	github.com/pulumi/pulumi-vault/sdk/v7 v7.13.0
-	github.com/pulumi/pulumi/sdk/v3 v3.265.0
+	github.com/pulumi/pulumi/sdk/v3 v3.266.0
 	github.com/pulumiverse/pulumi-scaleway/sdk v1.56.1
 	github.com/rs/zerolog v1.35.1
 	gopkg.in/yaml.v3 v3.0.1
