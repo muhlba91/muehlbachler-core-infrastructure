@@ -198,7 +198,16 @@ func main() {
 		}
 
 		// netbird (client)
-		_, ncErr := netbirdclient.Install(ctx, netbirdInstance)
+		_, ncErr := netbirdclient.Install(
+			ctx,
+			instance.SSHIPv4,
+			sshKey.PrivateKeyPem,
+			instance.Hostname,
+			dnsConfig,
+			netbirdConfig,
+			netbirdInstance,
+			dependsOn,
+		)
 		if ncErr != nil {
 			return ncErr
 		}

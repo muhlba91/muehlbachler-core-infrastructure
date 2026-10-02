@@ -139,8 +139,6 @@ func createConfigs(
 		opts...,
 	)
 
-	// note: the hashes derive from new (secret) values, which are unknown during previews:
-	// unknown secrets are not accepted as triggers, and the hash of secret content is not sensitive
 	return []pulumi.ResourceOutput{dockerComposeCopy, netbirdConfigCopy}, pulumi.Array{
 		pulumi.Unsecret(dockerComposeHash),
 		pulumi.Unsecret(netbirdConfigHash),
