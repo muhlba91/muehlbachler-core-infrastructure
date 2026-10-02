@@ -23,6 +23,7 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/hetzner/server"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/journal"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/netbird"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/netbirdclient"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/scaleway"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/scaleway/application"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/tailscale"
@@ -194,6 +195,12 @@ func main() {
 		)
 		if nbErr != nil {
 			return nbErr
+		}
+
+		// netbird (client)
+		_, ncErr := netbirdclient.Install(ctx, netbirdInstance)
+		if ncErr != nil {
+			return ncErr
 		}
 
 		// write output files
