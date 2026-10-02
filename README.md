@@ -192,6 +192,11 @@ netbird:
 > afterwards, add the `All` group to the IPv6 enabled groups again in NetBird, otherwise the peers lose their IPv6 addresses.
 
 > [!IMPORTANT]  
+> The owner created by the setup endpoint has no domain, so SSO users would each open their own account instead of joining it.
+> Directly after the setup, the initialization sets the domain `netbird.selfhosted` (the one hard-coded by the NetBird server), the category `private`, and the primary flag on the owner account.
+> This is only done on the first installation: for an existing instance, set `domain`, `domain_category`, and `is_domain_primary_account` of the owner account manually, and restart NetBird.
+
+> [!IMPORTANT]  
 > If the NetBird database is lost, all clients must be registered again with a new setup key.
 
 ---

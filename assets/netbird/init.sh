@@ -10,6 +10,8 @@ SETUP_BODY_FILE="/opt/netbird/setup.json"
 # the lifetime of tokens, and the remaining lifetime at which they are rotated (in days): set by Pulumi
 : "${EXPIRY_DAYS:?must be set}"
 : "${ROTATE_BEFORE_DAYS:?must be set}"
+# the domain the combined server hard-codes for single account mode (not configurable)
+SINGLE_ACCOUNT_DOMAIN="netbird.selfhosted"
 
 # extracts a string value from a (compact) JSON document on stdin
 json_field() {
@@ -113,6 +115,14 @@ elif echo "${INSTANCE}" | grep -Eq '"setup_required" *: *true'; then
 
     # the request contains the password: it is not needed anymore
     rm -f "${SETUP_BODY_FILE}"
+
+    # the setup endpoint creates the owner account without domain, category, and primary flag, but the combined server
+    # groups SSO users by the (hardcoded) single account mode domain: without a match, every new SSO user opens its own
+    # account (netbirdio/netbird#2773, #7197). only done here, directly after the setup, for the account of the owner.
+    if ! docker exec netbird-postgres sh -c "psql -v ON_ERROR_STOP=1 -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -c \"update accounts set domain = '${SINGLE_ACCOUNT_DOMAIN}', domain_category = 'private', is_domain_primary_account = true where id = (select account_id from users where id = '${USER_ID}');\""; then
+        echo "Failed to set the single account mode domain of the NetBird owner account (set domain, domain_category, is_domain_primary_account manually)." >&2
+        exit 1
+    fi
 else
     echo "NetBird is already set up, but ${PAT_FILE} does not exist (and could not be restored from backup)." >&2
     echo "Create a personal access token manually and write it to ${PAT_FILE} (yaml: user_id, email, token, token_id, expires_at)." >&2
