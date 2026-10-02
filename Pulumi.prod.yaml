@@ -50,6 +50,10 @@ config:
         description: Allow incoming Wireguard (wg4) traffic
         port: 65401
         protocol: udp
+      netbird-client:
+        description: Allow incoming NetBird client WireGuard (wt0) traffic
+        port: 65500
+        protocol: udp
     dnsSuffix: de.hetzner.muehlbachler.io
   muehlbachler-core-infrastructure:oidc:
     discoveryUrl: https://muehlbachler-mhvy5g.zitadel.cloud
@@ -130,3 +134,6 @@ config:
     admin:
       name: admin
       email: daniel@muehlbachler.io
+    client:
+      wireguardPort: 65500
+      mtu: 1420

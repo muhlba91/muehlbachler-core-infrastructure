@@ -10,6 +10,7 @@ import (
 
 // Install NetBird (server) on the remote server via SSH and create necessary resources.
 // The personal access token of the initial owner is stored in Vault, which must be installed before.
+// The returned instance is usable (e.g., via its provider) once its ready resource is completed.
 // ctx: Pulumi context.
 // sshIPv4: The IPv4 address of the server to connect to via SSH.
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
@@ -24,10 +25,10 @@ func Install(ctx *pulumi.Context,
 	netbirdConfig *netbirdConf.Config,
 	vaultInstanceData *pulumi.AnyOutput,
 	dependsOn []pulumi.Resource,
-) (*netbird.Data, pulumi.StringOutput, pulumi.Resource, error) {
+) (*netbird.Instance, error) {
 	netbirdData, ndErr := createResources(ctx, netbirdConfig)
 	if ndErr != nil {
-		return nil, pulumi.StringOutput{}, nil, ndErr
+		return nil, ndErr
 	}
 
 	netbirdInstall, niErr := installer(
@@ -39,10 +40,10 @@ func Install(ctx *pulumi.Context,
 		pulumi.DependsOn(dependsOn),
 	)
 	if niErr != nil {
-		return nil, pulumi.StringOutput{}, nil, niErr
+		return nil, niErr
 	}
 
-	token, nErr := configure(
+	token, initCmd, nErr := configure(
 		ctx,
 		sshIPv4,
 		privateKeyPem,
@@ -51,8 +52,29 @@ func Install(ctx *pulumi.Context,
 		pulumi.DependsOn(append([]pulumi.Resource{netbirdInstall}, dependsOn...)),
 	)
 	if nErr != nil {
-		return nil, pulumi.StringOutput{}, nil, nErr
+		return nil, nErr
 	}
 
-	return netbirdData, token, netbirdInstall, nil
+	ready, rErr := waitReady(
+		ctx,
+		sshIPv4,
+		privateKeyPem,
+		dnsConfig,
+		pulumi.DependsOn([]pulumi.Resource{initCmd}),
+	)
+	if rErr != nil {
+		return nil, rErr
+	}
+
+	provider, pErr := createProvider(ctx, dnsConfig, token)
+	if pErr != nil {
+		return nil, pErr
+	}
+
+	return &netbird.Instance{
+		Data:     netbirdData,
+		Token:    token,
+		Provider: provider,
+		Ready:    ready,
+	}, nil
 }

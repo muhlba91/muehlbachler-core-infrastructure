@@ -35,13 +35,14 @@ const (
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
 // netbirdData: NetBird configuration data.
 // dependsOn: Pulumi resource option to specify dependencies.
+// Returns the token and the initialization command.
 func initialize(
 	ctx *pulumi.Context,
 	sshIPv4 pulumi.StringOutput,
 	privateKeyPem pulumi.StringOutput,
 	netbirdData *netbird.Data,
 	dependsOn pulumi.ResourceOrInvokeOption,
-) (pulumi.StringOutput, error) {
+) (pulumi.StringOutput, *remote.Command, error) {
 	conn := &remote.ConnectionArgs{
 		Host:       sshIPv4,
 		PrivateKey: privateKeyPem,
@@ -71,7 +72,7 @@ func initialize(
 
 	initScript, sErr := file.ReadContents("./assets/netbird/init.sh")
 	if sErr != nil {
-		return pulumi.StringOutput{}, sErr
+		return pulumi.StringOutput{}, nil, sErr
 	}
 
 	// the settings are passed as variables prefixed to the script: the environment of a command requires sshd to accept them
@@ -86,7 +87,7 @@ func initialize(
 
 	rotation, rErr := rotationTrigger(ctx)
 	if rErr != nil {
-		return pulumi.StringOutput{}, rErr
+		return pulumi.StringOutput{}, nil, rErr
 	}
 
 	cmd, cErr := remote.NewCommand(ctx, "netbird-init", &remote.CommandArgs{
@@ -103,7 +104,7 @@ func initialize(
 			Update: "40m",
 		}))
 	if cErr != nil {
-		return pulumi.StringOutput{}, cErr
+		return pulumi.StringOutput{}, nil, cErr
 	}
 
 	token, _ := cmd.Stdout.ApplyT(func(stdout string) (string, error) {
@@ -121,7 +122,7 @@ func initialize(
 		return token, nil
 	}).(pulumi.StringOutput)
 
-	return token, nil
+	return token, cmd, nil
 }
 
 // rotationTrigger creates the schedule re-running the initialization to check, and rotate the token.

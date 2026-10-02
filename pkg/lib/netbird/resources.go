@@ -104,6 +104,10 @@ func validateConfig(netbirdConfig *netbirdConf.Config) error {
 	if admin == nil || admin.Name == nil || admin.Email == nil {
 		return errors.New("netbird: admin.name and admin.email must be configured")
 	}
+	client := netbirdConfig.Client
+	if client == nil || client.WireguardPort == nil || client.MTU == nil {
+		return errors.New("netbird: client.wireguardPort and client.mtu must be configured")
+	}
 	return nil
 }
 

@@ -88,7 +88,7 @@ func createConfigs(
 
 	dockerCompose, _ := netbirdData.DatabasePassword.ApplyT(func(password string) (string, error) {
 		return template.Render("./assets/netbird/docker-compose.yml.j2", map[string]any{
-			"domain": domain,
+			"domain": domain, //nolint:goconst // template key
 			"db": map[string]string{
 				"database": netbirdDatabaseName,
 				"user":     netbirdDatabaseUser,

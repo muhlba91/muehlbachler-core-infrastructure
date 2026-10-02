@@ -5,6 +5,7 @@ import (
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/lib/vault/secret"
 	"github.com/muhlba91/pulumi-shared-library/pkg/lib/vault/store"
+	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi-vault/sdk/v7/go/vault"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
@@ -13,7 +14,7 @@ import (
 )
 
 // Configure configures a NetBird instance on a server: it initializes it, and stores the personal access token in Vault.
-// The returned token resolves once it is stored in Vault.
+// The returned token resolves once it is stored in Vault, and the returned command is the initialization.
 // ctx: Pulumi context.
 // sshIPv4: The IPv4 address of the server to connect to via SSH.
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
@@ -27,10 +28,10 @@ func configure(
 	netbirdData *netbird.Data,
 	vaultInstanceData *pulumi.AnyOutput,
 	dependsOn pulumi.ResourceOrInvokeOption,
-) (pulumi.StringOutput, error) {
-	token, iErr := initialize(ctx, sshIPv4, privateKeyPem, netbirdData, dependsOn)
+) (pulumi.StringOutput, *remote.Command, error) {
+	token, initCmd, iErr := initialize(ctx, sshIPv4, privateKeyPem, netbirdData, dependsOn)
 	if iErr != nil {
-		return pulumi.StringOutput{}, iErr
+		return pulumi.StringOutput{}, nil, iErr
 	}
 
 	stored, _ := pulumi.All(token, *vaultInstanceData).ApplyT(func(vs []any) (string, error) {
@@ -40,7 +41,7 @@ func configure(
 		return nbToken, storeToken(ctx, nbToken, vaultInstance.Provider)
 	}).(pulumi.StringOutput)
 
-	return stored, nil
+	return stored, initCmd, nil
 }
 
 // Stores the NetBird personal access token in Vault's KV secrets engine.

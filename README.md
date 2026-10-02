@@ -167,7 +167,7 @@ tailscale:
 ### NetBird
 
 Only the NetBird **server** is installed by Pulumi (DNS entry `netbird` is required, see [DNS](#dns)).
-The `netbird-stun` firewall rule (UDP `3478`) must exist, see [Network](#network).
+The `netbird-stun` firewall rule (UDP `3478`) and the `netbird-client` firewall rule (UDP, the same port as `netbird.client.wireguardPort`) must exist, see [Network](#network).
 
 ```yaml
 netbird:
@@ -175,6 +175,9 @@ netbird:
   admin: the initial owner, created once via the setup API
     name: the display name
     email: the login email
+  client: the NetBird client running on this server
+    wireguardPort: the fixed WireGuard (UDP) port of the client, must match the netbird-client firewall rule (e.g. 65500)
+    mtu: the MTU of the client interface (e.g. 1420: the maximum for WireGuard on a 1500 byte link, 1370 remain for VXLAN on top)
 ```
 
 > [!IMPORTANT]  
@@ -182,6 +185,9 @@ netbird:
 > the restored database cannot be decrypted without the key.
 > After a full re-bootstrap with lost Pulumi state, the owner already
 > exists in the restored data, so a newly generated password does not apply: reset it in NetBird.
+
+> [!IMPORTANT]  
+> The fixed client port is not strictly required (NetBird falls back to its relay), but it allows direct connections to the public IP of the server.
 
 > [!IMPORTANT]  
 > If the NetBird database is lost, all clients must be registered again with a new setup key.

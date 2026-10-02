@@ -1,0 +1,14 @@
+#!/bin/sh
+
+### netbird ###
+
+# wait until NetBird is reachable via its public address (DNS, Traefik, and certificate)
+ATTEMPTS=0
+until curl -sf --max-time 10 -o /dev/null "https://{{ .domain }}/api/instance"; do
+    ATTEMPTS=$((ATTEMPTS + 1))
+    if [ "$ATTEMPTS" -ge 60 ]; then
+        echo "netbird is not reachable via https://{{ .domain }}." >&2
+        exit 1
+    fi
+    sleep 5
+done

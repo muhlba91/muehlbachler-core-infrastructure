@@ -182,8 +182,8 @@ func main() {
 			return tsErr
 		}
 
-		// netbird (server): installed after vault as the token is stored in vault
-		netbirdData, netbirdPAT, _, nbErr := netbird.Install(
+		// netbird (server)
+		netbirdInstance, nbErr := netbird.Install(
 			ctx,
 			instance.SSHIPv4,
 			sshKey.PrivateKeyPem,
@@ -207,8 +207,8 @@ func main() {
 			vaultInstanceData,
 			wireguardData,
 			dnsConfig,
-			netbirdData,
-			netbirdPAT,
+			netbirdInstance.Data,
+			netbirdInstance.Token,
 		)
 
 		return nil
