@@ -15,4 +15,6 @@ type Instance struct {
 	Provider *nbProvider.Provider
 	// Ready is the resource which is completed once the instance is reachable via its public address.
 	Ready pulumi.Resource
+	// Settings is the resource configuring the account: resources of the instance (e.g., setup keys) depend on it.
+	Settings pulumi.Resource
 }

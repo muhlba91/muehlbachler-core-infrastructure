@@ -7,6 +7,9 @@ type Config struct {
 	StoreEncryptionKey *string `yaml:"storeEncryptionKey,omitempty"`
 	// Admin is the initial admin of the NetBird instance.
 	Admin *AdminConfig `yaml:"admin,omitempty"`
+	// NetworkRange is the IPv4 range (CIDR) the NetBird peers are addressed from.
+	// It must not overlap Tailscale (100.64.0.0/10), nor any other network routed with it.
+	NetworkRange *string `yaml:"networkRange,omitempty"`
 	// Client is the NetBird client of this server.
 	Client *ClientConfig `yaml:"client,omitempty"`
 }

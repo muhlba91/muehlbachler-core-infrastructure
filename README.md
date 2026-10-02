@@ -175,6 +175,7 @@ netbird:
   admin: the initial owner, created once via the setup API
     name: the display name
     email: the login email
+  networkRange: the IPv4 range (CIDR) the peers are addressed from (e.g. 10.253.0.0/16): it must not overlap with other network routed over the overlay
   client: the NetBird client running on this server
     wireguardPort: the fixed WireGuard (UDP) port of the client, must match the netbird-client firewall rule (e.g. 65500)
     mtu: the MTU of the client interface (e.g. 1420: the maximum for WireGuard on a 1500 byte link, 1370 remain for VXLAN on top)
@@ -187,7 +188,8 @@ netbird:
 > exists in the restored data, so a newly generated password does not apply: reset it in NetBird.
 
 > [!IMPORTANT]  
-> The fixed client port is not strictly required (NetBird falls back to its relay), but it allows direct connections to the public IP of the server.
+> The Pulumi provider does not know the IPv6 settings of the NetBird account, and every update of the account settings (including the first apply, e.g., a changed `networkRange`) resets them:
+> afterwards, add the `All` group to the IPv6 enabled groups again in NetBird, otherwise the peers lose their IPv6 addresses.
 
 > [!IMPORTANT]  
 > If the NetBird database is lost, all clients must be registered again with a new setup key.

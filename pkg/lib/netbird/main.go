@@ -71,10 +71,16 @@ func Install(ctx *pulumi.Context,
 		return nil, pErr
 	}
 
+	settings, sErr := configureAccount(ctx, netbirdConfig, provider, pulumi.DependsOn([]pulumi.Resource{ready}))
+	if sErr != nil {
+		return nil, sErr
+	}
+
 	return &netbird.Instance{
 		Data:     netbirdData,
 		Token:    token,
 		Provider: provider,
 		Ready:    ready,
+		Settings: settings,
 	}, nil
 }

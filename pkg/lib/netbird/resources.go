@@ -3,6 +3,7 @@ package netbird
 import (
 	"errors"
 	"fmt"
+	"net/netip"
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/lib/random"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -21,6 +22,8 @@ const (
 	netbirdDatabaseName = "netbird"
 	// netbirdDatabaseUser is the user of the database.
 	netbirdDatabaseUser = "netbird"
+	// tailscaleRange is the range Tailscale uses: its firewall drops such traffic not arriving on its interface.
+	tailscaleRange = "100.64.0.0/10"
 )
 
 // createResources creates resources for NetBird based on the provided configuration.
@@ -104,9 +107,28 @@ func validateConfig(netbirdConfig *netbirdConf.Config) error {
 	if admin == nil || admin.Name == nil || admin.Email == nil {
 		return errors.New("netbird: admin.name and admin.email must be configured")
 	}
+	if err := validateNetworkRange(netbirdConfig.NetworkRange); err != nil {
+		return err
+	}
 	client := netbirdConfig.Client
 	if client == nil || client.WireguardPort == nil || client.MTU == nil {
 		return errors.New("netbird: client.wireguardPort and client.mtu must be configured")
+	}
+	return nil
+}
+
+// validateNetworkRange verifies the network range is an IPv4 CIDR outside of the carrier-grade NAT range used by Tailscale.
+// networkRange: The configured network range.
+func validateNetworkRange(networkRange *string) error {
+	if networkRange == nil {
+		return errors.New("netbird: networkRange must be configured")
+	}
+	prefix, err := netip.ParsePrefix(*networkRange)
+	if err != nil || !prefix.Addr().Is4() {
+		return fmt.Errorf("netbird: networkRange must be an IPv4 CIDR: %q", *networkRange)
+	}
+	if prefix.Overlaps(netip.MustParsePrefix(tailscaleRange)) {
+		return fmt.Errorf("netbird: networkRange must not overlap Tailscale (%s): %q", tailscaleRange, *networkRange)
 	}
 	return nil
 }

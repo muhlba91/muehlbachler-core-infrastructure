@@ -137,3 +137,4 @@ config:
     client:
       wireguardPort: 65500
       mtu: 1420
+    networkRange: 10.253.0.0/16

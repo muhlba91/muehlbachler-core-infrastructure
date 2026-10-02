@@ -42,6 +42,6 @@ func Install(
 		setupKey,
 		dnsConfig,
 		netbirdConfig,
-		pulumi.DependsOn(append([]pulumi.Resource{netbirdInstance.Ready}, dependsOn...)),
+		pulumi.DependsOn(append([]pulumi.Resource{netbirdInstance.Ready, netbirdInstance.Settings}, dependsOn...)),
 	)
 }

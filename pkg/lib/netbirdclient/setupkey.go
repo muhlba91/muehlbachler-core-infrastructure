@@ -25,7 +25,7 @@ func createSetupKey(ctx *pulumi.Context, netbirdInstance *netbird.Instance) (pul
 		Rotation: &rModel.Options{Days: setupKeyRotationDays},
 		PulumiOptions: []pulumi.ResourceOption{
 			pulumi.Provider(netbirdInstance.Provider),
-			pulumi.DependsOn([]pulumi.Resource{netbirdInstance.Ready}),
+			pulumi.DependsOn([]pulumi.Resource{netbirdInstance.Ready, netbirdInstance.Settings}),
 		},
 	})
 	if err != nil {
