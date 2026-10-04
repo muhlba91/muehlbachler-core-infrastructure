@@ -107,6 +107,7 @@ config:
         gre:
           remoteIp: 185.121.24.139
           tunnelIp: 2a11:6c7:f13:21::2/64
+          linkLocalIp: fe80::5f4:a8f4:e9b5:8d11/64
         addresses:
           - 2a11:6c7:f13:21::1
       de-bgpexchange-fra-001:
@@ -117,6 +118,7 @@ config:
           remoteIp: 193.148.249.248
           tunnelIp: 2a0e:8f01:1000:24::1f4/64
           type: gretap
+          linkLocalIp: fe80::ba95:9447:1b07:bf6/64
         addresses:
           - 2a0e:8f01:1000:24::1
           - 2a0e:8f01:1000:24::2

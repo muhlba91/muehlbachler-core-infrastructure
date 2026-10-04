@@ -145,6 +145,7 @@ bgp:
       gre: the GRE tunnel configuration for this neighbor, if applicable
         remoteIp: the GRE neighbor address
         tunnelIp: the GRE tunnel IP address
+        linkLocalIp: the GRE link-local IP address
         type: the type of the GRE network interface (optional, default: "gre")
   internalNetworks: the internal networks to be advertised
     ipv4: a list of IPv4 networks to advertise internally

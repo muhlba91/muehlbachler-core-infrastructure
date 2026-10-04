@@ -87,17 +87,19 @@ func createConfig(
 ) pulumi.StringOutput {
 	netplanConfig, _ := localIP.ApplyT(func(localIP string) string {
 		netplanData := struct {
-			Name     string
-			LocalIP  string
-			RemoteIP string
-			TunnelIP string
-			Type     string
+			Name        string
+			LocalIP     string
+			RemoteIP    string
+			TunnelIP    string
+			LinkLocalIP string
+			Type        string
 		}{
-			Name:     *neighbor.InterfaceName,
-			LocalIP:  localIP,
-			RemoteIP: *neighbor.GRE.RemoteIP,
-			TunnelIP: *neighbor.GRE.TunnelIP,
-			Type:     defaults.GetOrDefault(neighbor.GRE.Type, "gre"),
+			Name:        *neighbor.InterfaceName,
+			LocalIP:     localIP,
+			RemoteIP:    *neighbor.GRE.RemoteIP,
+			TunnelIP:    *neighbor.GRE.TunnelIP,
+			LinkLocalIP: *neighbor.GRE.LinkLocalIP,
+			Type:        defaults.GetOrDefault(neighbor.GRE.Type, "gre"),
 		}
 
 		config, _ := template.Render("./assets/frr/gre/config/netplan.yml.j2", netplanData)
