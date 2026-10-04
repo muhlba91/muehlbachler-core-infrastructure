@@ -8,3 +8,5 @@ net.ipv6.conf.default.accept_ra = 0
 net.ipv6.conf.all.autoconf = 0
 net.ipv6.conf.all.accept_ra = 0
 EOF
+
+sysctl --system
