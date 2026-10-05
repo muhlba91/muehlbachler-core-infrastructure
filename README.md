@@ -153,7 +153,7 @@ bgp:
   publicNetworks: the public networks to be advertised
     ipv4: a list of IPv4 networks to advertise publicly
     ipv6: a list of IPv6 networks to advertise publicly
-  evpn: the EVPN (L3VNI) configuration over the NetBird overlay (optional, requires NetBird, see [NetBird](#netbird))
+  evpn: the EVPN (L3VNI) configuration over the NetBird overlay (requires NetBird, see [NetBird](#netbird))
     vrf: the name of the VRF carrying the L3VNI (e.g. mesh)
     vni: the VXLAN network identifier of the L3VNI, the same on all sites (e.g. 50001)
     table: the kernel routing table of the VRF (e.g. 1001)
@@ -161,10 +161,18 @@ bgp:
     leakNetworks: the networks leaked between the default VRF and the EVPN VRF (the public IPv6 networks are always leaked, the NetBird network range never)
       ipv4: a list of IPv4 networks (e.g. 10.0.0.0/8)
       ipv6: a list of IPv6 networks (e.g. fc00::/7)
+    clientNat: the host addresses in the EVPN VRF which the NetBird clients are masqueraded to (see [NetBird](#netbird))
+      ipv4: a list of IPv4 host prefixes (e.g. 10.254.0.1/32)
+      ipv6: a list of IPv6 host prefixes (e.g. 2001:678:dc0:ff::1/128)
 ```
 
 With EVPN, the site routers are dynamic BGP neighbors from the NetBird network range (`netbird.networkRange`), and need no change of this configuration.
 The server uses its NetBird IPv4 address as VXLAN source (VTEP), which is looked up by its peer name (the hostname) once the NetBird client is registered, and exported as `netbird.client.ipv4`: the site routers peer with it.
+The client NAT addresses are assigned to the EVPN bridge, and announced into EVPN.
+
+> [!IMPORTANT]  
+> When the bridge loses its last IPv4 address (e.g., a changed `clientNat` address), the kernel removes the IPv4 routes through it without notifying FRR.
+> The EVPN installation therefore resets the EVPN sessions at its end, which installs the routes again (the site routers reconnect within seconds).
 
 > [!IMPORTANT]  
 > The kernel modules `vrf`, and `vxlan` are only part of `linux-image-extra-virtual`, which is installed on the first installation of FRR:
@@ -186,9 +194,13 @@ tailscale:
 
 ### NetBird
 
-Only the NetBird **server** is installed by Pulumi (DNS entry `netbird` is required, see [DNS](#dns)).
+The NetBird server, and a NetBird client on this server are installed by Pulumi (DNS entry `netbird` is required, see [DNS](#dns)).
 The `netbird-stun` firewall rule (UDP `3478`) and the `netbird-client` firewall rule (UDP, the same port as `netbird.client.wireguardPort`) must exist, see [Network](#network).
 The NetBird client on the server enforces the NetBird access policies on traffic arriving through the overlay: only peers allowed by a policy reach the server (e.g. BGP and VXLAN for the `backbone` group).
+
+The server is the routing peer of the NetBird network `sites` for the NetBird clients (e.g. laptops): its resources are the networks leaked into the EVPN VRF and the public IPv6 networks, and the policy `admins` lets the group `admins` reach them.
+The server masquerades the clients to the client NAT addresses (`bgp.evpn.clientNat`), which it announces into EVPN: the sites route the replies back, and new sites appear dynamically through BGP (no change in NetBird).
+The members of the groups (`backbone`, `admins`) are managed in NetBird (dashboard or setup keys): Pulumi ignores them.
 
 ```yaml
 netbird:

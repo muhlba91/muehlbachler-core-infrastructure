@@ -3,6 +3,7 @@ package evpn
 import (
 	"fmt"
 	"maps"
+	"slices"
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/template"
@@ -47,6 +48,8 @@ func installer(
 		return nil, prepErr
 	}
 
+	clientNAT := slices.Concat(evpnConfig.ClientNAT.IPv4, evpnConfig.ClientNAT.IPv6)
+
 	// the device names are derived from the VNI
 	templateData := map[string]any{
 		"vrf":              *evpnConfig.VRF,
@@ -56,6 +59,7 @@ func installer(
 		"bridge":           fmt.Sprintf("br%d", *evpnConfig.VNI),
 		"vxlan":            fmt.Sprintf("vni%d", *evpnConfig.VNI),
 		"netbirdInterface": netbirdInterface,
+		"clientNat":        clientNAT,
 	}
 
 	configResources, configHashes, cErr := createConfigs(ctx, templateData, vtep, sshIPv4, conn, opts...)

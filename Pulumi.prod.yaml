@@ -132,6 +132,11 @@ config:
           - 10.0.0.0/8
         ipv6:
           - fc00::/7
+      clientNat:
+        ipv4:
+          - 10.254.0.1/32
+        ipv6:
+          - 2001:678:dc0:ff::1/128
   muehlbachler-core-infrastructure:tailscale:
     authKey:
       secure: v1:jA/QT10wLkNbjLg4:t76dqKbE4c/NQdDbCy17g5UHIdk0NrUcnJpSYgIZhmQpi6eXzgPnsqRDkR3mU+/+9vHcZ3UXmXbE6SCy87y0SD7bo1ZJUNc5yOKDDts=

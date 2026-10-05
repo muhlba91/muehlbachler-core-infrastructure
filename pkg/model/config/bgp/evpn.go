@@ -14,4 +14,8 @@ type EVPNConfig struct {
 	// LeakNetworks are the networks leaked between the default VRF and the EVPN VRF (both directions).
 	// The public IPv6 networks (PublicNetworks) are always leaked, and the NetBird network range never.
 	LeakNetworks *AdvertisedNetworksConfig `yaml:"leakNetworks,omitempty"`
+	// ClientNAT are the host addresses in the EVPN VRF which the traffic of NetBird clients is masqueraded to.
+	// The server routes the clients into the sites, and the sites route the replies back to these addresses (EVPN):
+	// the masquerade only picks a source address of the VRF the traffic leaves into.
+	ClientNAT *AdvertisedNetworksConfig `yaml:"clientNat,omitempty"`
 }

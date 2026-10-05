@@ -229,6 +229,17 @@ func main() {
 			return evErr
 		}
 
+		// netbird client access: this server routes the clients into the sites (masqueraded to the client NAT addresses)
+		if caErr := netbird.CreateClientAccess(
+			ctx,
+			instance.Hostname,
+			bgpConfig,
+			netbirdInstance,
+			netbirdClientInstall,
+		); caErr != nil {
+			return caErr
+		}
+
 		// write output files
 		writeOutputFiles(ctx, sshKey, vaultInstanceData)
 
@@ -292,7 +303,7 @@ func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInst
 // dnsConfig: The DNS configuration.
 // netbirdData: The NetBird resources data.
 // netbirdPAT: The NetBird personal access token.
-// netbirdIPv4: The NetBird IPv4 address of the server (EVPN VTEP, empty without EVPN).
+// netbirdIPv4: The NetBird IPv4 address of the server (the EVPN VTEP).
 func exportPulumiOutputs(
 	ctx *pulumi.Context,
 	instance *serverModel.Data,

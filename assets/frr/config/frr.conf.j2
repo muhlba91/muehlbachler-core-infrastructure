@@ -171,12 +171,19 @@ router bgp {{ .bgp.LocalASN }} vrf {{ .bgp.EVPN.VRF }}
   ! global configuration
   bgp router-id {{ .publicIp }}
 
+  ! the NetBird clients are masqueraded to the client NAT addresses: the sites route the replies back via EVPN
   address-family ipv4 unicast
+{{- range .bgp.EVPN.ClientNAT.IPv4 }}
+    network {{ . }}
+{{- end }}
     import vrf default
     import vrf route-map EVPN-LEAK-V4
   exit-address-family
 
   address-family ipv6 unicast
+{{- range .bgp.EVPN.ClientNAT.IPv6 }}
+    network {{ . }}
+{{- end }}
     import vrf default
     import vrf route-map EVPN-LEAK-V6
   exit-address-family

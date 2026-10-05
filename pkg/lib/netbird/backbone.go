@@ -1,6 +1,8 @@
 package netbird
 
 import (
+	"slices"
+
 	nbProvider "github.com/KitStream/netbird-pulumi-provider/sdk/go/netbird"
 	"github.com/muhlba91/pulumi-shared-library/pkg/lib/netbird/group"
 	"github.com/muhlba91/pulumi-shared-library/pkg/lib/netbird/policy"
@@ -30,7 +32,9 @@ func createBackbone(
 ) (pulumi.StringOutput, error) {
 	opts := []pulumi.ResourceOption{pulumi.Provider(provider), pulumi.DependsOn(dependsOn)}
 
-	backbone, gErr := group.Create(ctx, backboneName, &group.CreateOptions{PulumiOptions: opts})
+	// the members are managed in NetBird (setup keys of the site routers)
+	membersOpts := append(slices.Clone(opts), pulumi.IgnoreChanges([]string{"peers"}))
+	backbone, gErr := group.Create(ctx, backboneName, &group.CreateOptions{PulumiOptions: membersOpts})
 	if gErr != nil {
 		return pulumi.StringOutput{}, gErr
 	}

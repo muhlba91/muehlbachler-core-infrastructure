@@ -24,3 +24,8 @@ chmod 0755 /opt/evpn/firewall.sh
 systemctl daemon-reload
 systemctl enable evpn
 systemctl restart evpn
+
+### frr ###
+# reconfiguring the bridge may remove its last IPv4 address (e.g., a changed client NAT address): the kernel then flushes
+# the IPv4 routes through it without notifying FRR, so the EVPN sessions are reset to install the routes again
+docker exec frr vtysh -c 'clear bgp l2vpn evpn *' 2>/dev/null || true

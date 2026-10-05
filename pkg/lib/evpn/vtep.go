@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/muhlba91/pulumi-shared-library/pkg/lib/netbird/peer"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
+	nbLib "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/netbird"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/netbird"
 )
 
@@ -23,22 +23,7 @@ func lookupVTEP(
 	netbirdInstance *netbird.Instance,
 	netbirdClient *remote.Command,
 ) pulumi.StringOutput {
-	// the ID of the NetBird client installation is only used to run the lookup after it (registered):
-	// direct invokes ignore the DependsOn option
-	vtep, _ := pulumi.All(hostname, netbirdClient.ID()).ApplyT(func(args []any) (string, error) {
-		name, _ := args[0].(string)
-
-		nbPeer, err := peer.Get(ctx, &peer.GetOptions{
-			Name:          &name,
-			PulumiOptions: []pulumi.InvokeOption{pulumi.Provider(netbirdInstance.Provider)},
-		})
-		if err != nil {
-			return "", err
-		}
-		return nbPeer.Ip, nil
-	}).(pulumi.StringOutput)
-
-	return vtep
+	return nbLib.LookupPeer(ctx, hostname, netbirdInstance, netbirdClient).MapIndex(pulumi.String(nbLib.PeerIPv4))
 }
 
 // routerMAC derives the router MAC address of the EVPN bridge from the BGP router ID (IPv4 address):

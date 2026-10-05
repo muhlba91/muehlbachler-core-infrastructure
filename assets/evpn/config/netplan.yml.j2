@@ -13,6 +13,11 @@ network:
     {{ .bridge }}:
       interfaces: [{{ .vxlan }}]
       macaddress: "{{ .routerMac }}"
+      # the NetBird clients are masqueraded to these addresses (in the VRF), see the FRR configuration
+      addresses:
+{{- range .clientNat }}
+        - "{{ . }}"
+{{- end }}
       mtu: {{ .mtu }}
       link-local: []
       parameters:
