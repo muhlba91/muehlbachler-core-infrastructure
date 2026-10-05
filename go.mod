@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/KitStream/netbird-pulumi-provider/sdk/go/netbird v0.0.0-20260919191558-542a8c184da4
-	github.com/muhlba91/pulumi-shared-library v0.0.0-20261005150629-248dddf890aa
+	github.com/muhlba91/pulumi-shared-library v0.0.0-20261005164816-c4835b2f712a
 	github.com/pulumi/pulumi-command/sdk v1.2.1
 	github.com/pulumi/pulumi-hcloud/sdk v1.42.0
 	github.com/pulumi/pulumi-tls/sdk/v5 v5.6.1
@@ -84,7 +84,7 @@ require (
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/pulumi/appdash v0.0.0-20231130102222-75f619a67231 // indirect
 	github.com/pulumi/pulumi-cloud-sdk/go v1.20260918.0 // indirect
-	github.com/pulumi/pulumi-gcp/sdk/v9 v9.37.0 // indirect
+	github.com/pulumi/pulumi-gcp/sdk/v9 v9.37.1 // indirect
 	github.com/pulumi/pulumi-google-native/sdk v0.32.0 // indirect
 	github.com/pulumi/pulumi-random/sdk/v4 v4.21.2 // indirect
 	github.com/pulumiverse/pulumi-time/sdk v0.1.0 // indirect
