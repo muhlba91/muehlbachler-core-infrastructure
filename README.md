@@ -188,6 +188,7 @@ tailscale:
 
 Only the NetBird **server** is installed by Pulumi (DNS entry `netbird` is required, see [DNS](#dns)).
 The `netbird-stun` firewall rule (UDP `3478`) and the `netbird-client` firewall rule (UDP, the same port as `netbird.client.wireguardPort`) must exist, see [Network](#network).
+The NetBird client on the server enforces the NetBird access policies on traffic arriving through the overlay: only peers allowed by a policy reach the server (e.g. BGP and VXLAN for the `backbone` group).
 
 ```yaml
 netbird:

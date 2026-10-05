@@ -10,11 +10,13 @@ services:
       - NB_INTERFACE_NAME=wt0
       - NB_WIREGUARD_PORT={{ .wireguardPort }}
       - NB_MTU={{ .mtu }}
-      # routing is done by EVPN/BGP, not by NetBird: no DNS takeover, no route install, no firewall management
+      # routing is done by EVPN/BGP, not by NetBird: no DNS takeover, no route install
       - NB_DISABLE_DNS=true
       - NB_DISABLE_CLIENT_ROUTES=true
       - NB_DISABLE_SERVER_ROUTES=true
-      - NB_DISABLE_FIREWALL=true
+      # the NetBird access policies are enforced on traffic arriving through the overlay (own nftables tables)
+      # NB_DISABLE_* settings are stored at the registration: a registered client only takes changes with 'netbird down' and 'netbird up'
+      - NB_DISABLE_FIREWALL=false
       - NB_LOG_LEVEL=info
       # the setup key is only needed for the first registration: it is removed from the server once the client is connected
       - NB_SETUP_KEY={{ .setupKey }}
