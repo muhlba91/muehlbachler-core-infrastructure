@@ -1,0 +1,31 @@
+---
+# EVPN (L3VNI) devices: VRF <- bridge (router MAC) <- VXLAN.
+# The VXLAN device has no parent link: the NetBird interface belongs to NetBird, and the kernel accepts
+# a local address which is not assigned yet (VXLAN works once NetBird assigns it).
+network:
+  version: 2
+  renderer: networkd
+  vrfs:
+    {{ .vrf }}:
+      table: {{ .table }}
+      interfaces: [{{ .bridge }}]
+  bridges:
+    {{ .bridge }}:
+      interfaces: [{{ .vxlan }}]
+      macaddress: "{{ .routerMac }}"
+      mtu: {{ .mtu }}
+      link-local: []
+      parameters:
+        stp: false
+        forward-delay: 0
+  tunnels:
+    {{ .vxlan }}:
+      mode: vxlan
+      id: {{ .vni }}
+      local: {{ .vtep }}
+      port: 4789
+      mac-learning: false
+      neigh-suppress: true
+      port-mac-learning: false
+      mtu: {{ .mtu }}
+      link-local: []

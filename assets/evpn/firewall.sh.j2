@@ -1,0 +1,48 @@
+#!/bin/sh
+
+### evpn firewall ###
+# iptables rules for EVPN in own chains, flushed and refilled on every start (idempotent), with one jump each.
+# Run by evpn.service after Docker (Docker sets the FORWARD policy to DROP).
+set -eu
+
+# create/flush the chain, and ensure the jump exists: <command> <table> <chain> <parent>
+chain() {
+  $1 -t "$2" -N "$3" 2>/dev/null || true
+  $1 -t "$2" -F "$3"
+  $1 -t "$2" -C "$4" -j "$3" 2>/dev/null || $1 -t "$2" -A "$4" -j "$3"
+}
+
+# remove the jump, and the chain: <command> <table> <chain> <parent>
+unchain() {
+  $1 -t "$2" -D "$4" -j "$3" 2>/dev/null || true
+  $1 -t "$2" -F "$3" 2>/dev/null || true
+  $1 -t "$2" -X "$3" 2>/dev/null || true
+}
+
+case "${1:-start}" in
+start)
+  # routed EVPN traffic out of the VRF (the way into it is covered by the tunnel interfaces)
+  chain iptables filter EVPN-FORWARD FORWARD
+  iptables -A EVPN-FORWARD -i {{ .bridge }} -j ACCEPT
+  iptables -A EVPN-FORWARD -i {{ .vrf }} -j ACCEPT
+  for c in iptables ip6tables; do
+    # VXLAN only through the NetBird overlay (VXLAN has no authentication)
+    chain $c filter EVPN-INPUT INPUT
+    $c -A EVPN-INPUT ! -i {{ .netbirdInterface }} -p udp --dport 4789 -j DROP
+    # TCP MSS for traffic entering VXLAN
+    chain $c mangle EVPN-MSS FORWARD
+    $c -t mangle -A EVPN-MSS -o {{ .bridge }} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+  done
+  ;;
+stop)
+  unchain iptables filter EVPN-FORWARD FORWARD
+  for c in iptables ip6tables; do
+    unchain $c filter EVPN-INPUT INPUT
+    unchain $c mangle EVPN-MSS FORWARD
+  done
+  ;;
+*)
+  echo "usage: $0 start|stop" >&2
+  exit 1
+  ;;
+esac

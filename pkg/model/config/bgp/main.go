@@ -10,6 +10,8 @@ type Config struct {
 	InternalNetworks *AdvertisedNetworksConfig `yaml:"internalNetworks,omitempty"`
 	// PublicNetworks are the public networks to be advertised.
 	PublicNetworks *AdvertisedNetworksConfig `yaml:"publicNetworks,omitempty"`
+	// EVPN is the EVPN configuration (optional).
+	EVPN *EVPNConfig `yaml:"evpn,omitempty"`
 }
 
 // AdvertisedNetworksConfig defines configuration data for advertised networks in BGP.

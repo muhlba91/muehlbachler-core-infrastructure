@@ -2,6 +2,12 @@
 frr defaults traditional
 hostname {{ .hostname }}
 log syslog warnings
+no zebra nexthop kernel enable
+
+! vrfs
+vrf {{ .bgp.EVPN.VRF }}
+  vni {{ .bgp.EVPN.VNI }}
+exit-vrf
 
 
 ! black holes
@@ -13,6 +19,17 @@ ipv6 route {{ . }} blackhole 254
 ! prefix lists
 {{- range .bgp.PublicNetworks.IPv6 }}
 ipv6 prefix-list PUBLIC-IPV6 permit {{ . }}
+{{- end }}
+
+ip prefix-list EVPN-UNDERLAY-V4 permit {{ .underlay }} le 32
+{{- range .bgp.EVPN.LeakNetworks.IPv4 }}
+ip prefix-list EVPN-INTERNAL-V4 permit {{ . }} le 32
+{{- end }}
+{{- range .bgp.EVPN.LeakNetworks.IPv6 }}
+ipv6 prefix-list EVPN-INTERNAL-V6 permit {{ . }} le 128
+{{- end }}
+{{- range .bgp.PublicNetworks.IPv6 }}
+ipv6 prefix-list EVPN-INTERNAL-V6 permit {{ . }} le 128
 {{- end }}
 
 
@@ -27,6 +44,17 @@ route-map PUBLIC-NETWORKS permit 100
 {{- if .bgp.PublicNetworks.IPv6 }}
   match ipv6 address prefix-list PUBLIC-IPV6
 {{- end }}
+exit
+
+! leaking between the default and the EVPN VRF: never the NetBird underlay (VXLAN would loop into itself)
+route-map EVPN-LEAK-V4 deny 10
+  match ip address prefix-list EVPN-UNDERLAY-V4
+exit
+route-map EVPN-LEAK-V4 permit 20
+  match ip address prefix-list EVPN-INTERNAL-V4
+exit
+route-map EVPN-LEAK-V6 permit 20
+  match ipv6 address prefix-list EVPN-INTERNAL-V6
 exit
 
 
@@ -51,6 +79,15 @@ router bgp {{ .bgp.LocalASN }}
   neighbor INTERNAL-PEERS disable-connected-check
   neighbor INTERNAL-PEERS soft-reconfiguration inbound
   neighbor INTERNAL-PEERS bfd
+
+  ! site routers (EVPN): dynamic neighbors from the NetBird network range
+  neighbor BACKBONE peer-group
+  neighbor BACKBONE remote-as internal
+  neighbor BACKBONE description backbone-evpn
+  neighbor BACKBONE timers 10 30
+  ! neighbor BACKBONE bfd
+  bgp listen range {{ .underlay }} peer-group BACKBONE
+  bgp listen limit 64
 
   ! neighbors
 {{- range $name, $neighbor := .bgp.Neighbors }}
@@ -88,6 +125,9 @@ router bgp {{ .bgp.LocalASN }}
     neighbor INTERNAL-PEERS route-reflector-client
     neighbor INTERNAL-PEERS route-map ALLOW-ALL out
     neighbor INTERNAL-PEERS route-map ALLOW-ALL in
+
+    import vrf {{ .bgp.EVPN.VRF }}
+    import vrf route-map EVPN-LEAK-V4
   exit-address-family
 
  ! IPv6 configuration
@@ -111,5 +151,38 @@ router bgp {{ .bgp.LocalASN }}
     neighbor INTERNAL-PEERS route-reflector-client
     neighbor INTERNAL-PEERS route-map ALLOW-ALL out
     neighbor INTERNAL-PEERS route-map ALLOW-ALL in
+
+    import vrf {{ .bgp.EVPN.VRF }}
+    import vrf route-map EVPN-LEAK-V6
+  exit-address-family
+
+  ! EVPN configuration: the hub reflects the routes between the site routers
+  address-family l2vpn evpn
+    neighbor BACKBONE activate
+    neighbor BACKBONE route-reflector-client
+    neighbor BACKBONE maximum-prefix 1000
+    advertise-all-vni
+  exit-address-family
+exit
+
+
+! BGP configuration of the EVPN VRF
+router bgp {{ .bgp.LocalASN }} vrf {{ .bgp.EVPN.VRF }}
+  ! global configuration
+  bgp router-id {{ .publicIp }}
+
+  address-family ipv4 unicast
+    import vrf default
+    import vrf route-map EVPN-LEAK-V4
+  exit-address-family
+
+  address-family ipv6 unicast
+    import vrf default
+    import vrf route-map EVPN-LEAK-V6
+  exit-address-family
+
+  address-family l2vpn evpn
+    advertise ipv4 unicast
+    advertise ipv6 unicast
   exit-address-family
 exit

@@ -1,0 +1,14 @@
+[Unit]
+Description=EVPN firewall rules (iptables)
+After=docker.service
+# re-applied whenever Docker restarts (it resets the FORWARD policy to DROP)
+PartOf=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/evpn/firewall.sh start
+ExecStop=/opt/evpn/firewall.sh stop
+
+[Install]
+WantedBy=multi-user.target

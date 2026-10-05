@@ -16,6 +16,7 @@ import (
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/docker"
+	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/evpn"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/frr"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/gcloud"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/google/dns"
@@ -158,13 +159,14 @@ func main() {
 		}
 
 		// frr
-		_, _, frrErr := frr.Install(
+		_, frrInstall, frrErr := frr.Install(
 			ctx,
 			instance.SSHIPv4,
 			sshKey.PrivateKeyPem,
 			instance.Hostname,
 			networkConfig,
 			bgpConfig,
+			netbirdConfig,
 			dependsOn,
 		)
 		if frrErr != nil {
@@ -198,7 +200,7 @@ func main() {
 		}
 
 		// netbird (client)
-		_, ncErr := netbirdclient.Install(
+		netbirdClientInstall, ncErr := netbirdclient.Install(
 			ctx,
 			instance.SSHIPv4,
 			sshKey.PrivateKeyPem,
@@ -210,6 +212,21 @@ func main() {
 		)
 		if ncErr != nil {
 			return ncErr
+		}
+
+		// evpn
+		evpnVTEP, _, evErr := evpn.Install(
+			ctx,
+			instance.SSHIPv4,
+			sshKey.PrivateKeyPem,
+			instance.Hostname,
+			bgpConfig.EVPN,
+			netbirdInstance,
+			netbirdClientInstall,
+			append([]pulumi.Resource{frrInstall}, dependsOn...),
+		)
+		if evErr != nil {
+			return evErr
 		}
 
 		// write output files
@@ -225,6 +242,7 @@ func main() {
 			dnsConfig,
 			netbirdInstance.Data,
 			netbirdInstance.Token,
+			evpnVTEP,
 		)
 
 		return nil
@@ -274,6 +292,7 @@ func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInst
 // dnsConfig: The DNS configuration.
 // netbirdData: The NetBird resources data.
 // netbirdPAT: The NetBird personal access token.
+// netbirdIPv4: The NetBird IPv4 address of the server (EVPN VTEP, empty without EVPN).
 func exportPulumiOutputs(
 	ctx *pulumi.Context,
 	instance *serverModel.Data,
@@ -283,6 +302,7 @@ func exportPulumiOutputs(
 	dnsConfig *dnsModel.Config,
 	netbirdData *netbirdModel.Data,
 	netbirdPAT pulumi.StringOutput,
+	netbirdIPv4 pulumi.StringOutput,
 ) {
 	ctx.Export("server", pulumi.ToMap(map[string]any{
 		"ipv4": instance.PublicIPv4,
@@ -323,5 +343,8 @@ func exportPulumiOutputs(
 			"password": netbirdData.Admin.Password,
 		}),
 		"pat": pulumi.ToSecret(netbirdPAT),
+		"client": map[string]any{
+			"ipv4": netbirdIPv4,
+		},
 	}))
 }

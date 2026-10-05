@@ -7,6 +7,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/bgp"
+	netbirdConf "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/netbird"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/frr"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/install"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
@@ -18,6 +19,7 @@ import (
 // privateKeyPem: The private key in PEM format to use for SSH authentication.
 // frrData: The FRR configuration data.
 // bgpConfig: The BGP configuration details.
+// netbirdConfig: NetBird configuration (its network range is the EVPN underlay).
 // dependsOn: Pulumi resource option to specify dependencies.
 func installer(
 	ctx *pulumi.Context,
@@ -25,6 +27,7 @@ func installer(
 	privateKeyPem pulumi.StringOutput,
 	frrData *frr.Data,
 	bgpConfig *bgp.Config,
+	netbirdConfig *netbirdConf.Config,
 	dependsOn pulumi.ResourceOrInvokeOption,
 ) (*remote.Command, error) {
 	conn := &remote.ConnectionArgs{
@@ -59,7 +62,15 @@ func installer(
 	}
 	opts = append(opts, pulumi.DependsOn([]pulumi.Resource{dockerComposeCopy}))
 
-	configResources, configHashes, cErr := createConfigs(ctx, frrData, bgpConfig, sshIPv4, conn, opts...)
+	configResources, configHashes, cErr := createConfigs(
+		ctx,
+		frrData,
+		bgpConfig,
+		netbirdConfig,
+		sshIPv4,
+		conn,
+		opts...,
+	)
 	if cErr != nil {
 		return nil, cErr
 	}
@@ -85,6 +96,7 @@ func installer(
 // ctx: Pulumi context.
 // frrData: The FRR configuration data.
 // bgpConfig: The BGP configuration details.
+// netbirdConfig: NetBird configuration (its network range is the EVPN underlay).
 // publicIP: The public IP address to be used in the configuration.
 // conn: The remote connection arguments.
 // opts: Additional Pulumi resource options.
@@ -92,11 +104,13 @@ func createConfigs(
 	ctx *pulumi.Context,
 	frrData *frr.Data,
 	bgpConfig *bgp.Config,
+	netbirdConfig *netbirdConf.Config,
 	publicIP pulumi.StringOutput,
 	conn *remote.ConnectionArgs,
 	opts ...pulumi.ResourceOption,
 ) ([]pulumi.ResourceOutput, pulumi.Array, error) {
-	frrConfig, _ := pulumi.All(frrData.Hostname, frrData.NeighborPassword, publicIP).ApplyT(func(args []any) string {
+	// a rendering error fails the deployment: an empty configuration would be copied, and applied otherwise
+	frrConfig, _ := pulumi.All(frrData.Hostname, frrData.NeighborPassword, publicIP).ApplyT(func(args []any) (string, error) {
 		hostname, _ := args[0].(string)
 		neighborPassword, _ := args[1].(string)
 		ip, _ := args[2].(string)
@@ -107,12 +121,12 @@ func createConfigs(
 				neighbor.Password = &neighborPassword
 			}
 		}
-		tpl, _ := template.Render("./assets/frr/config/frr.conf.j2", map[string]any{
+		return template.Render("./assets/frr/config/frr.conf.j2", map[string]any{
 			"hostname": hostname,
 			"publicIp": ip,
 			"bgp":      bgpConfig,
+			"underlay": *netbirdConfig.NetworkRange,
 		})
-		return tpl
 	}).(pulumi.StringOutput)
 	frrConfigHash, frrConfigCopy := remotefile.CopyRendered(
 		ctx,

@@ -153,7 +153,26 @@ bgp:
   publicNetworks: the public networks to be advertised
     ipv4: a list of IPv4 networks to advertise publicly
     ipv6: a list of IPv6 networks to advertise publicly
+  evpn: the EVPN (L3VNI) configuration over the NetBird overlay (optional, requires NetBird, see [NetBird](#netbird))
+    vrf: the name of the VRF carrying the L3VNI (e.g. mesh)
+    vni: the VXLAN network identifier of the L3VNI, the same on all sites (e.g. 50001)
+    table: the kernel routing table of the VRF (e.g. 1001)
+    mtu: the MTU of the VXLAN devices: the NetBird client MTU minus 50 bytes VXLAN overhead (e.g. 1370)
+    leakNetworks: the networks leaked between the default VRF and the EVPN VRF (the public IPv6 networks are always leaked, the NetBird network range never)
+      ipv4: a list of IPv4 networks (e.g. 10.0.0.0/8)
+      ipv6: a list of IPv6 networks (e.g. fc00::/7)
 ```
+
+With EVPN, the site routers are dynamic BGP neighbors from the NetBird network range (`netbird.networkRange`), and need no change of this configuration.
+The server uses its NetBird IPv4 address as VXLAN source (VTEP), which is looked up by its peer name (the hostname) once the NetBird client is registered, and exported as `netbird.client.ipv4`: the site routers peer with it.
+
+> [!IMPORTANT]  
+> The kernel modules `vrf`, and `vxlan` are only part of `linux-image-extra-virtual`, which is installed on the first installation of FRR:
+> for an existing server, install it manually (`apt-get install --no-install-recommends linux-image-extra-virtual`), and load the modules.
+
+> [!IMPORTANT]  
+> The peer name of the server must be unique in NetBird, otherwise the lookup of the VTEP fails.
+> If the NetBird IPv4 address of the server changes (e.g., after the NetBird database is lost), the site routers must be updated with the new address.
 
 ### Tailscale
 

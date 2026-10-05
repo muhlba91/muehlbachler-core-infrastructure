@@ -1,0 +1,26 @@
+#!/bin/sh
+
+### evpn ###
+# runs on the first installation, and whenever a configuration changes (e.g., the VTEP after a NetBird reinstallation)
+
+### networkd ###
+# restart to read the configuration (only read at start): FRR uses inline next hops, so its routes are kept
+systemctl restart systemd-networkd
+
+### netplan ###
+# networkd never changes the local address of an existing VXLAN device: recreate it if the VTEP changed
+if ip link show {{ .vxlan }} >/dev/null 2>&1 && ! ip -d link show {{ .vxlan }} | grep -q "local {{ .vtep }} "; then
+  echo "VTEP changed: recreating {{ .vxlan }}"
+  ip link del {{ .vxlan }}
+fi
+
+# set permissions and apply
+chmod 0600 /etc/netplan/60-evpn.yaml
+netplan generate
+netplan apply
+
+### firewall ###
+chmod 0755 /opt/evpn/firewall.sh
+systemctl daemon-reload
+systemctl enable evpn
+systemctl restart evpn

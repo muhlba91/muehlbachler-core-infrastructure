@@ -6,6 +6,7 @@ import (
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/frr/gre"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/bgp"
+	netbirdConf "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/netbird"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/network"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/frr"
 )
@@ -15,6 +16,7 @@ import (
 // hostname: The hostname of the server where FRR will be installed.
 // networkConfig: The network configuration.
 // bgpConfig: The BGP configuration.
+// netbirdConfig: NetBird configuration (its network range is the EVPN underlay).
 // dependsOn: List of Pulumi resources that this installation depends on.
 func Install(ctx *pulumi.Context,
 	sshIPv4 pulumi.StringOutput,
@@ -22,6 +24,7 @@ func Install(ctx *pulumi.Context,
 	hostname pulumi.StringOutput,
 	networkConfig *network.Config,
 	bgpConfig *bgp.Config,
+	netbirdConfig *netbirdConf.Config,
 	dependsOn []pulumi.Resource,
 ) (*frr.Data, *remote.Command, error) {
 	frrData, frrErr := createResources(ctx, hostname, networkConfig)
@@ -41,6 +44,7 @@ func Install(ctx *pulumi.Context,
 		privateKeyPem,
 		frrData,
 		bgpConfig,
+		netbirdConfig,
 		pulumi.DependsOn(pulumiResources),
 	)
 	if frrErr != nil {
