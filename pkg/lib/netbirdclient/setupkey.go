@@ -17,12 +17,14 @@ const (
 
 // createSetupKey creates the setup key to register the NetBird client.
 // The key is only needed for the first registration, but kept valid to register again if required.
+// The key assigns the registered peer to the backbone group.
 // ctx: Pulumi context.
 // netbirdInstance: The NetBird (server) instance.
 func createSetupKey(ctx *pulumi.Context, netbirdInstance *netbird.Instance) (pulumi.StringOutput, error) {
 	key, err := setupkey.Create(ctx, config.GlobalName, &setupkey.CreateOptions{
-		Type:     pulumi.String("reusable"),
-		Rotation: &rModel.Options{Days: setupKeyRotationDays},
+		Type:       pulumi.String("reusable"),
+		AutoGroups: pulumi.StringArray{netbirdInstance.BackboneGroupID},
+		Rotation:   &rModel.Options{Days: setupKeyRotationDays},
 		PulumiOptions: []pulumi.ResourceOption{
 			pulumi.Provider(netbirdInstance.Provider),
 			pulumi.DependsOn([]pulumi.Resource{netbirdInstance.Ready, netbirdInstance.Settings}),

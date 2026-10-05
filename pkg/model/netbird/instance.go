@@ -17,4 +17,6 @@ type Instance struct {
 	Ready pulumi.Resource
 	// Settings is the resource configuring the account: resources of the instance (e.g., setup keys) depend on it.
 	Settings pulumi.Resource
+	// BackboneGroupID is the ID of the group of the backbone peers, which may reach each other.
+	BackboneGroupID pulumi.StringOutput
 }

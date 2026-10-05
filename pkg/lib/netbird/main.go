@@ -76,11 +76,17 @@ func Install(ctx *pulumi.Context,
 		return nil, sErr
 	}
 
+	backboneGroupID, bErr := createBackbone(ctx, provider, []pulumi.Resource{ready, settings})
+	if bErr != nil {
+		return nil, bErr
+	}
+
 	return &netbird.Instance{
-		Data:     netbirdData,
-		Token:    token,
-		Provider: provider,
-		Ready:    ready,
-		Settings: settings,
+		Data:            netbirdData,
+		Token:           token,
+		Provider:        provider,
+		Ready:           ready,
+		Settings:        settings,
+		BackboneGroupID: backboneGroupID,
 	}, nil
 }
