@@ -254,6 +254,7 @@ func main() {
 			netbirdInstance.Data,
 			netbirdInstance.Token,
 			evpnVTEP,
+			netbirdInstance.BackboneGroupID,
 		)
 
 		return nil
@@ -304,6 +305,7 @@ func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInst
 // netbirdData: The NetBird resources data.
 // netbirdPAT: The NetBird personal access token.
 // netbirdIPv4: The NetBird IPv4 address of the server (the EVPN VTEP).
+// netbirdBackboneGroupID: The ID of the NetBird backbone group, which the site routers join.
 func exportPulumiOutputs(
 	ctx *pulumi.Context,
 	instance *serverModel.Data,
@@ -314,6 +316,7 @@ func exportPulumiOutputs(
 	netbirdData *netbirdModel.Data,
 	netbirdPAT pulumi.StringOutput,
 	netbirdIPv4 pulumi.StringOutput,
+	netbirdBackboneGroupID pulumi.StringOutput,
 ) {
 	ctx.Export("server", pulumi.ToMap(map[string]any{
 		"ipv4": instance.PublicIPv4,
@@ -353,7 +356,8 @@ func exportPulumiOutputs(
 			"email":    netbirdData.Admin.Email,
 			"password": netbirdData.Admin.Password,
 		}),
-		"pat": pulumi.ToSecret(netbirdPAT),
+		"pat":           pulumi.ToSecret(netbirdPAT),
+		"backboneGroup": netbirdBackboneGroupID,
 		"client": map[string]any{
 			"ipv4": netbirdIPv4,
 		},
