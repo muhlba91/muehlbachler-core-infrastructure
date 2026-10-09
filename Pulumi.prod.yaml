@@ -42,10 +42,6 @@ config:
         description: Allow incoming Wireguard (wg1) traffic
         port: 65101
         protocol: udp
-      wireguard-wg3:
-        description: Allow incoming Wireguard (wg3) traffic
-        port: 65301
-        protocol: udp
       netbird-client:
         description: Allow incoming NetBird client WireGuard (wt0) traffic
         port: 65500
@@ -73,7 +69,6 @@ config:
     internalNetworks:
       ipv4:
         - 10.254.1.0/30
-        - 10.254.3.0/30
       ipv6: []
     publicNetworks:
       ipv6:
@@ -84,11 +79,6 @@ config:
         isPublic: false
         addresses:
           - fd80::254:1:1
-      de-hetzner-001:
-        interfaceName: wg3
-        isPublic: false
-        addresses:
-          - fd80::254:3:1
       de-route64-fra2-001:
         asn: 212895
         interfaceName: gre-r64-fra2
