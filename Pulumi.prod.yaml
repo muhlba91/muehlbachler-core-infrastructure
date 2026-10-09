@@ -46,10 +46,6 @@ config:
         description: Allow incoming Wireguard (wg3) traffic
         port: 65301
         protocol: udp
-      wireguard-wg4:
-        description: Allow incoming Wireguard (wg4) traffic
-        port: 65401
-        protocol: udp
       netbird-client:
         description: Allow incoming NetBird client WireGuard (wt0) traffic
         port: 65500
@@ -78,9 +74,7 @@ config:
       ipv4:
         - 10.254.1.0/30
         - 10.254.3.0/30
-        - 10.254.4.0/30
-      ipv6:
-        - fd80::254:4:0/127
+      ipv6: []
     publicNetworks:
       ipv6:
         - 2001:678:dc0::/48
@@ -95,11 +89,6 @@ config:
         isPublic: false
         addresses:
           - fd80::254:3:1
-      ca-ovh-001:
-        interfaceName: wg4
-        isPublic: false
-        addresses:
-          - fd80::254:4:1
       de-route64-fra2-001:
         asn: 212895
         interfaceName: gre-r64-fra2
