@@ -27,9 +27,8 @@ func Install(ctx *pulumi.Context,
 	netbirdConfig *netbirdConf.Config,
 	dependsOn []pulumi.Resource,
 ) (*frr.Data, *remote.Command, error) {
-	frrData, frrErr := createResources(ctx, hostname, networkConfig)
-	if frrErr != nil {
-		return nil, nil, frrErr
+	frrData := &frr.Data{
+		Hostname: pulumi.Sprintf("%s.%s", hostname, *networkConfig.DNSSuffix),
 	}
 
 	greInstall, greErr := gre.Install(ctx, sshIPv4, privateKeyPem, bgpConfig, dependsOn)

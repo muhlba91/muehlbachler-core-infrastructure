@@ -34,9 +34,6 @@ ipv6 prefix-list EVPN-INTERNAL-V6 permit {{ . }} le 128
 
 
 ! route maps
-route-map ALLOW-ALL permit 100
-exit
-
 route-map DENY-ALL deny 100
 exit
 
@@ -72,14 +69,6 @@ router bgp {{ .bgp.LocalASN }}
   neighbor EXTERNAL-PEERS disable-connected-check
   neighbor EXTERNAL-PEERS soft-reconfiguration inbound
 
-  neighbor INTERNAL-PEERS peer-group
-  neighbor INTERNAL-PEERS remote-as internal
-  neighbor INTERNAL-PEERS timers 60 180
-  neighbor INTERNAL-PEERS ebgp-multihop 255
-  neighbor INTERNAL-PEERS disable-connected-check
-  neighbor INTERNAL-PEERS soft-reconfiguration inbound
-  neighbor INTERNAL-PEERS bfd
-
   ! site routers (EVPN): dynamic neighbors from the NetBird network range
   neighbor BACKBONE peer-group
   neighbor BACKBONE remote-as internal
@@ -93,13 +82,8 @@ router bgp {{ .bgp.LocalASN }}
 {{- range $name, $neighbor := .bgp.Neighbors }}
   ! name: {{ $name }}
 {{- range $i, $addr := $neighbor.Addresses }}
-{{- if $neighbor.IsPublic }}
   neighbor {{ $addr }} peer-group EXTERNAL-PEERS
   neighbor {{ $addr }} remote-as {{ $neighbor.ASN }}
-{{- else }}
-  neighbor {{ $addr }} peer-group INTERNAL-PEERS
-  neighbor {{ $addr }} interface {{ $neighbor.InterfaceName }}
-{{- end }}
 {{- if $neighbor.Password }}
   ! neighbor {{ $addr }} password {{ $neighbor.Password }}
 {{- end }}
@@ -109,10 +93,6 @@ router bgp {{ .bgp.LocalASN }}
 
   ! IPv4 configuration
   address-family ipv4 unicast
-{{- range .bgp.InternalNetworks.IPv4 }}
-    network {{ . }}
-{{- end }}
-
     ! neighbor EXTERNAL-PEERS activate
     ! neighbor EXTERNAL-PEERS next-hop-self force
     ! neighbor EXTERNAL-PEERS nexthop-local unchanged
@@ -120,21 +100,12 @@ router bgp {{ .bgp.LocalASN }}
     ! neighbor EXTERNAL-PEERS route-map PUBLIC-NETWORKS out
     ! neighbor EXTERNAL-PEERS route-map DENY-ALL in
 
-    neighbor INTERNAL-PEERS activate
-    neighbor INTERNAL-PEERS next-hop-self force
-    neighbor INTERNAL-PEERS route-reflector-client
-    neighbor INTERNAL-PEERS route-map ALLOW-ALL out
-    neighbor INTERNAL-PEERS route-map ALLOW-ALL in
-
     import vrf {{ .bgp.EVPN.VRF }}
     import vrf route-map EVPN-LEAK-V4
   exit-address-family
 
  ! IPv6 configuration
   address-family ipv6 unicast
-{{- range .bgp.InternalNetworks.IPv6 }}
-    network {{ . }}
-{{- end }}
 {{- range .bgp.PublicNetworks.IPv6 }}
     network {{ . }}
 {{- end }}
@@ -145,12 +116,6 @@ router bgp {{ .bgp.LocalASN }}
     neighbor EXTERNAL-PEERS attribute-unchanged next-hop
     neighbor EXTERNAL-PEERS route-map PUBLIC-NETWORKS out
     neighbor EXTERNAL-PEERS route-map DENY-ALL in
-
-    neighbor INTERNAL-PEERS activate
-    neighbor INTERNAL-PEERS next-hop-self force
-    neighbor INTERNAL-PEERS route-reflector-client
-    neighbor INTERNAL-PEERS route-map ALLOW-ALL out
-    neighbor INTERNAL-PEERS route-map ALLOW-ALL in
 
     import vrf {{ .bgp.EVPN.VRF }}
     import vrf route-map EVPN-LEAK-V6

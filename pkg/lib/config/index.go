@@ -11,7 +11,6 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/google"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/netbird"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/network"
-	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/oidc"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/scaleway"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/server"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/tailscale"
@@ -39,7 +38,7 @@ var (
 // ctx: The Pulumi context.
 func LoadConfig(
 	ctx *pulumi.Context,
-) (*google.Config, *scaleway.Config, *server.Config, *network.Config, *oidc.Config, *dns.Config, *bgp.Config, *tailscale.Config, *netbird.Config, error) {
+) (*google.Config, *scaleway.Config, *server.Config, *network.Config, *dns.Config, *bgp.Config, *tailscale.Config, *netbird.Config, error) {
 	Environment = ctx.Stack()
 
 	cfg := config.New(ctx, "")
@@ -61,9 +60,6 @@ func LoadConfig(
 	var networkConfig network.Config
 	cfg.RequireObject("network", &networkConfig)
 
-	var oidcConfig oidc.Config
-	cfg.RequireObject("oidc", &oidcConfig)
-
 	var dnsConfig dns.Config
 	cfg.RequireObject("dns", &dnsConfig)
 
@@ -76,7 +72,7 @@ func LoadConfig(
 	var netbirdConfig netbird.Config
 	cfg.RequireObject("netbird", &netbirdConfig)
 
-	return &googleConfig, &scalewayConfig, &serverConfig, &networkConfig, &oidcConfig, &dnsConfig, &bgpConfig, &tailscaleConfig, &netbirdConfig, nil
+	return &googleConfig, &scalewayConfig, &serverConfig, &networkConfig, &dnsConfig, &bgpConfig, &tailscaleConfig, &netbirdConfig, nil
 }
 
 // CommonLabels returns a map of common labels to be used across resources.

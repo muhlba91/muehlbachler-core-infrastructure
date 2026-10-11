@@ -1,5 +1,0 @@
-#!/bin/sh
-
-# upload data to scaleway
-rclone --config /opt/scaleway/rclone.conf sync -P /opt/wireguard/etc/ scaleway:{{ .bucket.id }}/{{ .bucket.path }}/wireguard/etc/ || true
-rclone --config /opt/scaleway/rclone.conf sync -P /opt/wireguard/data/ scaleway:{{ .bucket.id }}/{{ .bucket.path }}/wireguard/data/ || true

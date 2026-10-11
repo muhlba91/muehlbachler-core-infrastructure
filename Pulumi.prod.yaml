@@ -30,31 +30,11 @@ config:
         description: Allow incoming Vault traffic
         port: 8200
         protocol: tcp
-      wireguard:
-        description: Allow incoming Wireguard (user) traffic
-        port: 65000
-        protocol: udp
-      wireguard-mesh:
-        description: Allow incoming Wireguard (tuxnet-mesh) traffic
-        port: 65001
-        protocol: udp
-      wireguard-wg1:
-        description: Allow incoming Wireguard (wg1) traffic
-        port: 65101
-        protocol: udp
       netbird-client:
         description: Allow incoming NetBird client WireGuard (wt0) traffic
         port: 65500
         protocol: udp
     dnsSuffix: de.hetzner.muehlbachler.io
-  muehlbachler-core-infrastructure:oidc:
-    discoveryUrl: https://muehlbachler-mhvy5g.zitadel.cloud
-    clients:
-      wireguard:
-        clientId:
-          secure: v1:fj3xTxb9Kp4jvzCu:adzvM79yKUqJsDYHvWt4QpWz/nynLzVdLpVoJScTInEh3w==
-        clientSecret:
-          secure: v1:XW8JpKsCOffKqUm+:iH3urhf/phyXa6hZjAJBlvD1GlLQeKt48NcbQ00Gf0FN4v9bce4jZQFEtbAH2e52E4QLQfjgBtvsmqg3CZ6EuWXI7NtHeVeHTZSrCSVfDSc=
   muehlbachler-core-infrastructure:server:
     location: fsn1
     type: cx22
@@ -63,26 +43,16 @@ config:
   muehlbachler-core-infrastructure:dns:
     project: muehlbachler-dns
     email: postmaster@muehlbachler.io
-    entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}, wireguard: {zoneId: muehlbachler-io, domain: vpn.platform.muehlbachler.io}, netbird: {zoneId: muehlbachler-io, domain: netbird.platform.muehlbachler.io}}
+    entries: {vault: {zoneId: muehlbachler-io, domain: vault.platform.muehlbachler.io}, netbird: {zoneId: muehlbachler-io, domain: netbird.platform.muehlbachler.io}}
   muehlbachler-core-infrastructure:bgp:
     localAsn: 201421
-    internalNetworks:
-      ipv4:
-        - 10.254.1.0/30
-      ipv6: []
     publicNetworks:
       ipv6:
         - 2001:678:dc0::/48
     neighbors:
-      at-vie-001:
-        interfaceName: wg1
-        isPublic: false
-        addresses:
-          - fd80::254:1:1
       de-route64-fra2-001:
         asn: 212895
         interfaceName: gre-r64-fra2
-        isPublic: true
         gre:
           remoteIp: 185.121.24.139
           tunnelIp: 2a11:6c7:f13:21::2/64
@@ -92,7 +62,6 @@ config:
       de-bgpexchange-fra-001:
         asn: 24381
         interfaceName: gre-bgpxch-fra
-        isPublic: true
         gre:
           remoteIp: 193.148.249.248
           tunnelIp: 2a0e:8f01:1000:24::1f4/64

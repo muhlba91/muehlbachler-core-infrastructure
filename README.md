@@ -91,19 +91,6 @@ network:
       sourceIps: the source IPs (for inbound rules, optional)
 ```
 
-### OIDC
-
-The OIDC configuration to connect the instance to for login.
-
-```yaml
-oidc:
-  discoveryUrl: the OIDC discovery url (without ".well-known")
-  clients: a map containing the OIDC clients
-    <name>:
-      clientId: the client id
-      clientSecret: the client secret
-```
-
 ### Server
 
 The Hetzner server configuration.
@@ -133,23 +120,17 @@ dns:
 ```yaml
 bgp:
   localAsn: the local ASN
-  advertisedIPv4Networks: a list of IPv4 networks to advertise
-  advertisedIPv6Networks: a list of IPv6 networks to advertise
-  neighbors: a map of BGP neighbors
+  neighbors: a map of the external BGP neighbors (eBGP, e.g. over GRE)
     <name>:
-      asn: the ASN (optional due to usage of peer groups)
+      asn: the ASN
       address: the neighbor address
-      interfaceName: the BGP interface
-      isPublic: whether the neighbor is a public peer
-      password: the BGP neighbor password (optional, will be set automatically for internal peers if not specified)
+      interfaceName: the name of the GRE interface to the neighbor
+      password: the BGP neighbor password (optional)
       gre: the GRE tunnel configuration for this neighbor, if applicable
         remoteIp: the GRE neighbor address
         tunnelIp: the GRE tunnel IP address
         linkLocalIp: the GRE link-local IP address
         type: the type of the GRE network interface (optional, default: "gre")
-  internalNetworks: the internal networks to be advertised
-    ipv4: a list of IPv4 networks to advertise internally
-    ipv6: a list of IPv6 networks to advertise internally
   publicNetworks: the public networks to be advertised
     ipv4: a list of IPv4 networks to advertise publicly
     ipv6: a list of IPv6 networks to advertise publicly
@@ -166,7 +147,7 @@ bgp:
       ipv6: a list of IPv6 host prefixes (e.g. 2001:678:dc0:ff::1/128)
 ```
 
-With EVPN, the site routers are dynamic BGP neighbors from the NetBird network range (`netbird.networkRange`), and need no change of this configuration.
+The site routers are dynamic BGP neighbors (EVPN) from the NetBird network range (`netbird.networkRange`), and need no change of this configuration.
 The server uses its NetBird IPv4 address as VXLAN source (VTEP), which is looked up by its peer name (the hostname) once the NetBird client is registered, and exported as `netbird.client.ipv4`: the site routers peer with it.
 The client NAT addresses are assigned to the EVPN bridge, and announced into EVPN.
 

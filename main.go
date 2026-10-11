@@ -30,12 +30,10 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/tailscale"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/traefik"
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/vault"
-	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/wireguard"
 	dnsModel "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/config/dns"
 	netbirdModel "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/netbird"
 	serverModel "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/server"
 	vaultModel "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/vault"
-	wireguardModel "github.com/muhlba91/muehlbachler-core-infrastructure/pkg/model/wireguard"
 )
 
 //nolint:gocognit,funlen // main is the entry point of the Pulumi program.
@@ -47,7 +45,7 @@ func main() {
 		}
 
 		// configuration
-		googleConfig, scalewayConfig, serverConfig, networkConfig, oidcConfig, dnsConfig, bgpConfig, tailscaleConfig, netbirdConfig, err := config.LoadConfig(
+		googleConfig, scalewayConfig, serverConfig, networkConfig, dnsConfig, bgpConfig, tailscaleConfig, netbirdConfig, err := config.LoadConfig(
 			ctx,
 		)
 		if err != nil {
@@ -145,19 +143,6 @@ func main() {
 			return vdErr
 		}
 
-		// wireguard
-		wireguardData, _, wiErr := wireguard.Install(
-			ctx,
-			instance.SSHIPv4,
-			sshKey.PrivateKeyPem,
-			dnsConfig,
-			oidcConfig,
-			dependsOn,
-		)
-		if wiErr != nil {
-			return wiErr
-		}
-
 		// frr
 		_, frrInstall, frrErr := frr.Install(
 			ctx,
@@ -249,7 +234,6 @@ func main() {
 			instance,
 			vaultData,
 			vaultInstanceData,
-			wireguardData,
 			dnsConfig,
 			netbirdInstance.Data,
 			netbirdInstance.Token,
@@ -300,7 +284,6 @@ func writeOutputFiles(ctx *pulumi.Context, sshKey *tlsProv.PrivateKey, vaultInst
 // instance: The Hetzner server instance data.
 // vaultData: The Vault resources data.
 // vaultInstanceData: The Vault instance data output.
-// wireguardData: The WireGuard resources data.
 // dnsConfig: The DNS configuration.
 // netbirdData: The NetBird resources data.
 // netbirdPAT: The NetBird personal access token.
@@ -311,7 +294,6 @@ func exportPulumiOutputs(
 	instance *serverModel.Data,
 	vaultData *vaultModel.Data,
 	vaultInstanceData *pulumi.AnyOutput,
-	wireguardData *wireguardModel.Data,
 	dnsConfig *dnsModel.Config,
 	netbirdData *netbirdModel.Data,
 	netbirdPAT pulumi.StringOutput,
@@ -344,10 +326,6 @@ func exportPulumiOutputs(
 				}),
 			},
 		}
-	}))
-
-	ctx.Export("wireguard", pulumi.ToMap(map[string]any{
-		"adminPassword": wireguardData.AdminPassword,
 	}))
 
 	ctx.Export("netbird", pulumi.ToMap(map[string]any{

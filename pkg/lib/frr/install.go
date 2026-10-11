@@ -110,17 +110,10 @@ func createConfigs(
 	opts ...pulumi.ResourceOption,
 ) ([]pulumi.ResourceOutput, pulumi.Array, error) {
 	// a rendering error fails the deployment: an empty configuration would be copied, and applied otherwise
-	frrConfig, _ := pulumi.All(frrData.Hostname, frrData.NeighborPassword, publicIP).ApplyT(func(args []any) (string, error) {
+	frrConfig, _ := pulumi.All(frrData.Hostname, publicIP).ApplyT(func(args []any) (string, error) {
 		hostname, _ := args[0].(string)
-		neighborPassword, _ := args[1].(string)
-		ip, _ := args[2].(string)
+		ip, _ := args[1].(string)
 
-		for name := range bgpConfig.Neighbors {
-			neighbor := bgpConfig.Neighbors[name]
-			if neighbor.Password == nil && !neighbor.IsPublic {
-				neighbor.Password = &neighborPassword
-			}
-		}
 		return template.Render("./assets/frr/config/frr.conf.j2", map[string]any{
 			"hostname": hostname,
 			"publicIp": ip,
