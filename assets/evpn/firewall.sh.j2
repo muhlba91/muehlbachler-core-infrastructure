@@ -19,9 +19,8 @@ unchain() {
   $1 -t "$2" -X "$3" 2>/dev/null || true
 }
 
-# ensure the local routes of the IPv6 addresses of the bridge: the kernel may lose them (e.g., when the bridge is enslaved
-# to the VRF after the address was assigned), and the host then forwards, instead of answering, for its own addresses:
-# re-adding the address restores them
+# restore the local routes of the IPv6 addresses of the bridge: a netplan apply loses them, and the host then forwards,
+# instead of answering, for its own address (re-adding the address restores the route)
 repair_local_routes() {
   ip link show {{ .bridge }} >/dev/null 2>&1 || return 0
   for addr in {{ range .clientNatIPv6 }}{{ . }} {{ end }}; do
@@ -44,7 +43,7 @@ start)
     # VXLAN only through the NetBird overlay (VXLAN has no authentication)
     chain $c filter EVPN-INPUT INPUT
     $c -A EVPN-INPUT ! -i {{ .netbirdInterface }} -p udp --dport 4789 -j DROP
-    # TCP MSS for traffic entering VXLAN, and the NetBird overlay (the replies of the sites carry the MSS of the sites)
+    # TCP MSS for traffic entering VXLAN, and the NetBird overlay
     chain $c mangle EVPN-MSS FORWARD
     $c -t mangle -A EVPN-MSS -o {{ .bridge }} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
     $c -t mangle -A EVPN-MSS -o {{ .netbirdInterface }} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu

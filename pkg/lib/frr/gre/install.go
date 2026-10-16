@@ -16,7 +16,7 @@ import (
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/util/remotefile"
 )
 
-// Install GRE tunnels on the remote server via SSH.
+// Install GRE tunnels, and their firewall rules on the remote server via SSH.
 // ctx: Pulumi context.
 // sshIPv4: The IPv4 address of the server to connect to via SSH.
 // privateKeyPem: The private key in PEM format to use for SSH authentication.

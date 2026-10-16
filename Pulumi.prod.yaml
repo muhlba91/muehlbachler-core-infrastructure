@@ -70,7 +70,6 @@ config:
           linkLocalIp: fe80::ba95:9447:1b07:bf6/64
           mtu: 1462
         addresses:
-          - 2a0e:8f01:1000:24::1
           - 2a0e:8f01:1000:24::2
     evpn:
       vrf: mesh
@@ -87,6 +86,8 @@ config:
           - 10.254.0.1/32
         ipv6:
           - 2001:678:dc0:ff::1/128
+      egress:
+        maximumPaths: 2
   muehlbachler-core-infrastructure:tailscale:
     authKey:
       secure: v1:jA/QT10wLkNbjLg4:t76dqKbE4c/NQdDbCy17g5UHIdk0NrUcnJpSYgIZhmQpi6eXzgPnsqRDkR3mU+/+9vHcZ3UXmXbE6SCy87y0SD7bo1ZJUNc5yOKDDts=

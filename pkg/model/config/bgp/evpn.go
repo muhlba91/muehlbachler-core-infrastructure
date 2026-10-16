@@ -18,4 +18,14 @@ type EVPNConfig struct {
 	// The server routes the clients into the sites, and the sites route the replies back to these addresses (EVPN):
 	// the masquerade only picks a source address of the VRF the traffic leaves into.
 	ClientNAT *AdvertisedNetworksConfig `yaml:"clientNat,omitempty"`
+	// Egress is the Internet egress of the sites through the upstream neighbors (optional, disabled if unset).
+	Egress *EgressConfig `yaml:"egress,omitempty"`
+}
+
+// EgressConfig defines the Internet egress of the sites for sources of the public networks.
+// The providers of the sites drop these sources: the replies of exposed services leave through the hub instead.
+// The upstream neighbors provide the default route, which is only used by the EVPN VRF (the sites).
+type EgressConfig struct {
+	// MaximumPaths is the number of upstream default routes used in parallel (ECMP, default: 2).
+	MaximumPaths *int `yaml:"maximumPaths,omitempty"`
 }

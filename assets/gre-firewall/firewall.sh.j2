@@ -1,36 +1,42 @@
 #!/bin/sh
 
 ### gre firewall ###
-# iptables rules for the GRE/GRETAP interfaces in an own chain, flushed and refilled on every start (idempotent).
-# A GRETAP tunnel can be a shared layer 2 segment (e.g., an exchange): only BGP from the neighbors, ICMPv6 (neighbor
-# discovery, path MTU) and replies reach the host. Interfaces need not exist when the rules are added.
-# Forwarding from the GRE interfaces is limited to the public networks (the only ones announced): the hub is no
-# transit for other members of a shared segment into the EVPN VRF, or anywhere else.
+# iptables rules for the GRE/GRETAP interfaces in own chains, flushed and refilled on every start (idempotent).
+# A GRETAP tunnel can be a shared layer 2 segment (e.g., an exchange): the host only accepts BGP from the neighbors,
+# ICMPv6 (neighbor discovery, path MTU), and replies on them. Interfaces need not exist when the rules are added.
+# Forwarding is limited to the public networks: from the tunnels to them (no transit for other members of a segment),
+# and into the tunnels from them (the egress of the sites: other sources are dropped by the upstreams).
 set -eu
 
-# create/flush the chain, and ensure it is the first rule of the parent chain: <command> <chain> <parent>
+# create/flush the chain, and ensure it is the first rule of the parent chain: <command> <table> <chain> <parent>
 chain() {
-  $1 -N "$2" 2>/dev/null || true
-  $1 -F "$2"
-  $1 -C "$3" -j "$2" 2>/dev/null || $1 -I "$3" 1 -j "$2"
+  $1 -t "$2" -N "$3" 2>/dev/null || true
+  $1 -t "$2" -F "$3"
+  $1 -t "$2" -C "$4" -j "$3" 2>/dev/null || $1 -t "$2" -I "$4" 1 -j "$3"
 }
 
-# remove the jump, and the chain: <command> <chain> <parent>
+# remove the jump, and the chain: <command> <table> <chain> <parent>
 unchain() {
-  $1 -D "$3" -j "$2" 2>/dev/null || true
-  $1 -F "$2" 2>/dev/null || true
-  $1 -X "$2" 2>/dev/null || true
+  $1 -t "$2" -D "$4" -j "$3" 2>/dev/null || true
+  $1 -t "$2" -F "$3" 2>/dev/null || true
+  $1 -t "$2" -X "$3" 2>/dev/null || true
 }
 
 case "${1:-start}" in
 start)
-  chain ip6tables GRE-INPUT INPUT
-  chain iptables GRE-INPUT INPUT
-  chain ip6tables GRE-FORWARD FORWARD
+  chain ip6tables filter GRE-INPUT INPUT
+  chain iptables filter GRE-INPUT INPUT
+  chain ip6tables filter GRE-FORWARD FORWARD
+  chain ip6tables filter GRE-EGRESS FORWARD
+  chain ip6tables mangle GRE-MSS FORWARD
 {{- range .publicNetworks }}
   ip6tables -A GRE-FORWARD -i gre+ -d {{ . }} -j RETURN
+  ip6tables -A GRE-EGRESS -o gre+ -s {{ . }} -j RETURN
 {{- end }}
   ip6tables -A GRE-FORWARD -i gre+ -j DROP
+  ip6tables -A GRE-EGRESS -o gre+ -j DROP
+  # TCP MSS for traffic leaving through the tunnels
+  ip6tables -t mangle -A GRE-MSS -o gre+ -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 {{- range .tunnels }}
   # {{ .name }}
   ip6tables -A GRE-INPUT -i {{ .name }} -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
@@ -44,9 +50,11 @@ start)
 {{- end }}
   ;;
 stop)
-  unchain ip6tables GRE-INPUT INPUT
-  unchain iptables GRE-INPUT INPUT
-  unchain ip6tables GRE-FORWARD FORWARD
+  unchain ip6tables filter GRE-INPUT INPUT
+  unchain iptables filter GRE-INPUT INPUT
+  unchain ip6tables filter GRE-FORWARD FORWARD
+  unchain ip6tables filter GRE-EGRESS FORWARD
+  unchain ip6tables mangle GRE-MSS FORWARD
   ;;
 *)
   echo "usage: $0 start|stop" >&2

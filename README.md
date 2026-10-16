@@ -123,15 +123,17 @@ bgp:
   neighbors: a map of the external BGP neighbors (eBGP, e.g. over GRE)
     <name>:
       asn: the ASN
-      addresses: a list of the neighbor addresses (remove an address to stop peering with it; an empty list keeps the tunnel, but configures no session)
+      addresses: a list of the neighbor addresses (an empty list keeps the tunnel, but configures no session)
       interfaceName: the name of the GRE interface to the neighbor (must start with "gre-", max. 15 characters)
       password: the BGP neighbor password (optional)
+      localPref: the local preference of the default route learned from the neighbor: equal values share the traffic, the highest wins (optional, default: 100; with egress)
+      prepend: how often the local ASN is additionally prepended to the announced networks, which makes the neighbor less preferred for incoming traffic (optional, default: 0, max. 10)
       gre: the GRE tunnel configuration for this neighbor, if applicable
         remoteIp: the GRE neighbor address
         tunnelIp: the GRE tunnel IP address
         linkLocalIp: the GRE link-local IP address
         type: the type of the GRE network interface, "gre" or "gretap" (optional, default: "gre")
-        mtu: the MTU of the GRE network interface (optional, default: 1472; GRETAP needs 1462 on a 1500 byte path)
+        mtu: the MTU of the GRE network interface (optional, default: 1472; 1462 for "gretap" on a 1500 byte path)
   publicNetworks: the public networks to be advertised
     ipv4: a list of IPv4 networks to advertise publicly
     ipv6: a list of IPv6 networks to advertise publicly
@@ -146,10 +148,17 @@ bgp:
     clientNat: the host addresses in the EVPN VRF which the NetBird clients are masqueraded to (see [NetBird](#netbird))
       ipv4: a list of IPv4 host prefixes (e.g. 10.254.0.1/32)
       ipv6: a list of IPv6 host prefixes (e.g. 2001:678:dc0:ff::1/128)
+    egress: the Internet egress of the sites for sources of the public networks (optional, disabled if unset)
+      maximumPaths: the number of upstream default routes used in parallel (ECMP, optional, default: 2, max. 8)
 ```
 
-The GRE interfaces are protected by the `gre-firewall` service: the host only accepts BGP (TCP `179`) from the configured neighbor addresses, ICMPv6, and replies on them, and only forwards traffic arriving on them to the public networks (`publicNetworks`).
-A GRETAP tunnel can be a shared layer 2 segment (e.g., an exchange), and the hub must not be a transit for other members.
+With `egress`, the upstream neighbors provide a default route, used only by the EVPN VRF (the sites), never by the hub.
+The providers of the sites drop sources of the public networks (e.g., replies of exposed services): the sites send them to the hub, which forwards them to the upstreams.
+It requires `publicNetworks.ipv6`.
+
+The `gre-firewall` service protects the GRE interfaces: the host accepts only BGP from the neighbors, ICMPv6, and replies on them.
+Traffic arriving on them is forwarded to the public networks only, and traffic leaving through them needs a source of the public networks.
+A GRETAP tunnel can be a shared layer 2 segment (e.g., an exchange).
 
 The site routers are dynamic BGP neighbors (EVPN) from the NetBird network range (`netbird.networkRange`), and need no change of this configuration.
 The server uses its NetBird IPv4 address as VXLAN source (VTEP), which is looked up by its peer name (the hostname) once the NetBird client is registered, and exported as `netbird.client.ipv4`: the site routers peer with it.

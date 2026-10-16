@@ -7,6 +7,15 @@ no zebra nexthop kernel enable
 ! vrfs
 vrf {{ .bgp.EVPN.VRF }}
   vni {{ .bgp.EVPN.VNI }}
+{{- if .bgp.EVPN.Egress }}
+  ! unknown parts of the networks must not follow the default route of the upstreams (and return to the hub)
+{{- range .bgp.PublicNetworks.IPv6 }}
+  ipv6 route {{ . }} blackhole 254
+{{- end }}
+{{- range .bgp.EVPN.LeakNetworks.IPv6 }}
+  ipv6 route {{ . }} blackhole 254
+{{- end }}
+{{- end }}
 exit-vrf
 
 
@@ -19,6 +28,10 @@ ipv6 route {{ . }} blackhole 254
 ! prefix lists
 {{- range .bgp.PublicNetworks.IPv6 }}
 ipv6 prefix-list PUBLIC-IPV6 permit {{ . }}
+{{- end }}
+
+{{- if .bgp.EVPN.Egress }}
+ipv6 prefix-list DEFAULT-V6 permit ::/0
 {{- end }}
 
 ip prefix-list EVPN-UNDERLAY-V4 permit {{ .underlay }} le 32
@@ -37,13 +50,39 @@ ipv6 prefix-list EVPN-INTERNAL-V6 permit {{ . }} le 128
 route-map DENY-ALL deny 100
 exit
 
-! without public networks nothing is announced: a route-map without a match would permit everything
-{{- if .bgp.PublicNetworks.IPv6 }}
-route-map PUBLIC-NETWORKS permit 100
+! announce the public networks only (without any, nothing: a route-map without a match permits everything)
+{{- range $name, $neighbor := .bgp.Neighbors }}
+{{- if $.bgp.PublicNetworks.IPv6 }}
+route-map EXTERNAL-OUT-{{ $name }} permit 100
   match ipv6 address prefix-list PUBLIC-IPV6
+{{- with $neighbor.PrependPath $.bgp.LocalASN }}
+  set as-path prepend {{ . }}
+{{- end }}
 exit
 {{- else }}
-route-map PUBLIC-NETWORKS deny 100
+route-map EXTERNAL-OUT-{{ $name }} deny 100
+exit
+{{- end }}
+{{- end }}
+
+{{- if .bgp.EVPN.Egress }}
+! the default route of the upstreams: for the EVPN VRF (the sites) only, never for the hub
+{{- range $name, $neighbor := .bgp.Neighbors }}
+route-map EXTERNAL-IN-{{ $name }} permit 100
+  match ipv6 address prefix-list DEFAULT-V6
+  set local-preference {{ $neighbor.LocalPref }}
+exit
+{{- end }}
+route-map NO-DEFAULT deny 10
+  match ipv6 address prefix-list DEFAULT-V6
+exit
+route-map NO-DEFAULT permit 20
+exit
+route-map EVPN-MESH-V6 permit 10
+  match ipv6 address prefix-list DEFAULT-V6
+exit
+route-map EVPN-MESH-V6 permit 20
+  match ipv6 address prefix-list EVPN-INTERNAL-V6
 exit
 {{- end }}
 
@@ -65,6 +104,9 @@ router bgp {{ .bgp.LocalASN }}
   bgp router-id {{ .publicIp }}
   no bgp ebgp-requires-policy
   no bgp default ipv4-unicast
+{{- if .bgp.EVPN.Egress }}
+  bgp bestpath as-path multipath-relax
+{{- end }}
 
   ! peer groups
   neighbor EXTERNAL-PEERS peer-group
@@ -101,7 +143,7 @@ router bgp {{ .bgp.LocalASN }}
     ! neighbor EXTERNAL-PEERS next-hop-self force
     ! neighbor EXTERNAL-PEERS nexthop-local unchanged
     ! neighbor EXTERNAL-PEERS attribute-unchanged next-hop
-    ! neighbor EXTERNAL-PEERS route-map PUBLIC-NETWORKS out
+    ! neighbor EXTERNAL-PEERS route-map EXTERNAL-OUT out
     ! neighbor EXTERNAL-PEERS route-map DENY-ALL in
 
     import vrf {{ .bgp.EVPN.VRF }}
@@ -118,8 +160,20 @@ router bgp {{ .bgp.LocalASN }}
     neighbor EXTERNAL-PEERS next-hop-self force
     neighbor EXTERNAL-PEERS nexthop-local unchanged
     neighbor EXTERNAL-PEERS attribute-unchanged next-hop
-    neighbor EXTERNAL-PEERS route-map PUBLIC-NETWORKS out
     neighbor EXTERNAL-PEERS route-map DENY-ALL in
+{{- range $name, $neighbor := .bgp.Neighbors }}
+{{- range $neighbor.Addresses }}
+    neighbor {{ . }} route-map EXTERNAL-OUT-{{ $name }} out
+{{- if $.bgp.EVPN.Egress }}
+    neighbor {{ . }} route-map EXTERNAL-IN-{{ $name }} in
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with .bgp.EVPN.Egress }}
+
+    maximum-paths {{ .MaximumPaths }}
+    table-map NO-DEFAULT
+{{- end }}
 
     import vrf {{ .bgp.EVPN.VRF }}
     import vrf route-map EVPN-LEAK-V6
@@ -154,11 +208,14 @@ router bgp {{ .bgp.LocalASN }} vrf {{ .bgp.EVPN.VRF }}
     network {{ . }}
 {{- end }}
     import vrf default
-    import vrf route-map EVPN-LEAK-V6
+    import vrf route-map {{ if .bgp.EVPN.Egress }}EVPN-MESH-V6{{ else }}EVPN-LEAK-V6{{ end }}
   exit-address-family
 
   address-family l2vpn evpn
     advertise ipv4 unicast
     advertise ipv6 unicast
+{{- if .bgp.EVPN.Egress }}
+    default-originate ipv6
+{{- end }}
   exit-address-family
 exit
