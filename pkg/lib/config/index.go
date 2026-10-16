@@ -65,6 +65,9 @@ func LoadConfig(
 
 	var bgpConfig bgp.Config
 	cfg.RequireObject("bgp", &bgpConfig)
+	if err := bgpConfig.Validate(); err != nil {
+		return nil, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("invalid bgp configuration: %w", err)
+	}
 
 	var tailscaleConfig tailscale.Config
 	cfg.RequireObject("tailscale", &tailscaleConfig)

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/defaults"
-	"github.com/muhlba91/pulumi-shared-library/pkg/util/file"
 	"github.com/muhlba91/pulumi-shared-library/pkg/util/template"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -44,6 +43,7 @@ func installer(
 	}
 
 	tunnels := []string{}
+	firewallTunnels := []tunnel{}
 	configResources := []pulumi.ResourceOutput{}
 	configHashes := pulumi.Array{}
 	keys := slices.Collect(maps.Keys(bgpConfig.Neighbors))
@@ -55,11 +55,10 @@ func installer(
 		}
 
 		tunnels = append(tunnels, *neighbor.InterfaceName)
+		firewallTunnels = append(firewallTunnels, tunnel{name: *neighbor.InterfaceName, addresses: neighbor.Addresses})
 
-		hash := createConfig(sshIPv4, neighbor)
+		hash, resource := copyConfig(ctx, sshIPv4, neighbor, conn, opts...)
 		configHashes = append(configHashes, hash)
-
-		resource := writeToRemote(ctx, hash, neighbor.InterfaceName, conn, opts...)
 		configResources = append(configResources, resource)
 	}
 
@@ -69,76 +68,60 @@ func installer(
 	if iErr != nil {
 		return nil, iErr
 	}
-	return remote.NewCommand(ctx, "remote-command-install-gre", &remote.CommandArgs{
+	greInstall, gErr := remote.NewCommand(ctx, "remote-command-install-gre", &remote.CommandArgs{
 		Create:     pulumi.StringPtr(installFn),
 		Update:     pulumi.StringPtr(installFn),
-		Delete:     pulumi.StringPtr(installFn),
 		Triggers:   configHashes,
 		Connection: conn,
 	}, append(opts, remotefile.DependsOnAll(configResources...))...)
+	if gErr != nil {
+		return nil, gErr
+	}
+
+	return installFirewall(
+		ctx,
+		firewallTunnels,
+		bgpConfig.PublicNetworks.IPv6,
+		conn,
+		append(opts, pulumi.DependsOn([]pulumi.Resource{greInstall}))...,
+	)
 }
 
-// createConfig generates the GRE netplan configuration file.
+// copyConfig renders the GRE netplan configuration file, and copies it to the remote server.
+// A rendering error fails the deployment: an empty configuration would be copied, and applied otherwise.
+// ctx: Pulumi context.
 // localIP: The local IP address to be used in the GRE configuration.
 // neighbor: The BGP neighbor for which the GRE configuration is being created.
-func createConfig(
-	localIP pulumi.StringOutput,
-	neighbor *bgp.NeighborConfig,
-) pulumi.StringOutput {
-	netplanConfig, _ := localIP.ApplyT(func(localIP string) string {
-		netplanData := struct {
-			Name        string
-			LocalIP     string
-			RemoteIP    string
-			TunnelIP    string
-			LinkLocalIP string
-			Type        string
-		}{
-			Name:        *neighbor.InterfaceName,
-			LocalIP:     localIP,
-			RemoteIP:    *neighbor.GRE.RemoteIP,
-			TunnelIP:    *neighbor.GRE.TunnelIP,
-			LinkLocalIP: *neighbor.GRE.LinkLocalIP,
-			Type:        defaults.GetOrDefault(neighbor.GRE.Type, "gre"),
-		}
-
-		config, _ := template.Render("./assets/frr/gre/config/netplan.yml.j2", netplanData)
-		return config
-	}).(pulumi.StringOutput)
-
-	netplanConfigHash, _ := file.WritePulumi(fmt.Sprintf("./outputs/gre_netplan_%s.yaml", *neighbor.InterfaceName), netplanConfig).
-		ApplyT(func(_ string) string {
-			hash, _ := file.Hash(fmt.Sprintf("./outputs/gre_netplan_%s.yaml", *neighbor.InterfaceName))
-			return *hash
-		}).(pulumi.StringOutput)
-
-	return netplanConfigHash
-}
-
-// writeToRemote uploads the GRE netplan config file to the remote server.
-// ctx: Pulumi context.
-// bgpConfig: The BGP configuration details.
 // conn: The remote connection arguments.
 // opts: Additional Pulumi resource options.
-func writeToRemote(
+func copyConfig(
 	ctx *pulumi.Context,
-	hash pulumi.StringOutput,
-	interfaceName *string,
+	localIP pulumi.StringOutput,
+	neighbor *bgp.NeighborConfig,
 	conn *remote.ConnectionArgs,
 	opts ...pulumi.ResourceOption,
-) pulumi.ResourceOutput {
-	netplanConfigCopy, _ := hash.ApplyT(func(_ string) (pulumi.Resource, error) {
-		return remote.NewCopyToRemote(
-			ctx,
-			fmt.Sprintf("remote-copy-gre-netplan-%s", *interfaceName),
-			&remote.CopyToRemoteArgs{
-				Source:     pulumi.NewFileAsset(fmt.Sprintf("./outputs/gre_netplan_%s.yaml", *interfaceName)),
-				RemotePath: pulumi.String(fmt.Sprintf("/etc/netplan/%s.yaml", *interfaceName)),
-				Triggers:   pulumi.Array{hash},
-				Connection: conn,
-			},
-			opts...)
-	}).(pulumi.ResourceOutput)
+) (pulumi.StringOutput, pulumi.ResourceOutput) {
+	name := *neighbor.InterfaceName
 
-	return netplanConfigCopy
+	netplanConfig, _ := localIP.ApplyT(func(localIP string) (string, error) {
+		return template.Render("./assets/frr/gre/config/netplan.yml.j2", map[string]any{
+			"Name":        name,
+			"LocalIP":     localIP,
+			"RemoteIP":    *neighbor.GRE.RemoteIP,
+			"TunnelIP":    *neighbor.GRE.TunnelIP,
+			"LinkLocalIP": *neighbor.GRE.LinkLocalIP,
+			"Type":        defaults.GetOrDefault(neighbor.GRE.Type, bgp.GreTypeGre),
+			"MTU":         defaults.GetOrDefault(neighbor.GRE.MTU, bgp.DefaultGreMTU),
+		})
+	}).(pulumi.StringOutput)
+
+	return remotefile.CopyRendered(
+		ctx,
+		fmt.Sprintf("remote-copy-gre-netplan-%s", name),
+		fmt.Sprintf("./outputs/gre_netplan_%s.yaml", name),
+		pulumi.String(fmt.Sprintf("/etc/netplan/%s.yaml", name)),
+		netplanConfig,
+		conn,
+		opts...,
+	)
 }

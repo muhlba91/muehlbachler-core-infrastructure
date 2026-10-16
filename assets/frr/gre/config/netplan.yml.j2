@@ -3,12 +3,12 @@ network:
   version: 2
   tunnels:
     {{ .Name }}:
-      mode: gre
+      mode: {{ .Type }}
       local: {{ .LocalIP }}
       remote: {{ .RemoteIP }}
       addresses:
         - "{{ .TunnelIP }}"
         - "{{ .LinkLocalIP }}"
-      mtu: 1472
+      mtu: {{ .MTU }}
       accept-ra: false
       ipv6-privacy: false

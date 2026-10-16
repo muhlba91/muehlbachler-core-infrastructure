@@ -63,7 +63,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
 	github.com/klauspost/compress v1.20.0 // indirect
-	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.1 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
@@ -85,7 +84,6 @@ require (
 	github.com/pulumi/appdash v0.0.0-20231130102222-75f619a67231 // indirect
 	github.com/pulumi/pulumi-cloud-sdk/go v1.20260918.0 // indirect
 	github.com/pulumi/pulumi-gcp/sdk/v10 v10.1.1 // indirect
-	github.com/pulumi/pulumi-gcp/sdk/v9 v9.37.1 // indirect
 	github.com/pulumi/pulumi-google-native/sdk v0.32.0 // indirect
 	github.com/pulumi/pulumi-random/sdk/v4 v4.21.3 // indirect
 	github.com/pulumiverse/pulumi-time/sdk v0.1.0 // indirect

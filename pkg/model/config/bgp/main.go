@@ -8,7 +8,7 @@ type Config struct {
 	Neighbors map[string]*NeighborConfig `yaml:"neighbors,omitempty"`
 	// PublicNetworks are the public networks to be advertised.
 	PublicNetworks *AdvertisedNetworksConfig `yaml:"publicNetworks,omitempty"`
-	// EVPN is the EVPN configuration (optional).
+	// EVPN is the EVPN configuration (required: NetBird, FRR, and the EVPN installation depend on it).
 	EVPN *EVPNConfig `yaml:"evpn,omitempty"`
 }
 

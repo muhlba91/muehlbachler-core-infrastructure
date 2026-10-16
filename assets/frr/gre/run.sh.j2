@@ -31,5 +31,8 @@ for file in /etc/netplan/*.yaml; do
 done
 
 # set permissions and apply
-chmod 0600 /etc/netplan/gre-*.yaml
+for file in /etc/netplan/gre-*.yaml; do
+  [ -e "$file" ] || continue
+  chmod 0600 "$file"
+done
 netplan apply

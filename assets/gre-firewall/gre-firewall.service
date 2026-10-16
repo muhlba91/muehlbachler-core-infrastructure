@@ -1,0 +1,12 @@
+[Unit]
+Description=GRE firewall rules (iptables)
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/gre-firewall/firewall.sh start
+ExecStop=/opt/gre-firewall/firewall.sh stop
+
+[Install]
+WantedBy=multi-user.target

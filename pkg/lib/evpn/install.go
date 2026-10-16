@@ -60,6 +60,7 @@ func installer(
 		"vxlan":            fmt.Sprintf("vni%d", *evpnConfig.VNI),
 		"netbirdInterface": netbirdInterface,
 		"clientNat":        clientNAT,
+		"clientNatIPv6":    evpnConfig.ClientNAT.IPv6,
 	}
 
 	configResources, configHashes, cErr := createConfigs(ctx, templateData, vtep, sshIPv4, conn, opts...)

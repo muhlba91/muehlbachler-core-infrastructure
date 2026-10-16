@@ -2,7 +2,7 @@ package bgp
 
 // NeighborConfig defines configuration data for a BGP neighbor.
 type NeighborConfig struct {
-	// Addresses is the list of BGP neighbor addresses.
+	// Addresses is the list of BGP neighbor addresses: without any, no BGP session is configured (the tunnel is kept).
 	Addresses []string `yaml:"addresses,omitempty"`
 	// ASN is the BGP neighbor autonomous system number.
 	ASN *uint32 `yaml:"asn,omitempty"`
@@ -22,6 +22,8 @@ type GreConfig struct {
 	TunnelIP *string `yaml:"tunnelIp,omitempty"`
 	// LinkLocalIP is the GRE link-local IP address.
 	LinkLocalIP *string `yaml:"linkLocalIp,omitempty"`
-	// Type is the type of the GRE network interface.
+	// Type is the type of the GRE network interface: "gre" (default), or "gretap".
 	Type *string `yaml:"type,omitempty"`
+	// MTU is the MTU of the GRE network interface (default: 1472).
+	MTU *int `yaml:"mtu,omitempty"`
 }

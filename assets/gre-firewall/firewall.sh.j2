@@ -1,0 +1,55 @@
+#!/bin/sh
+
+### gre firewall ###
+# iptables rules for the GRE/GRETAP interfaces in an own chain, flushed and refilled on every start (idempotent).
+# A GRETAP tunnel can be a shared layer 2 segment (e.g., an exchange): only BGP from the neighbors, ICMPv6 (neighbor
+# discovery, path MTU) and replies reach the host. Interfaces need not exist when the rules are added.
+# Forwarding from the GRE interfaces is limited to the public networks (the only ones announced): the hub is no
+# transit for other members of a shared segment into the EVPN VRF, or anywhere else.
+set -eu
+
+# create/flush the chain, and ensure it is the first rule of the parent chain: <command> <chain> <parent>
+chain() {
+  $1 -N "$2" 2>/dev/null || true
+  $1 -F "$2"
+  $1 -C "$3" -j "$2" 2>/dev/null || $1 -I "$3" 1 -j "$2"
+}
+
+# remove the jump, and the chain: <command> <chain> <parent>
+unchain() {
+  $1 -D "$3" -j "$2" 2>/dev/null || true
+  $1 -F "$2" 2>/dev/null || true
+  $1 -X "$2" 2>/dev/null || true
+}
+
+case "${1:-start}" in
+start)
+  chain ip6tables GRE-INPUT INPUT
+  chain iptables GRE-INPUT INPUT
+  chain ip6tables GRE-FORWARD FORWARD
+{{- range .publicNetworks }}
+  ip6tables -A GRE-FORWARD -i gre+ -d {{ . }} -j RETURN
+{{- end }}
+  ip6tables -A GRE-FORWARD -i gre+ -j DROP
+{{- range .tunnels }}
+  # {{ .name }}
+  ip6tables -A GRE-INPUT -i {{ .name }} -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+  ip6tables -A GRE-INPUT -i {{ .name }} -p ipv6-icmp -j ACCEPT
+{{- $name := .name }}
+{{- range .addresses }}
+  ip6tables -A GRE-INPUT -i {{ $name }} -s {{ . }} -p tcp --dport 179 -j ACCEPT
+{{- end }}
+  ip6tables -A GRE-INPUT -i {{ .name }} -j DROP
+  iptables -A GRE-INPUT -i {{ .name }} -j DROP
+{{- end }}
+  ;;
+stop)
+  unchain ip6tables GRE-INPUT INPUT
+  unchain iptables GRE-INPUT INPUT
+  unchain ip6tables GRE-FORWARD FORWARD
+  ;;
+*)
+  echo "usage: $0 start|stop" >&2
+  exit 1
+  ;;
+esac

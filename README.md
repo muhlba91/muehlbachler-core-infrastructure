@@ -123,18 +123,19 @@ bgp:
   neighbors: a map of the external BGP neighbors (eBGP, e.g. over GRE)
     <name>:
       asn: the ASN
-      address: the neighbor address
-      interfaceName: the name of the GRE interface to the neighbor
+      addresses: a list of the neighbor addresses (remove an address to stop peering with it; an empty list keeps the tunnel, but configures no session)
+      interfaceName: the name of the GRE interface to the neighbor (must start with "gre-", max. 15 characters)
       password: the BGP neighbor password (optional)
       gre: the GRE tunnel configuration for this neighbor, if applicable
         remoteIp: the GRE neighbor address
         tunnelIp: the GRE tunnel IP address
         linkLocalIp: the GRE link-local IP address
-        type: the type of the GRE network interface (optional, default: "gre")
+        type: the type of the GRE network interface, "gre" or "gretap" (optional, default: "gre")
+        mtu: the MTU of the GRE network interface (optional, default: 1472; GRETAP needs 1462 on a 1500 byte path)
   publicNetworks: the public networks to be advertised
     ipv4: a list of IPv4 networks to advertise publicly
     ipv6: a list of IPv6 networks to advertise publicly
-  evpn: the EVPN (L3VNI) configuration over the NetBird overlay (requires NetBird, see [NetBird](#netbird))
+  evpn: (required) the EVPN (L3VNI) configuration over the NetBird overlay (requires NetBird, see [NetBird](#netbird))
     vrf: the name of the VRF carrying the L3VNI (e.g. mesh)
     vni: the VXLAN network identifier of the L3VNI, the same on all sites (e.g. 50001)
     table: the kernel routing table of the VRF (e.g. 1001)
@@ -146,6 +147,9 @@ bgp:
       ipv4: a list of IPv4 host prefixes (e.g. 10.254.0.1/32)
       ipv6: a list of IPv6 host prefixes (e.g. 2001:678:dc0:ff::1/128)
 ```
+
+The GRE interfaces are protected by the `gre-firewall` service: the host only accepts BGP (TCP `179`) from the configured neighbor addresses, ICMPv6, and replies on them, and only forwards traffic arriving on them to the public networks (`publicNetworks`).
+A GRETAP tunnel can be a shared layer 2 segment (e.g., an exchange), and the hub must not be a transit for other members.
 
 The site routers are dynamic BGP neighbors (EVPN) from the NetBird network range (`netbird.networkRange`), and need no change of this configuration.
 The server uses its NetBird IPv4 address as VXLAN source (VTEP), which is looked up by its peer name (the hostname) once the NetBird client is registered, and exported as `netbird.client.ipv4`: the site routers peer with it.
