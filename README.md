@@ -133,7 +133,7 @@ bgp:
         tunnelIp: the GRE tunnel IP address
         linkLocalIp: the GRE link-local IP address
         type: the type of the GRE network interface, "gre" or "gretap" (optional, default: "gre")
-        mtu: the MTU of the GRE network interface (optional, default: 1472; 1462 for "gretap" on a 1500 byte path)
+        mtu: the MTU of the GRE network interface (optional, default: 1472, max. 1476; 1462 for "gretap" on a 1500 byte path)
   publicNetworks: the public networks to be advertised
     ipv4: a list of IPv4 networks to advertise publicly
     ipv6: a list of IPv6 networks to advertise publicly

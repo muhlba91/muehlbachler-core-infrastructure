@@ -44,6 +44,6 @@ type GreConfig struct {
 	LinkLocalIP *string `yaml:"linkLocalIp,omitempty"`
 	// Type is the type of the GRE network interface: "gre" (default), or "gretap".
 	Type *string `yaml:"type,omitempty"`
-	// MTU is the MTU of the GRE network interface (default: 1472).
+	// MTU is the MTU of the GRE network interface (default: 1472, max. 1476).
 	MTU *int `yaml:"mtu,omitempty"`
 }

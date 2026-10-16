@@ -17,6 +17,8 @@ const (
 	greTypeGretap = "gretap"
 	// DefaultGreMTU is the MTU of GRE interfaces if none is configured.
 	DefaultGreMTU = 1472
+	// maxGreMTU is the maximum MTU of GRE interfaces: 1500 bytes minus the IPv4 (20), and GRE (4) headers.
+	maxGreMTU = 1476
 	// maxInterfaceNameLength is the maximum length of a Linux interface name.
 	maxInterfaceNameLength = 15
 	// defaultLocalPref is the local preference of an upstream default route if none is configured.
@@ -103,8 +105,8 @@ func (n *NeighborConfig) validateGRE() error {
 	if n.GRE.Type != nil && *n.GRE.Type != GreTypeGre && *n.GRE.Type != greTypeGretap {
 		errs = append(errs, fmt.Errorf("gre.type must be %q or %q", GreTypeGre, greTypeGretap))
 	}
-	if n.GRE.MTU != nil && (*n.GRE.MTU < 1280 || *n.GRE.MTU > DefaultGreMTU) {
-		errs = append(errs, fmt.Errorf("gre.mtu must be between 1280 and %d", DefaultGreMTU))
+	if n.GRE.MTU != nil && (*n.GRE.MTU < 1280 || *n.GRE.MTU > maxGreMTU) {
+		errs = append(errs, fmt.Errorf("gre.mtu must be between 1280 and %d", maxGreMTU))
 	}
 
 	return errors.Join(errs...)
