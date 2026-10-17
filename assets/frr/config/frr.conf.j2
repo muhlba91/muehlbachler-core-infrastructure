@@ -71,6 +71,8 @@ exit
 route-map EXTERNAL-IN-{{ $name }} permit 100
   match ipv6 address prefix-list DEFAULT-V6
   set local-preference {{ $neighbor.LocalPref }}
+  ! equal origin, so default routes of equal length share the traffic (ECMP)
+  set origin igp
 exit
 {{- end }}
 route-map NO-DEFAULT deny 10
@@ -193,6 +195,9 @@ exit
 router bgp {{ .bgp.LocalASN }} vrf {{ .bgp.EVPN.VRF }}
   ! global configuration
   bgp router-id {{ .publicIp }}
+{{- if .bgp.EVPN.Egress }}
+  bgp bestpath as-path multipath-relax
+{{- end }}
 
   ! the NetBird clients are masqueraded to the client NAT addresses: the sites route the replies back via EVPN
   address-family ipv4 unicast
@@ -206,6 +211,10 @@ router bgp {{ .bgp.LocalASN }} vrf {{ .bgp.EVPN.VRF }}
   address-family ipv6 unicast
 {{- range .bgp.EVPN.ClientNAT.IPv6 }}
     network {{ . }}
+{{- end }}
+{{- with .bgp.EVPN.Egress }}
+    ! the default routes of the upstreams leaked from the default VRF share the traffic
+    maximum-paths {{ .MaximumPaths }}
 {{- end }}
     import vrf default
     import vrf route-map {{ if .bgp.EVPN.Egress }}EVPN-MESH-V6{{ else }}EVPN-LEAK-V6{{ end }}

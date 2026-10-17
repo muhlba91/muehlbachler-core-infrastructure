@@ -10,5 +10,8 @@ network:
         - "{{ .TunnelIP }}"
         - "{{ .LinkLocalIP }}"
       mtu: {{ .MTU }}
+{{- if .Key }}
+      key: {{ .Key }}
+{{- end }}
       accept-ra: false
       ipv6-privacy: false

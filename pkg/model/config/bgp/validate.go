@@ -105,6 +105,9 @@ func (n *NeighborConfig) validateGRE() error {
 	if n.GRE.Type != nil && *n.GRE.Type != GreTypeGre && *n.GRE.Type != greTypeGretap {
 		errs = append(errs, fmt.Errorf("gre.type must be %q or %q", GreTypeGre, greTypeGretap))
 	}
+	if n.GRE.Key != nil && *n.GRE.Key == 0 {
+		errs = append(errs, errors.New("gre.key must be positive"))
+	}
 	if n.GRE.MTU != nil && (*n.GRE.MTU < 1280 || *n.GRE.MTU > maxGreMTU) {
 		errs = append(errs, fmt.Errorf("gre.mtu must be between 1280 and %d", maxGreMTU))
 	}

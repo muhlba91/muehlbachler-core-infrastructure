@@ -44,6 +44,9 @@ type GreConfig struct {
 	LinkLocalIP *string `yaml:"linkLocalIp,omitempty"`
 	// Type is the type of the GRE network interface: "gre" (default), or "gretap".
 	Type *string `yaml:"type,omitempty"`
+	// Key is the optional GRE key identifying the tunnel (input and output): required by peers
+	// if there are multiple tunnels to the same endpoint.
+	Key *uint32 `yaml:"key,omitempty"`
 	// MTU is the MTU of the GRE network interface (default: 1472, max. 1476).
 	MTU *int `yaml:"mtu,omitempty"`
 }

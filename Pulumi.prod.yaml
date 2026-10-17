@@ -81,6 +81,30 @@ config:
           mtu: 1476
         addresses:
           - 2a01:20e:1000:178::1
+      de-as214205-fra1-001:
+        asn: 214205
+        interfaceName: gre-214205-fra1
+        gre:
+          remoteIp: 193.148.249.216
+          key: 1
+          tunnelIp: 2a0b:4e07:4d:fff::1b/127
+          linkLocalIp: fe80::214:205:9c3a:61e7/64
+          mtu: 1476
+        addresses:
+          - 2a0b:4e07:4d:fff::1a
+      de-as214205-ams2-001:
+        asn: 214205
+        prepend: 3
+        localPref: 50
+        interfaceName: gre-214205-ams2
+        gre:
+          remoteIp: 142.249.174.24
+          key: 10
+          tunnelIp: 2a0b:4e07:4e:fffe::5/127
+          linkLocalIp: fe80::214:205:4e2:b87d/64
+          mtu: 1476
+        addresses:
+          - 2a0b:4e07:4e:fffe::4
       nl-bgp43-ams-001:
         asn: 197324
         prepend: 3
@@ -109,7 +133,7 @@ config:
         ipv6:
           - 2001:678:dc0:ff::1/128
       egress:
-        maximumPaths: 2
+        maximumPaths: 3
   muehlbachler-core-infrastructure:tailscale:
     authKey:
       secure: v1:jA/QT10wLkNbjLg4:t76dqKbE4c/NQdDbCy17g5UHIdk0NrUcnJpSYgIZhmQpi6eXzgPnsqRDkR3mU+/+9vHcZ3UXmXbE6SCy87y0SD7bo1ZJUNc5yOKDDts=

@@ -111,6 +111,7 @@ func copyConfig(
 			"TunnelIP":    *neighbor.GRE.TunnelIP,
 			"LinkLocalIP": *neighbor.GRE.LinkLocalIP,
 			"Type":        defaults.GetOrDefault(neighbor.GRE.Type, bgp.GreTypeGre),
+			"Key":         defaults.GetOrDefault(neighbor.GRE.Key, 0),
 			"MTU":         defaults.GetOrDefault(neighbor.GRE.MTU, bgp.DefaultGreMTU),
 		})
 	}).(pulumi.StringOutput)
