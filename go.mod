@@ -5,7 +5,7 @@ go 1.27.3
 require (
 	github.com/KitStream/netbird-pulumi-provider/sdk/go/netbird v0.0.0-20260919191558-542a8c184da4
 	github.com/muhlba91/pulumi-shared-library v0.0.0-20261028220055-0e32eaf78a0e
-	github.com/pulumi/pulumi-command/sdk v1.2.1
+	github.com/pulumi/pulumi-command/sdk v1.3.0
 	github.com/pulumi/pulumi-hcloud/sdk v1.43.3
 	github.com/pulumi/pulumi-tls/sdk/v5 v5.6.2
 	github.com/pulumi/pulumi-vault/sdk/v7 v7.14.1
