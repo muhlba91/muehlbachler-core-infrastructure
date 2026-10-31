@@ -21,7 +21,7 @@ services:
       - /opt/backup/netbird:/backups
 
   server:
-    image: netbirdio/netbird-server:0.81.5
+    image: netbirdio/netbird-server:0.82.0
     container_name: netbird-server
     restart: unless-stopped
     depends_on:
