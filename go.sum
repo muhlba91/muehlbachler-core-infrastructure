@@ -228,6 +228,8 @@ github.com/pulumi/pulumi-hcloud/sdk v1.43.2 h1:Iz2rmexI2sa/LJSEw/KWt0BD3ksQgNNKG
 github.com/pulumi/pulumi-hcloud/sdk v1.43.2/go.mod h1:7/r7bYk5Fm/1cCY3wB7DDQyU/pRelK/cW1ihh8dGusA=
 github.com/pulumi/pulumi-hcloud/sdk v1.43.3 h1:qwE/2+0vyo+2Iyqv+lP1RfhoaR4dQOpuOrE1vl/NtdM=
 github.com/pulumi/pulumi-hcloud/sdk v1.43.3/go.mod h1:7/r7bYk5Fm/1cCY3wB7DDQyU/pRelK/cW1ihh8dGusA=
+github.com/pulumi/pulumi-hcloud/sdk v1.43.4 h1:F5+cHPvWANfAzvCwX4oyCHXlf10J2pFexVrnS73xNUU=
+github.com/pulumi/pulumi-hcloud/sdk v1.43.4/go.mod h1:ecBUQyHQLm8jh82kYGiK6Id3OiCR/cOjw2baXucwJgQ=
 github.com/pulumi/pulumi-random/sdk/v4 v4.21.3 h1:wlRJDBsbotZ0TliYNjmBnbBehWmcr6HcwiZTQ28Z1iQ=
 github.com/pulumi/pulumi-random/sdk/v4 v4.21.3/go.mod h1:SQiqL8U7t62k2vdQVI9RajYzAg2OzBIW7Ta9mEKfRwM=
 github.com/pulumi/pulumi-random/sdk/v4 v4.21.4 h1:j+8/B+itNUHaOF7FNcdpV6qXGAg58WSzPo+RBYnUv8w=
