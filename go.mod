@@ -10,7 +10,7 @@ require (
 	github.com/pulumi/pulumi-tls/sdk/v5 v5.6.3
 	github.com/pulumi/pulumi-vault/sdk/v7 v7.14.1
 	github.com/pulumi/pulumi/sdk/v3 v3.274.1
-	github.com/pulumiverse/pulumi-scaleway/sdk v1.60.0
+	github.com/pulumiverse/pulumi-scaleway/sdk v1.61.1
 	github.com/rs/zerolog v1.35.1
 	gopkg.in/yaml.v3 v3.0.1
 )
