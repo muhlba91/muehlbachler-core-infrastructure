@@ -4,13 +4,13 @@ go 1.27.3
 
 require (
 	github.com/KitStream/netbird-pulumi-provider/sdk/go/netbird v0.0.0-20260919191558-542a8c184da4
-	github.com/muhlba91/pulumi-shared-library v0.0.0-20261106191621-011a32a22aa1
+	github.com/muhlba91/pulumi-shared-library v0.0.0-20261108165712-6be472944605
 	github.com/pulumi/pulumi-command/sdk v1.3.0
 	github.com/pulumi/pulumi-hcloud/sdk v1.43.4
 	github.com/pulumi/pulumi-tls/sdk/v5 v5.6.3
 	github.com/pulumi/pulumi-vault/sdk/v7 v7.14.1
 	github.com/pulumi/pulumi/sdk/v3 v3.274.1
-	github.com/pulumiverse/pulumi-scaleway/sdk v1.61.1
+	github.com/pulumiverse/pulumi-scaleway/sdk v1.62.0
 	github.com/rs/zerolog v1.35.1
 	gopkg.in/yaml.v3 v3.0.1
 )
