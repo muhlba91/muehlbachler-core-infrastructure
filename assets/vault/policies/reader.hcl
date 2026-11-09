@@ -1,9 +1,9 @@
 path "secret/*" {
   capabilities = ["read", "list"]
 }
-path "github-/*" {
+path "github-*/*" {
   capabilities = ["read", "list"]
 }
-path "kubernetes-/*" {
+path "kubernetes-*/*" {
   capabilities = ["read", "list"]
 }
