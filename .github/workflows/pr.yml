@@ -89,7 +89,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Pulumi Preview
     needs:
-      - conform
       - lint
       - test
     permissions:
