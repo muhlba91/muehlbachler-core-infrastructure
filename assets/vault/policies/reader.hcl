@@ -1,9 +1,10 @@
 path "secret/*" {
   capabilities = ["read", "list"]
 }
-path "github-*/*" {
+# `*` is a glob only at the end of a path: `github-*` covers every github-<repo> mount.
+path "github-*" {
   capabilities = ["read", "list"]
 }
-path "kubernetes-*/*" {
+path "kubernetes-*" {
   capabilities = ["read", "list"]
 }
