@@ -19,10 +19,11 @@ path "sys/auth" {
 path "secret/*" {
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
-path "github-*/*" {
+# `*` is a glob only at the end of a path: `github-*` covers every github-<repo> mount.
+path "github-*" {
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
-path "kubernetes-*/*" {
+path "kubernetes-*" {
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
 path "sys/mounts/*" {
