@@ -5,3 +5,7 @@ path "github-*" {
 path "kubernetes-*" {
   capabilities = ["read", "list"]
 }
+# developer machines (Pulumi tokens, per-host GCP keys), created by github-infrastructure
+path "dev-infrastructure/*" {
+  capabilities = ["read", "list"]
+}

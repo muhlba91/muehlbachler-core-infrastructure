@@ -26,6 +26,10 @@ path "github-*" {
 path "kubernetes-*" {
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
+# developer machines (Pulumi tokens, per-host GCP keys), created by github-infrastructure
+path "dev-infrastructure/*" {
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
 path "sys/mounts/*" {
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
