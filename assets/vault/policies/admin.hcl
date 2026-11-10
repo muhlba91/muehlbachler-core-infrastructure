@@ -16,9 +16,6 @@ path "sys/auth/*" {
 path "sys/auth" {
   capabilities = ["read"]
 }
-path "secret/*" {
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
 # `*` is a glob only at the end of a path: `github-*` covers every github-<repo> mount.
 path "github-*" {
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
