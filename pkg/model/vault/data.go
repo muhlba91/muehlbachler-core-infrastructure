@@ -1,7 +1,7 @@
 package vault
 
 import (
-	"github.com/muhlba91/pulumi-shared-library/pkg/model/google/iam/serviceaccount"
+	"github.com/muhlba91/pulumi-shared-library/pkg/model/google/native/iam/serviceaccount"
 	"github.com/muhlba91/pulumi-shared-library/pkg/model/scaleway/iam/application"
 	"github.com/pulumiverse/pulumi-scaleway/sdk/go/scaleway/object"
 )

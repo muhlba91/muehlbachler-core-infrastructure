@@ -5,8 +5,8 @@ import (
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/lib/google/iam/role"
 	kmsIam "github.com/muhlba91/pulumi-shared-library/pkg/lib/google/kms/iam"
-	gmodel "github.com/muhlba91/pulumi-shared-library/pkg/model/google/iam/serviceaccount"
-	slServiceAccount "github.com/muhlba91/pulumi-shared-library/pkg/util/google/iam/serviceaccount"
+	gmodel "github.com/muhlba91/pulumi-shared-library/pkg/model/google/native/iam/serviceaccount"
+	slServiceAccount "github.com/muhlba91/pulumi-shared-library/pkg/util/google/native/iam/serviceaccount"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/muhlba91/muehlbachler-core-infrastructure/pkg/lib/config"
