@@ -107,6 +107,21 @@ jobs:
 
       - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
 
+      # Google credentials from workload identity (the CI identity and secrets are managed by github-infrastructure)
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ secrets.GOOGLE_CLOUD_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GOOGLE_CLOUD_CI_SERVICE_ACCOUNT }}
+
+      # the secrets are read by fnox from Google Secret Manager (fnox.toml), the same as on the developer machines
+      - name: Load secrets
+        run: |
+          fnox ci-redact
+          fnox export --format json \
+            | jq -r '.secrets | to_entries[]
+                | if (.value | test("\n")) then error("multi-line value: \(.key)") else "\(.key)=\(.value)" end' \
+            >> "$GITHUB_ENV"
+
       # Go comes from mise; setup-go only restores the module cache.
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
 
@@ -122,14 +137,3 @@ jobs:
           stack-name: prod
           comment-on-pr: true
           refresh: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-        env:
-          CLOUDSDK_COMPUTE_REGION: "${{ secrets.CLOUDSDK_COMPUTE_REGION }}"
-          GOOGLE_CREDENTIALS: "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}"
-          GITHUB_TOKEN: "${{ secrets.GH_PAT_TOKEN }}"
-          HCLOUD_TOKEN: "${{ secrets.HCLOUD_TOKEN }}"
-          SCW_ACCESS_KEY: "${{ secrets.SCW_ACCESS_KEY }}"
-          SCW_SECRET_KEY: "${{ secrets.SCW_SECRET_KEY }}"
-          SCW_ORGANIZATION_ID: "${{ secrets.SCW_ORGANIZATION_ID }}"
-          SCW_PROJECT_ID: "${{ secrets.SCW_PROJECT_ID }}"
-          SCW_DEFAULT_REGION: "${{ secrets.SCW_DEFAULT_REGION }}"
-          SCW_DEFAULT_ZONE: "${{ secrets.SCW_DEFAULT_ZONE }}"
