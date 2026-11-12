@@ -39,7 +39,8 @@ fnox exec -- pulumi destroy
 This is a bootstrap repository: it creates Vault and therefore never reads from it. The secrets are read with
 [fnox](https://fnox.jdx.dev) from Google Secret Manager (see [`fnox.toml`](fnox.toml)):
 
-- **CI:** still uses GitHub repository secrets; it moves to workload identity and this fnox configuration in a follow-up.
+- **CI:** Google credentials from workload identity (managed by `github-infrastructure`); a step loads the secrets into
+  the job's environment.
 - **Locally:** with your Application Default Credentials (`gcloud auth application-default login`):
 
   ```bash

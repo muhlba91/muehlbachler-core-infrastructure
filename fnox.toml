@@ -3,7 +3,8 @@
 # This is a bootstrap repository: it creates Vault, so it never reads from Vault. Its secrets live in Google Secret
 # Manager in public-services-402810, named `muehlbachler-core-infrastructure--<VARIABLE>` (see BOOTSTRAP.md).
 #
-# - CI (after the follow-up switch; until then GitHub repository secrets): Google credentials from workload identity
+# - CI: Google credentials from workload identity (google-github-actions/auth); the identity is managed by
+#   github-infrastructure and passed as GitHub Actions secrets (GOOGLE_CLOUD_*)
 # - locally (Mac): your Application Default Credentials (`gcloud auth application-default login`); mise sets
 #   FNOX_PROFILE=default here, so the machine's `dev` profile (Vault) is never used
 #
