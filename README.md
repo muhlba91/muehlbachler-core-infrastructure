@@ -14,16 +14,16 @@ This repository contains the infrastructure as code (IaC) for the Core Infrastru
 
 ## Requirements
 
-Go, golangci-lint, and Pulumi are installed via mise, see [Development](#development).
+Go, golangci-lint, Pulumi, and fnox are installed via mise, see [Development](#development).
 
 ## Creating the Infrastructure
 
 To create the services, a [Pulumi Stack](https://www.pulumi.com/docs/concepts/stack/) with the correct configuration needs to exists.
 
-The stack can be deployed via:
+The stack can be deployed via (see [Secrets](#secrets)):
 
 ```bash
-pulumi up
+fnox exec -- pulumi up
 ```
 
 ## Destroying the Infrastructure
@@ -31,16 +31,25 @@ pulumi up
 The entire infrastructure can be destroyed via:
 
 ```bash
-pulumi destroy
+fnox exec -- pulumi destroy
 ```
 
-## Environment Variables
+## Secrets
 
-To successfully run, and configure the Pulumi plugins, you need to set a list of environment variables. Alternatively, refer to the used Pulumi provider's configuration documentation.
+This is a bootstrap repository: it creates Vault and therefore never reads from it. The secrets are read with
+[fnox](https://fnox.jdx.dev) from Google Secret Manager (see [`fnox.toml`](fnox.toml)):
 
-- `CLOUDSDK_COMPUTE_REGION` the Google Cloud (GCP) region
-- `GOOGLE_APPLICATION_CREDENTIALS`: reference to a file containing the Google Cloud (GCP) service account credentials
-- `HCLOUD_TOKEN`: the Hetzner Cloud API token
+- **CI:** still uses GitHub repository secrets; it moves to workload identity and this fnox configuration in a follow-up.
+- **Locally:** with your Application Default Credentials (`gcloud auth application-default login`):
+
+  ```bash
+  fnox exec -- pulumi preview --stack prod
+  ```
+
+  Local overrides go into `fnox.local.toml` (gitignored).
+
+The initial bootstrap (what must exist before the first deployment, and how to seed the secrets) is described in
+[BOOTSTRAP.md](BOOTSTRAP.md).
 
 ---
 
