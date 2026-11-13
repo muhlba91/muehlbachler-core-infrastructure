@@ -95,6 +95,8 @@ func initialize(
 		Update:     pulumi.StringPtr(initScript),
 		Triggers:   pulumi.Array{rotation},
 		Connection: conn,
+		// stdout contains the token: it must not be streamed to the (unmasked) Pulumi log, only stderr (errors) is
+		Logging: remote.LoggingStderr,
 	},
 		dependsOn,
 		remotefile.DependsOnAll(setupBodyCopy),
