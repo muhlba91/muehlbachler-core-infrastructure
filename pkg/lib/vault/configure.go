@@ -3,7 +3,6 @@ package vault
 import (
 	"encoding/json"
 	"fmt"
-	"net"
 
 	"github.com/muhlba91/pulumi-shared-library/pkg/lib/vault/secret"
 	"github.com/muhlba91/pulumi-shared-library/pkg/lib/vault/store"
@@ -30,7 +29,7 @@ func configure(
 	dnsConfig *dns.Config,
 	dependsOn pulumi.ResourceOrInvokeOption,
 ) (*pulumi.AnyOutput, error) {
-	address := fmt.Sprintf("https://%s", net.JoinHostPort(*dnsConfig.Entries["vault"].Domain, "8200"))
+	address := fmt.Sprintf("https://%s", *dnsConfig.Entries["vault"].Domain)
 
 	keys, iErr := initialize(ctx, sshIPv4, privateKeyPem, dependsOn)
 	if iErr != nil {
