@@ -147,7 +147,7 @@ config:
       secure: v1:gxhw+vju2eAHg4Fp:BUBZG3O/yvoqu1D3D4Dh47R9S29MkWepaFdlygQSZRBZvwjzjHXopO2bIfYayCr1FARZ+vWUyqlUyaAh
     admin:
       name: admin
-      email: daniel@muehlbachler.io
+      email: dev@muehlbachler.io
     client:
       wireguardPort: 65500
       mtu: 1420
