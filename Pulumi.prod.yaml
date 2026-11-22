@@ -26,10 +26,6 @@ config:
         description: Allow incoming NetBird STUN traffic
         port: 3478
         protocol: udp
-      vault:
-        description: Allow incoming Vault traffic
-        port: 8200
-        protocol: tcp
       netbird-client:
         description: Allow incoming NetBird client WireGuard (wt0) traffic
         port: 65500
