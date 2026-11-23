@@ -24,6 +24,8 @@ else
 fi
 
 # check if vault was already initialized or not
+# $? is the status of the branch above, on purpose
+# shellcheck disable=SC2181
 if [[ $? -eq 0 ]]; then
     # parse token and recovery keys
     echo "Vault initialized successfully. Parsing keys..."

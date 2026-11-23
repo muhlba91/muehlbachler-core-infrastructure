@@ -1,0 +1,4 @@
+# Markdown rules (`pre-commit`, CI).
+default: true
+MD013: false # prose and tables are not wrapped
+MD028: false # GitHub alerts (DOC-17) are separated by blank lines

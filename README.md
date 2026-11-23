@@ -2,11 +2,11 @@
 
 [![Build status](https://img.shields.io/github/actions/workflow/status/muhlba91/muehlbachler-core-infrastructure/pipeline.yml?style=for-the-badge)](https://github.com/muhlba91/muehlbachler-core-infrastructure/actions/workflows/pipeline.yml)
 [![License](https://img.shields.io/github/license/muhlba91/muehlbachler-core-infrastructure?style=for-the-badge)](LICENSE.md)
-[![](https://api.scorecard.dev/projects/github.com/muhlba91/muehlbachler-core-infrastructure/badge?style=for-the-badge)](https://scorecard.dev/viewer/?uri=github.com/muhlba91/muehlbachler-core-infrastructure)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/muhlba91/muehlbachler-core-infrastructure/badge?style=for-the-badge)](https://scorecard.dev/viewer/?uri=github.com/muhlba91/muehlbachler-core-infrastructure)
 
 This repository contains the infrastructure as code (IaC) for the Core Infrastructure using [Pulumi](http://pulumi.com).
 
-> **ℹ️ Info:**  
+> **ℹ️ Info:**
 > This repository was previously named `vault` as it initially only contained the Vault deployment.
 > There are leftover references to this name in the code, and documentation, which cannot be changed at this point.
 
@@ -174,15 +174,15 @@ The site routers are dynamic BGP neighbors (EVPN) from the NetBird network range
 The server uses its NetBird IPv4 address as VXLAN source (VTEP), which is looked up by its peer name (the hostname) once the NetBird client is registered, and exported as `netbird.client.ipv4`: the site routers peer with it.
 The client NAT addresses are assigned to the EVPN bridge, and announced into EVPN.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > When the bridge loses its last IPv4 address (e.g., a changed `clientNat` address), the kernel removes the IPv4 routes through it without notifying FRR.
 > The EVPN installation therefore resets the EVPN sessions at its end, which installs the routes again (the site routers reconnect within seconds).
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > The kernel modules `vrf`, and `vxlan` are only part of `linux-image-extra-virtual`, which is installed on the first installation of FRR:
 > for an existing server, install it manually (`apt-get install --no-install-recommends linux-image-extra-virtual`), and load the modules.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > The peer name of the server must be unique in NetBird, otherwise the lookup of the VTEP fails.
 > If the NetBird IPv4 address of the server changes (e.g., after the NetBird database is lost), the site routers must be updated with the new address.
 
@@ -193,7 +193,7 @@ tailscale:
   authKey: the Tailscale auth key
 ```
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > The Tailscale auth key must be recreated periodically, if reused due to expiration.
 
 ### NetBird
@@ -218,22 +218,22 @@ netbird:
     mtu: the MTU of the client interface (e.g. 1420: the maximum for WireGuard on a 1500 byte link, 1370 remain for VXLAN on top)
 ```
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > `netbird.storeEncryptionKey` **must stay the same** across restores and full re-bootstraps:
 > the restored database cannot be decrypted without the key.
 > After a full re-bootstrap with lost Pulumi state, the owner already
 > exists in the restored data, so a newly generated password does not apply: reset it in NetBird.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > The Pulumi provider does not know the IPv6 settings of the NetBird account, and every update of the account settings (including the first apply, e.g., a changed `networkRange`) resets them:
 > afterwards, add the `All` group to the IPv6 enabled groups again in NetBird, otherwise the peers lose their IPv6 addresses.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > The owner created by the setup endpoint has no domain, so SSO users would each open their own account instead of joining it.
 > Directly after the setup, the initialization sets the domain `netbird.selfhosted` (the one hard-coded by the NetBird server), the category `private`, and the primary flag on the owner account.
 > This is only done on the first installation: for an existing instance, set `domain`, `domain_category`, and `is_domain_primary_account` of the owner account manually, and restart NetBird.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > If the NetBird database is lost, all clients must be registered again with a new setup key.
 
 ---
