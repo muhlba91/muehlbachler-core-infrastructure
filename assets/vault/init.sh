@@ -9,7 +9,9 @@ until sudo docker inspect vault --format "{{.State.Status}}" | grep "running" > 
     echo "Waiting for vault to start..."
     sleep 5
 done
-while [[ ! $(curl -s ${ADDRESS}) ]]; do
+# the port is not published on the host, so check from inside the container
+# exit code 1 means unreachable, 2 means sealed (still reachable)
+while sudo docker exec vault vault status -address="${ADDRESS}" > /dev/null 2>&1; [[ $? -eq 1 ]]; do
     echo "Waiting for vault to be reachable..."
     sleep 5
 done
