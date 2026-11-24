@@ -28,6 +28,8 @@ services:
       # FIXME: remove once https://github.com/hashicorp/vault/issues/31919 is released (next release)
       - SKIP_SETCAP=true
       - VAULT_ADDR=http://127.0.0.1:8200
+      # Scaleway S3 returns no supported checksums, which only produces SDK warnings
+      - AWS_RESPONSE_CHECKSUM_VALIDATION=when_required
       - GOOGLE_APPLICATION_CREDENTIALS=/vault/credentials.json
     cap_add:
       - IPC_LOCK
