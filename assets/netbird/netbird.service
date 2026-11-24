@@ -5,6 +5,7 @@ After=docker.service
 
 [Service]
 Restart=always
+RestartSec=10
 WorkingDirectory=/opt/netbird
 ExecStartPre=/usr/bin/docker compose --file /opt/netbird/docker-compose.yml --project-name netbird pull
 ExecStart=/usr/bin/docker compose --file /opt/netbird/docker-compose.yml --project-name netbird up --force-recreate

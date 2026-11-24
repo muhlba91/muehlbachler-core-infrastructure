@@ -5,6 +5,7 @@ After=docker.service
 
 [Service]
 Restart=always
+RestartSec=10
 WorkingDirectory=/opt/frr
 ExecStartPre=/usr/bin/docker compose --file /opt/frr/docker-compose.yml --project-name frr pull
 ExecStart=/usr/bin/docker compose --file /opt/frr/docker-compose.yml --project-name frr up --force-recreate

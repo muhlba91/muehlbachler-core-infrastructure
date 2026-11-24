@@ -5,6 +5,7 @@ After=docker.service
 
 [Service]
 Restart=always
+RestartSec=10
 WorkingDirectory=/opt/tailscale
 ExecStartPre=/sbin/iptables -A FORWARD -i tailscale+ -j ACCEPT
 ExecStartPre=/usr/bin/docker compose --file /opt/tailscale/docker-compose.yml --project-name tailscale pull
